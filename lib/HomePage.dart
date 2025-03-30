@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'Product.dart'; 
 
 class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +45,7 @@ class CategorySection extends StatelessWidget {
   final String title;
   final List<Product> products;
 
-  CategorySection({required this.title, required this.products});
+  const CategorySection({super.key, required this.title, required this.products});
 
   @override
   Widget build(BuildContext context) {
