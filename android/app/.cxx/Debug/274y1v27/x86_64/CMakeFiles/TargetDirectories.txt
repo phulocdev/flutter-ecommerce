@@ -1,0 +1,2 @@
+D:/Hoctap/Nam4/HK2/Cross_Platform/flutter-ecommerce/android/app/.cxx/Debug/274y1v27/x86_64/CMakeFiles/edit_cache.dir
+D:/Hoctap/Nam4/HK2/Cross_Platform/flutter-ecommerce/android/app/.cxx/Debug/274y1v27/x86_64/CMakeFiles/rebuild_cache.dir

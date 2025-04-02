@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
 import 'HomePage.dart';
+import 'Login.dart';
 
 void main() {
   runApp(const MyApp());
 }
+class Login extends StatelessWidget {
+  const Login({super.key});
 
-class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Auth Screens',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: LoginScreen(),  // Start the app with LoginScreen
+    );
+  }
+}class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
