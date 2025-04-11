@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/product.dart';
-import 'package:flutter_ecommerce/screens/product_detail.dart';
+import 'package:flutter_ecommerce/screens/product_detail_screen.dart';
 
 class ProductCard extends StatelessWidget {
   const ProductCard({super.key, required this.product});
