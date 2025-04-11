@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/apis/auth_api_service.dart';
 import 'package:flutter_ecommerce/models/dto/login_request_dto.dart';
-import 'package:flutter_ecommerce/screens/forgot_password.dart';
+import 'package:flutter_ecommerce/screens/forgot_password_screen.dart';
 import 'package:flutter_ecommerce/screens/main_screen.dart';
-import 'package:flutter_ecommerce/screens/registration.dart';
+import 'package:flutter_ecommerce/screens/registration_screen.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 
 class LoginScreen extends StatefulWidget {
