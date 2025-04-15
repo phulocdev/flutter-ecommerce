@@ -11,21 +11,27 @@ class ProductScreen extends StatelessWidget {
       appBar: AppBar(
         foregroundColor: Colors.white,
         title: const Text(
-          'Products',
+          'Trang chủ',
           style: TextStyle(
               color: Colors.white, fontWeight: FontWeight.w500, fontSize: 24),
-          textAlign: TextAlign.center,
         ),
         backgroundColor: Colors.blue,
         actions: [
-          Icon(
-            Icons.shopping_cart,
-            color: Colors.white,
+          IconButton(
+            icon: const Icon(Icons.search, color: Colors.white),
+            onPressed: () {
+
+            },
           ),
-          SizedBox(
-            width: 8,
-          )
+          IconButton(
+            icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
+            onPressed: () {
+
+            },
+          ),
+          const SizedBox(width: 8),
         ],
+
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -43,8 +49,8 @@ class ProductScreen extends StatelessWidget {
               title: '🏆 Bán chạy nhất',
               products: bestSellers,
             ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 8.0),
               child: Text(
                 '📌 Danh mục sản phẩm',
                 style: TextStyle(
@@ -73,6 +79,7 @@ class ProductScreen extends StatelessWidget {
               title: '⌨️ Bàn phím',
               products: keyboardProducts,
             ),
+             const SizedBox(height: 20),
           ],
         ),
       ),

@@ -8,27 +8,21 @@ class ProductsListHorizontal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double totalVerticalPadding = 20.0;
-    const double availableHeight = 220.0 - totalVerticalPadding;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final double horizontalPaddingAndSpacing = 44.0;
-    final double desiredWidth = (screenWidth - horizontalPaddingAndSpacing) / 3;
-    final double calculatedAspectRatio =
-        availableHeight > 0 ? (desiredWidth / availableHeight) : 5;
-
     return SizedBox(
       height: 220,
-      child: GridView.builder(
-        padding: const EdgeInsets.all(10),
-        itemCount: products.length,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
         scrollDirection: Axis.horizontal,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 1,
-          childAspectRatio: calculatedAspectRatio,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-        ),
-        itemBuilder: (context, index) => ProductCard(product: products[index]),
+        itemCount: products.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 10.0),
+            child: SizedBox(
+              width: 160,
+              child: ProductCard(product: products[index]),
+            ),
+          );
+        },
       ),
     );
   }
