@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 
-class ProductDetail extends StatelessWidget {
-  const ProductDetail({super.key, required this.product});
+class ProductDetailScreen extends StatelessWidget {
+  const ProductDetailScreen({super.key, required this.product});
   final Product product;
 
   @override

@@ -6,21 +6,30 @@ class ProductsEachCategorySection extends StatelessWidget {
   final String title;
   final List<Product> products;
 
-  const ProductsEachCategorySection(
-      {super.key, required this.title, required this.products});
+  const ProductsEachCategorySection({
+    super.key,
+    required this.title,
+    required this.products,
+  });
 
   @override
   Widget build(BuildContext context) {
+    const double sectionVerticalPadding = 32.0;
+    const double horizontalPadding = 12.0;
+
+    if (products.isEmpty) {}
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      padding: const EdgeInsets.symmetric(vertical: sectionVerticalPadding / 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            padding: const EdgeInsets.symmetric(
+                horizontal: horizontalPadding, vertical: 12),
             child: Text(
               title,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(),
             ),
           ),
           ProductsListHorizontal(products: products),
