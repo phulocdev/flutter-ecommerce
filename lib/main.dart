@@ -1,26 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecommerce/screens/main_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
-  runApp(const MyApp());
+
+  try {
+    await dotenv.load(fileName: ".env");
+    print(".env file loaded successfully.");
+  } catch (e) {
+    print("Error loading .env file: $e");
+  }
+
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Ecommerce',
-      debugShowCheckedModeBanner: false,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final goRouter = ref.watch(goRouterProvider);
+
+    return MaterialApp.router(
+      title: 'Flutter E-commerce',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        primarySwatch: Colors.blue,
+        colorScheme:
+            ColorScheme.fromSwatch(primarySwatch: Colors.blue).copyWith(
+          secondary: Colors.blue,
+        ),
         useMaterial3: true,
       ),
-      home: const MainScreen(),
+      routerConfig: goRouter,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
