@@ -25,20 +25,25 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             children: [
               TextFormField(
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'Mật khẩu hiện tại'),
-                validator: (value) => value!.isEmpty ? 'Nhập mật khẩu hiện tại' : null,
+                decoration:
+                    const InputDecoration(labelText: 'Mật khẩu hiện tại'),
+                validator: (value) =>
+                    value!.isEmpty ? 'Nhập mật khẩu hiện tại' : null,
                 onSaved: (value) => currentPassword = value!,
               ),
               TextFormField(
                 obscureText: true,
                 decoration: const InputDecoration(labelText: 'Mật khẩu mới'),
-                validator: (value) => value!.length < 6 ? 'Tối thiểu 6 ký tự' : null,
+                validator: (value) =>
+                    value!.length < 6 ? 'Tối thiểu 6 ký tự' : null,
                 onSaved: (value) => newPassword = value!,
               ),
               TextFormField(
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'Xác nhận mật khẩu'),
-                validator: (value) => value != newPassword ? 'Không khớp' : null,
+                decoration:
+                    const InputDecoration(labelText: 'Xác nhận mật khẩu'),
+                validator: (value) =>
+                    value != newPassword ? 'Không khớp' : null,
                 onSaved: (value) => confirmPassword = value!,
               ),
               const SizedBox(height: 20),

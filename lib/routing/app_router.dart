@@ -26,7 +26,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final bool isLoggedIn = true; // Placeholder: Replace with actual auth check
 
   return GoRouter(
-    initialLocation: AppRoute.login.path, // Start at the products screen
+    initialLocation: AppRoute.products.path, // Start at the products screen
     navigatorKey: _rootNavigatorKey,
     debugLogDiagnostics: true, // Useful for debugging routing issues
 
@@ -76,7 +76,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                                 description: 'test',
                                 price: 12,
                                 imageUrl:
-                                    'https://picsum.photos/seed/d_monitor_curved/250/250')); // Modify screen to accept ID
+                                    'https://picsum.photos/seed/d_monitor_curved/250/250'));
                       } else {
                         // Handle error: ID missing or invalid
                         return const Scaffold(

@@ -46,7 +46,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       backgroundColor: Colors.blue.shade100,
                       backgroundImage: _avatarBytes != null
                           ? MemoryImage(_avatarBytes!)
-                          : const AssetImage('assets/images/avt.png') as ImageProvider,
+                          : const AssetImage('assets/images/avt.png')
+                              as ImageProvider,
                     ),
                     const CircleAvatar(
                       backgroundColor: Colors.white,
@@ -62,7 +63,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 10),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Địa chỉ giao hàng'),
+                decoration:
+                    const InputDecoration(labelText: 'Địa chỉ giao hàng'),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
