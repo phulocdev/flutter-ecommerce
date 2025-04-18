@@ -1,37 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/data/dummy_products.dart';
+import 'package:flutter_ecommerce/providers/cart_providers.dart';
+import 'package:flutter_ecommerce/widgets/cart_icon_button.dart';
 import 'package:flutter_ecommerce/widgets/products_each_category_section.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class ProductScreen extends StatelessWidget {
+class ProductScreen extends ConsumerWidget {
   const ProductScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+    final TextTheme textTheme = theme.textTheme;
+
+    final cartItemCount = ref.watch(cartTotalQuantityProvider);
+
+    const double screenHorizontalPadding = 12.0;
+    const double sectionTitleBottomPadding = 12.0;
+
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
-        title: const Text(
-          'Trang chủ',
-          style: TextStyle(
-              color: Colors.white, fontWeight: FontWeight.w500, fontSize: 24),
+        foregroundColor: theme.appBarTheme.foregroundColor ?? Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor ?? Colors.blue,
+        elevation: theme.appBarTheme.elevation ?? 2.0,
+        title: Text(
+          'Products',
+          style: theme.appBarTheme.titleTextStyle ??
+              const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 24),
         ),
-        backgroundColor: Colors.blue,
+        centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
-            onPressed: () {
-
-            },
-          ),
-          const SizedBox(width: 8),
+          CartAppBarIcon(),
         ],
-
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -49,12 +53,16 @@ class ProductScreen extends StatelessWidget {
               title: '🏆 Bán chạy nhất',
               products: bestSellers,
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 8.0),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                screenHorizontalPadding,
+                20.0,
+                screenHorizontalPadding,
+                sectionTitleBottomPadding,
+              ),
               child: Text(
                 '📌 Danh mục sản phẩm',
-                style: TextStyle(
-                  fontSize: 22,
+                style: textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -79,7 +87,7 @@ class ProductScreen extends StatelessWidget {
               title: '⌨️ Bàn phím',
               products: keyboardProducts,
             ),
-             const SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
         ),
       ),

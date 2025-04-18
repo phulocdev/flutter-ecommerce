@@ -4,8 +4,8 @@ import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/providers/cart_provider.dart';
 import 'package:flutter_ecommerce/screens/cart_screen.dart';
 
-class ProductDetail extends StatelessWidget {
-  const ProductDetail({super.key, required this.product});
+class ProductDetailScreen extends StatelessWidget {
+  const ProductDetailScreen({super.key, required this.product});
   final Product product;
 
   @override

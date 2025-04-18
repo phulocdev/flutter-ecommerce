@@ -1,28 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/product.dart';
+import 'package:flutter_ecommerce/screens/product_detail_screen.dart';
 import 'package:flutter_ecommerce/widgets/product_card.dart';
 
 class ProductsListHorizontal extends StatelessWidget {
-  const ProductsListHorizontal({super.key, required this.products});
   final List<Product> products;
+
+  const ProductsListHorizontal({
+    super.key,
+    required this.products,
+  });
+
+  void _navigateToProductDetail(BuildContext context, Product product) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (ctx) => ProductDetailScreen(
+        product: product,
+      ),
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
+    const double cardWidth = 150.0;
+    const double listHeight = 240.0;
+    const double horizontalPadding = 12.0;
+    const double itemSpacing = 10.0;
+
     return SizedBox(
-      height: 220,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+      height: listHeight,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
         scrollDirection: Axis.horizontal,
         itemCount: products.length,
         itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.only(right: 10.0),
-            child: SizedBox(
-              width: 160,
-              child: ProductCard(product: products[index]),
+          final product = products[index];
+
+          return SizedBox(
+            width: cardWidth,
+            child: ProductCard(
+              product: product,
+              onTap: () => _navigateToProductDetail(context, product),
             ),
           );
         },
+        separatorBuilder: (context, index) =>
+            const SizedBox(width: itemSpacing),
       ),
     );
   }

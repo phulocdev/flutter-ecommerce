@@ -1,70 +1,118 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce/providers/cart_providers.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_ecommerce/models/product.dart';
-import 'package:flutter_ecommerce/screens/product_detail_screen.dart';
 
-class ProductCard extends StatelessWidget {
-  const ProductCard({super.key, required this.product});
+class ProductCard extends ConsumerWidget {
   final Product product;
+  final VoidCallback? onTap;
 
-  void _navigateToProductDetailScreen(BuildContext context, Product product) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
-      return ProductDetail(product: product);
-    }));
-  }
+  const ProductCard({
+    super.key,
+    required this.product,
+    this.onTap,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    const double cardBorderRadius = 15.0;
-    final Border cardBorder = Border.all(
-      color: Colors.grey.shade300,
-      width: 1.0,
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-    return InkWell(
-      onTap: () {
-        _navigateToProductDetailScreen(context, product);
-      },
-      borderRadius: BorderRadius.circular(cardBorderRadius),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: cardBorder,
-          borderRadius: BorderRadius.circular(cardBorderRadius),
-        ),
-        clipBehavior: Clip.antiAlias,
+    return Card(
+      elevation: 3,
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: InkWell(
+        onTap: onTap,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: Image.network(
-                product.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+              child: Hero(
+                tag: 'product_image_${product.id}',
+                child: Image.network(
+                  product.imageUrl,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                            : null,
+                        strokeWidth: 2.0,
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) => Center(
+                    child: Icon(
+                      Icons.image_not_supported_outlined,
+                      color: Colors.grey.shade400,
+                      size: 40,
+                    ),
+                  ),
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 7.0),
+              padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 4.0),
               child: Text(
                 product.name,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style:
+                    textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-              child: Text(
-                product.formattedPrice,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Colors.redAccent, fontWeight: FontWeight.w500),
+              padding: const EdgeInsets.fromLTRB(8.0, 0, 4.0, 6.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    product.formattedPrice,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.add_shopping_cart_outlined),
+                    color: colorScheme.secondary,
+                    iconSize: 20,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    tooltip: 'Add to Cart',
+                    onPressed: () {
+                      ref.read(cartNotifierProvider.notifier).addItem(product);
+
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${product.name} added to cart!'),
+                          duration: const Duration(seconds: 2),
+                          behavior: SnackBarBehavior.floating,
+                          action: SnackBarAction(
+                            label: 'UNDO',
+                            onPressed: () {
+                              ref
+                                  .read(cartNotifierProvider.notifier)
+                                  .removeSingleItem(product.id);
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 8),
           ],
         ),
       ),

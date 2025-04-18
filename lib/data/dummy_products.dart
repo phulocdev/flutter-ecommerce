@@ -1,312 +1,272 @@
-// data/dummy_products.dart
-import 'package:flutter_ecommerce/models/product.dart'; // Đảm bảo đường dẫn đúng
+// lib/data/dummy_products.dart
+import 'package:flutter_ecommerce/models/product.dart'; // Adjust import path as needed
 
-// Sử dụng prefix trong ID để dễ phân biệt:
-// d = discounted, n = new, bs = best seller, s = storage,
-// m = monitor, l = laptop, mo = mouse, k = keyboard
+// Note: Using picsum.photos with seeds for varied images.
+// Format: https://picsum.photos/seed/{seed_name}/250/250
 
 List<Product> discountedProducts = [
   Product(
       id: 'd1',
-      name: "Laptop Gaming Nitro 5",
-      imageUrl: "https://picsum.photos/seed/d1/250",
-      price: 21500000, // Giá ví dụ (VND)
-      description:
-          'Laptop gaming Acer Nitro 5 với chip Intel Core i5, card đồ họa RTX 3050, màn hình 144Hz. Chiến game mượt mà, thiết kế hầm hố.'),
+      name: "Laptop Gaming ROG",
+      description: "High-performance gaming laptop with latest GPU.",
+      imageUrl: "https://picsum.photos/seed/d_laptop_gaming/250/250",
+      price: 1199.99),
   Product(
       id: 'd2',
-      name: "Màn hình cong Samsung 34\"",
-      imageUrl: "https://picsum.photos/seed/d2/250",
-      price: 8990000, // Giá ví dụ (VND)
-      description:
-          'Màn hình ultrawide cong 34 inch, độ phân giải WQHD, tần số quét 100Hz. Tối ưu cho làm việc đa nhiệm và giải trí.'),
+      name: "Màn hình cong 34\"",
+      description: "Ultrawide curved monitor for immersive experience.",
+      imageUrl: "https://picsum.photos/seed/d_monitor_curved/250/250",
+      price: 449.50),
   Product(
       id: 'd3',
       name: "Chuột Logitech G502 Hero",
-      imageUrl: "https://picsum.photos/seed/d3/250",
-      price: 950000, // Giá ví dụ (VND)
-      description:
-          'Chuột gaming có dây G502 Hero với cảm biến HERO 25K, 11 nút lập trình được, thiết kế công thái học.'),
+      description: "Popular high-performance wired gaming mouse.",
+      imageUrl: "https://picsum.photos/seed/d_mouse_g502/250/250",
+      price: 49.99),
   Product(
       id: 'd4',
-      name: "Bàn phím cơ DareU EK87",
-      imageUrl: "https://picsum.photos/seed/d4/250",
-      price: 499000, // Giá ví dụ (VND)
-      description:
-          'Bàn phím cơ Tenkeyless (TKL) giá rẻ, switch D độc quyền, LED Rainbow. Phù hợp cho người mới bắt đầu.'),
+      name: "Bàn phím RGB Cơ",
+      description: "Mechanical keyboard with customizable RGB lighting.",
+      imageUrl: "https://picsum.photos/seed/d_keyboard_rgb/250/250",
+      price: 89.90),
   Product(
       id: 'd5',
-      name: "Tai nghe Gaming Rapoo VH500",
-      imageUrl: "https://picsum.photos/seed/d5/250",
-      price: 390000, // Giá ví dụ (VND)
-      description:
-          'Tai nghe chụp tai gaming với âm thanh vòm 7.1 giả lập, mic khử ồn, LED RGB. Thoải mái khi đeo trong thời gian dài.'),
+      name: "Tai nghe HyperX Cloud II",
+      description: "Comfortable gaming headset with 7.1 surround sound.",
+      imageUrl: "https://picsum.photos/seed/d_headset_hyperx/250/250",
+      price: 74.99),
 ];
 
 List<Product> newProducts = [
   Product(
       id: 'n1',
-      name: "MacBook Air M3 13 inch",
-      imageUrl: "https://picsum.photos/seed/n1/250",
-      price: 28500000, // Giá ví dụ (VND)
-      description:
-          'MacBook Air mới nhất với chip Apple M3 mạnh mẽ, thời lượng pin khủng, thiết kế mỏng nhẹ. Hoàn hảo cho công việc và sáng tạo.'),
+      name: "MacBook Air M3",
+      description: "Latest Apple MacBook Air with M3 chip.",
+      imageUrl: "https://picsum.photos/seed/n_macbook_air/250/250",
+      price: 1199.00),
   Product(
       id: 'n2',
-      name: "Màn hình LG UltraFine 4K 27\"",
-      imageUrl: "https://picsum.photos/seed/n2/250",
-      price: 12500000, // Giá ví dụ (VND)
-      description:
-          'Màn hình 4K sắc nét, tấm nền IPS, hỗ trợ HDR, cổng USB-C. Lựa chọn tuyệt vời cho đồ họa và dựng phim.'),
+      name: "Màn hình Studio Display",
+      description: "Apple's 5K Retina display for creators.",
+      imageUrl: "https://picsum.photos/seed/n_monitor_studio/250/250",
+      price: 1599.00),
   Product(
       id: 'n3',
-      name: "Chuột Razer Viper V3 Pro",
-      imageUrl: "https://picsum.photos/seed/n3/250",
-      price: 3800000, // Giá ví dụ (VND)
-      description:
-          'Chuột gaming không dây siêu nhẹ mới nhất từ Razer, cảm biến Focus Pro 30K, switch quang học Gen-3.'),
+      name: "Chuột Razer Viper Mini",
+      description: "Lightweight ambidextrous gaming mouse.",
+      imageUrl: "https://picsum.photos/seed/n_mouse_viper/250/250",
+      price: 39.99),
   Product(
       id: 'n4',
-      name: "Bàn phím cơ Keychron Q1 Pro",
-      imageUrl: "https://picsum.photos/seed/n4/250",
-      price: 4500000, // Giá ví dụ (VND)
-      description:
-          'Bàn phím cơ custom không dây, layout 75%, vỏ nhôm CNC, hỗ trợ QMK/VIA. Trải nghiệm gõ phím đỉnh cao.'),
+      name: "Bàn phím Keychron K2",
+      description: "Compact wireless mechanical keyboard.",
+      imageUrl: "https://picsum.photos/seed/n_keyboard_keychron/250/250",
+      price: 89.99),
   Product(
       id: 'n5',
-      name: "Webcam Insta360 Link",
-      imageUrl: "https://picsum.photos/seed/n5/250",
-      price: 7200000, // Giá ví dụ (VND)
-      description:
-          'Webcam 4K tích hợp gimbal AI, tự động theo dõi và lấy nét. Chất lượng hình ảnh vượt trội cho họp trực tuyến và streaming.'),
+      name: "Webcam Logitech C920",
+      description: "Popular Full HD webcam for streaming and calls.",
+      imageUrl: "https://picsum.photos/seed/n_webcam_logitech/250/250",
+      price: 59.99),
 ];
 
 List<Product> bestSellers = [
   Product(
       id: 'bs1',
-      name: "Laptop Dell XPS 13",
-      imageUrl: "https://picsum.photos/seed/bs1/250",
-      price: 32000000, // Giá ví dụ (VND)
-      description:
-          'Laptop doanh nhân cao cấp với thiết kế viền mỏng InfinityEdge, hiệu năng ổn định, màn hình đẹp.'),
+      name: "Laptop Dell XPS 15",
+      description: "Premium Windows laptop with InfinityEdge display.",
+      imageUrl: "https://picsum.photos/seed/bs_laptop_xps/250/250",
+      price: 1499.00),
   Product(
       id: 'bs2',
       name: "Ổ cứng SSD Samsung 980 Pro 1TB",
-      imageUrl: "https://picsum.photos/seed/bs2/250",
-      price: 2300000, // Giá ví dụ (VND)
-      description:
-          'Ổ cứng SSD NVMe PCIe Gen4 tốc độ cao, tối ưu cho gaming và các tác vụ nặng. Thời gian tải ứng dụng siêu nhanh.'),
+      description: "Fast NVMe SSD for high-speed storage.",
+      imageUrl: "https://picsum.photos/seed/bs_ssd_980pro/250/250",
+      price: 99.99),
   Product(
       id: 'bs3',
-      name: "Chuột Logitech MX Anywhere 3S",
-      imageUrl: "https://picsum.photos/seed/bs3/250",
-      price: 1850000, // Giá ví dụ (VND)
-      description:
-          'Chuột không dây nhỏ gọn, hoạt động trên mọi bề mặt, cuộn MagSpeed siêu nhanh, kết nối đa thiết bị.'),
+      name: "Chuột không dây Logitech MX Anywhere 3",
+      description: "Compact wireless mouse for productivity on the go.",
+      imageUrl: "https://picsum.photos/seed/bs_mouse_mx/250/250",
+      price: 79.99),
   Product(
       id: 'bs4',
-      name: "Loa Bluetooth JBL Charge 5",
-      imageUrl: "https://picsum.photos/seed/bs4/250",
-      price: 3100000, // Giá ví dụ (VND)
-      description:
-          'Loa di động chống nước IP67, âm thanh JBL Original Pro Sound mạnh mẽ, pin 20 giờ, tích hợp sạc dự phòng.'),
+      name: "Loa Bluetooth JBL Flip 6",
+      description: "Portable waterproof Bluetooth speaker.",
+      imageUrl: "https://picsum.photos/seed/bs_speaker_jbl/250/250",
+      price: 129.95),
   Product(
       id: 'bs5',
       name: "Card đồ họa NVIDIA RTX 4070",
-      imageUrl: "https://picsum.photos/seed/bs5/250",
-      price: 16500000, // Giá ví dụ (VND)
-      description:
-          'Card đồ họa hiệu năng cao với kiến trúc Ada Lovelace, hỗ trợ DLSS 3, Ray Tracing. Chơi game 2K max setting.'),
+      description: "High-end graphics card for gaming and creation.",
+      imageUrl: "https://picsum.photos/seed/bs_gpu_4070/250/250",
+      price: 599.00),
 ];
 
 List<Product> storageProducts = [
   Product(
       id: 's1',
-      name: "SSD Western Digital Blue SN580 1TB",
-      imageUrl: "https://picsum.photos/seed/s1/250",
-      price: 1550000, // Giá ví dụ (VND)
-      description:
-          'Ổ cứng SSD NVMe PCIe Gen4 tầm trung, tốc độ đọc/ghi tốt, phù hợp nâng cấp cho laptop và PC phổ thông.'),
+      name: "SSD Crucial MX500 1TB",
+      description: "Reliable SATA III SSD for everyday use.",
+      imageUrl: "https://picsum.photos/seed/s_ssd_crucial/250/250",
+      price: 64.99),
   Product(
       id: 's2',
       name: "HDD Seagate Barracuda 2TB",
-      imageUrl: "https://picsum.photos/seed/s2/250",
-      price: 1400000, // Giá ví dụ (VND)
-      description:
-          'Ổ cứng HDD 3.5 inch dung lượng lớn, tốc độ 7200RPM, thích hợp lưu trữ dữ liệu, phim ảnh, game.'),
+      description: "Internal hard drive for bulk storage.",
+      imageUrl: "https://picsum.photos/seed/s_hdd_seagate/250/250",
+      price: 54.99),
   Product(
       id: 's3',
       name: "Ổ cứng di động WD My Passport 4TB",
-      imageUrl: "https://picsum.photos/seed/s3/250",
-      price: 2800000, // Giá ví dụ (VND)
-      description:
-          'Ổ cứng gắn ngoài dung lượng 4TB, kết nối USB 3.0, thiết kế nhỏ gọn, có phần mềm sao lưu và bảo mật.'),
+      description: "Portable external hard drive with password protection.",
+      imageUrl: "https://picsum.photos/seed/s_hdd_wd/250/250",
+      price: 109.99),
   Product(
       id: 's4',
-      name: "USB Sandisk Ultra Flair 128GB",
-      imageUrl: "https://picsum.photos/seed/s4/250",
-      price: 250000, // Giá ví dụ (VND)
-      description:
-          'USB 3.0 tốc độ cao, vỏ kim loại bền bỉ, dung lượng 128GB đủ lưu trữ tài liệu và dữ liệu quan trọng.'),
+      name: "USB SanDisk Ultra 128GB",
+      description: "USB 3.0 flash drive for quick file transfers.",
+      imageUrl: "https://picsum.photos/seed/s_usb_sandisk/250/250",
+      price: 14.99),
   Product(
       id: 's5',
-      name: "Thẻ nhớ MicroSD Samsung EVO Plus 256GB",
-      imageUrl: "https://picsum.photos/seed/s5/250",
-      price: 480000, // Giá ví dụ (VND)
-      description:
-          'Thẻ nhớ tốc độ cao Class 10, U3, V30. Phù hợp cho điện thoại, máy tính bảng, camera hành trình quay 4K.'),
+      name: "Thẻ nhớ MicroSD Samsung Evo 256GB",
+      description: "High-speed microSD card for phones and cameras.",
+      imageUrl: "https://picsum.photos/seed/s_microsd_samsung/250/250",
+      price: 24.99),
 ];
 
 List<Product> monitorProducts = [
   Product(
       id: 'm1',
-      name: "Màn hình LG 27UP600-W 27\" 4K",
-      imageUrl: "https://picsum.photos/seed/m1/250",
-      price: 6800000, // Giá ví dụ (VND)
-      description:
-          'Màn hình 27 inch độ phân giải 4K UHD, tấm nền IPS, HDR10. Hình ảnh sắc nét, màu sắc chính xác.'),
+      name: "Màn hình LG UltraGear 27\" QHD",
+      description: "27-inch QHD gaming monitor with 144Hz refresh rate.",
+      imageUrl: "https://picsum.photos/seed/m_lg_ultragear/250/250",
+      price: 299.99),
   Product(
       id: 'm2',
-      name: "Màn hình Dell UltraSharp U3223QE 32\" 4K",
-      imageUrl: "https://picsum.photos/seed/m2/250",
-      price: 19500000, // Giá ví dụ (VND)
-      description:
-          'Màn hình cao cấp 31.5 inch 4K, tấm nền IPS Black cho độ tương phản cao, nhiều cổng kết nối, Hub USB-C.'),
+      name: "Màn hình Dell UltraSharp 32\" 4K",
+      description: "32-inch 4K monitor for productivity and color accuracy.",
+      imageUrl: "https://picsum.photos/seed/m_dell_ultrasharp/250/250",
+      price: 649.99),
   Product(
       id: 'm3',
-      name: "Màn hình ASUS TUF Gaming VG249Q1R 24\"",
-      imageUrl: "https://picsum.photos/seed/m3/250",
-      price: 4100000, // Giá ví dụ (VND)
-      description:
-          'Màn hình gaming 23.8 inch Full HD, tấm nền IPS, tần số quét 165Hz, 1ms MPRT. Chơi game FPS mượt mà.'),
+      name: "Màn hình ASUS TUF Gaming 24\" FHD",
+      description: "24-inch Full HD gaming monitor, high refresh rate.",
+      imageUrl: "https://picsum.photos/seed/m_asus_tuf/250/250",
+      price: 199.00),
   Product(
       id: 'm4',
-      name: "Màn hình Xiaomi Mi Curved Gaming 34\"",
-      imageUrl: "https://picsum.photos/seed/m4/250",
-      price: 8500000, // Giá ví dụ (VND)
-      description:
-          'Màn hình ultrawide cong 34 inch, độ phân giải WQHD, 144Hz, FreeSync Premium. Trải nghiệm game và phim ảnh sống động.'),
+      name: "Màn hình Xiaomi Mi Curved 34\"",
+      description: "Affordable ultrawide curved gaming monitor.",
+      imageUrl: "https://picsum.photos/seed/m_xiaomi_curved/250/250",
+      price: 399.99),
   Product(
       id: 'm5',
-      name: "Màn hình HP M27fw 27\" Full HD",
-      imageUrl: "https://picsum.photos/seed/m5/250",
-      price: 3900000, // Giá ví dụ (VND)
-      description:
-          'Màn hình văn phòng 27 inch Full HD, tấm nền IPS, thiết kế viền mỏng, màu trắng trang nhã, công nghệ bảo vệ mắt.'),
+      name: "Màn hình HP 27\" FHD IPS",
+      description: "27-inch IPS monitor with thin bezels for office use.",
+      imageUrl: "https://picsum.photos/seed/m_hp_27ips/250/250",
+      price: 179.99),
 ];
 
 List<Product> laptopProducts = [
   Product(
       id: 'l1',
-      name: "MacBook Pro 14 inch M3 Pro",
-      imageUrl: "https://picsum.photos/seed/l1/250",
-      price: 48000000, // Giá ví dụ (VND)
-      description:
-          'MacBook Pro hiệu năng cực cao với chip M3 Pro, màn hình Liquid Retina XDR, hệ thống loa đỉnh cao. Dành cho chuyên gia.'),
+      name: "MacBook Pro 14\" M3",
+      description: "Powerful Apple laptop for professionals.",
+      imageUrl: "https://picsum.photos/seed/l_macbook_pro/250/250",
+      price: 1599.00),
   Product(
       id: 'l2',
-      name: "Dell Inspiron 15 3530",
-      imageUrl: "https://picsum.photos/seed/l2/250",
-      price: 14500000, // Giá ví dụ (VND)
-      description:
-          'Laptop văn phòng phổ thông 15.6 inch, chip Intel Core i5 Gen 13, RAM 8GB, SSD 512GB. Đáp ứng tốt nhu cầu học tập, làm việc cơ bản.'),
+      name: "Dell Inspiron 15",
+      description: "Versatile everyday laptop from Dell.",
+      imageUrl: "https://picsum.photos/seed/l_dell_inspiron/250/250",
+      price: 649.99),
   Product(
       id: 'l3',
-      name: "ASUS ROG Strix G16 (2024)",
-      imageUrl: "https://picsum.photos/seed/l3/250",
-      price: 42000000, // Giá ví dụ (VND)
-      description:
-          'Laptop gaming mạnh mẽ với CPU Intel Core i9 Gen 14, card RTX 4060, màn hình Nebula 2.5K 240Hz.'),
+      name: "ASUS ROG Zephyrus G14",
+      description: "Compact and powerful gaming laptop.",
+      imageUrl: "https://picsum.photos/seed/l_asus_rog/250/250",
+      price: 1449.00),
   Product(
       id: 'l4',
-      name: "HP Pavilion 14 dv2074TU",
-      imageUrl: "https://picsum.photos/seed/l4/250",
-      price: 16800000, // Giá ví dụ (VND)
-      description:
-          'Laptop học tập - văn phòng 14 inch nhỏ gọn, chip Core i5, RAM 16GB, thiết kế trẻ trung, vỏ kim loại.'),
+      name: "HP Spectre x360 14",
+      description: "Premium 2-in-1 convertible laptop.",
+      imageUrl: "https://picsum.photos/seed/l_hp_spectre/250/250",
+      price: 1249.99),
   Product(
       id: 'l5',
-      name: "Lenovo ThinkPad E14 Gen 5",
-      imageUrl: "https://picsum.photos/seed/l5/250",
-      price: 19500000, // Giá ví dụ (VND)
-      description:
-          'Laptop doanh nhân bền bỉ, bàn phím ThinkPad trứ danh, bảo mật vân tay, chip Intel Core i5. Đáng tin cậy cho công việc.'),
+      name: "Lenovo Yoga Slim 7 Pro",
+      description: "Thin and light laptop with a great display.",
+      imageUrl: "https://picsum.photos/seed/l_lenovo_yoga/250/250",
+      price: 999.00),
 ];
 
 List<Product> mouseProducts = [
   Product(
       id: 'mo1',
       name: "Chuột Logitech MX Master 3S",
-      imageUrl: "https://picsum.photos/seed/mo1/250",
-      price: 2450000, // Giá ví dụ (VND)
-      description:
-          'Chuột công thái học cao cấp, cuộn MagSpeed, nút bấm siêu êm, cảm biến 8K DPI, kết nối đa thiết bị qua Bluetooth/Logi Bolt.'),
+      description: "Advanced wireless mouse for productivity.",
+      imageUrl: "https://picsum.photos/seed/mo_mx_master/250/250",
+      price: 99.99),
   Product(
       id: 'mo2',
-      name: "Chuột Razer DeathAdder V3",
-      imageUrl: "https://picsum.photos/seed/mo2/250",
-      price: 1600000, // Giá ví dụ (VND)
-      description:
-          'Chuột gaming có dây siêu nhẹ (59g), thiết kế công thái học tối ưu cho người thuận tay phải, cảm biến Focus Pro 30K.'),
+      name: "Chuột Razer DeathAdder V2",
+      description: "Ergonomic wired gaming mouse.",
+      imageUrl: "https://picsum.photos/seed/mo_deathadder/250/250",
+      price: 49.99),
   Product(
       id: 'mo3',
-      name: "Chuột không dây Xiaomi Mi Dual Mode Silent",
-      imageUrl: "https://picsum.photos/seed/mo3/250",
-      price: 280000, // Giá ví dụ (VND)
-      description:
-          'Chuột không dây giá rẻ, kết nối Bluetooth/USB Receiver, nút bấm yên tĩnh, thiết kế đơn giản, phù hợp văn phòng.'),
+      name: "Chuột không dây Xiaomi Mi Silent",
+      description: "Affordable and quiet wireless mouse.",
+      imageUrl: "https://picsum.photos/seed/mo_xiaomi/250/250",
+      price: 14.99),
   Product(
       id: 'mo4',
-      name: "Chuột Corsair Harpoon RGB Wireless",
-      imageUrl: "https://picsum.photos/seed/mo4/250",
-      price: 1150000, // Giá ví dụ (VND)
-      description:
-          'Chuột gaming không dây Slipstream tốc độ cao, nhẹ (99g), cảm biến quang học 10K DPI, LED RGB.'),
+      name: "Chuột Corsair Dark Core RGB Pro",
+      description: "Wireless gaming mouse with multiple connection options.",
+      imageUrl: "https://picsum.photos/seed/mo_corsair/250/250",
+      price: 79.99),
   Product(
       id: 'mo5',
-      name: "Chuột Microsoft Bluetooth Ergonomic",
-      imageUrl: "https://picsum.photos/seed/mo5/250",
-      price: 1050000, // Giá ví dụ (VND)
-      description:
-          'Chuột không dây Bluetooth thiết kế công thái học, thoải mái khi sử dụng lâu dài, 2 nút tùy chỉnh, hoạt động đa nền tảng.'),
+      name: "Chuột Microsoft Arc Mouse",
+      description: "Unique, foldable mouse for portability.",
+      imageUrl: "https://picsum.photos/seed/mo_microsoft_arc/250/250",
+      price: 69.99),
 ];
 
 List<Product> keyboardProducts = [
   Product(
       id: 'k1',
-      name: "Bàn phím cơ AKKO 3087 v2 DS Horizon",
-      imageUrl: "https://picsum.photos/seed/k1/250",
-      price: 1350000, // Giá ví dụ (VND)
-      description:
-          'Bàn phím cơ TKL, keycap PBT Double-Shot, AKKO switch v2 (Blue/Orange/Pink). Phối màu đẹp mắt, chất lượng build tốt.'),
+      name: "Bàn phím cơ Akko 3068B Plus",
+      description: "Compact 65% layout wireless mechanical keyboard.",
+      imageUrl: "https://picsum.photos/seed/k_akko_3068b/250/250",
+      price: 95.00),
   Product(
       id: 'k2',
-      name: "Bàn phím Logitech G Pro X TKL Lightspeed",
-      imageUrl: "https://picsum.photos/seed/k2/250",
-      price: 4200000, // Giá ví dụ (VND)
-      description:
-          'Bàn phím gaming không dây TKL cao cấp, kết nối Lightspeed, switch GX có thể thay nóng (hot-swap), LED RGB Lightsync.'),
+      name: "Bàn phím Logitech G Pro X TKL",
+      description: "Tenkeyless gaming keyboard with swappable switches.",
+      imageUrl: "https://picsum.photos/seed/k_logitech_gpro/250/250",
+      price: 129.99),
   Product(
       id: 'k3',
-      name: "Bàn phím Razer BlackWidow V4 Pro",
-      imageUrl: "https://picsum.photos/seed/k3/250",
-      price: 5800000, // Giá ví dụ (VND)
-      description:
-          'Bàn phím cơ fullsize cao cấp, Razer switch (Green/Yellow), núm xoay Command Dial, phím macro, LED Chroma RGB.'),
+      name: "Bàn phím Razer Huntsman Mini",
+      description: "60% gaming keyboard with optical switches.",
+      imageUrl: "https://picsum.photos/seed/k_razer_huntsman/250/250",
+      price: 119.99),
   Product(
       id: 'k4',
-      name: "Bàn phím Corsair K70 RGB Pro",
-      imageUrl: "https://picsum.photos/seed/k4/250",
-      price: 3900000, // Giá ví dụ (VND)
+      name: "Bàn phím Corsair K100 RGB Optical",
       description:
-          'Bàn phím cơ fullsize, switch Cherry MX, khung nhôm bền bỉ, keycap PBT Double-Shot, công nghệ siêu xử lý AXON.'),
+          "Flagship gaming keyboard with optical switches and iCUE wheel.",
+      imageUrl: "https://picsum.photos/seed/k_corsair_k100/250/250",
+      price: 229.99),
   Product(
       id: 'k5',
       name: "Bàn phím Apple Magic Keyboard",
-      imageUrl: "https://picsum.photos/seed/k5/250",
-      price: 2500000, // Giá ví dụ (VND)
-      description:
-          'Bàn phím không dây cho Mac, thiết kế mỏng nhẹ, pin sạc, hành trình phím ổn định, kết nối Bluetooth nhanh chóng.'),
+      description: "Wireless keyboard designed for Mac.",
+      imageUrl: "https://picsum.photos/seed/k_apple_magic/250/250",
+      price: 99.00),
 ];
 
 

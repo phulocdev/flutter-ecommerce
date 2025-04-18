@@ -1,38 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecommerce/screens/main_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:provider/provider.dart';
-import 'package:flutter_ecommerce/providers/cart_provider.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
-  runApp(const MyApp());
+
+  try {
+    await dotenv.load(fileName: ".env");
+    print(".env file loaded successfully.");
+  } catch (e) {
+    print("Error loading .env file: $e");
+  }
+
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (ctx) => CartProvider(),
-      child: MaterialApp(
-        title: 'Flutter Ecommerce',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-            titleTextStyle: TextStyle(
-                color: Colors.white, fontSize: 20, fontWeight: FontWeight.w500),
-            iconTheme: IconThemeData(color: Colors.white),
-          ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final goRouter = ref.watch(goRouterProvider);
+
+    return MaterialApp.router(
+      title: 'Flutter E-commerce',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        colorScheme:
+            ColorScheme.fromSwatch(primarySwatch: Colors.blue).copyWith(
+          secondary: Colors.blue,
         ),
-        home: const MainScreen(),
+        useMaterial3: true,
       ),
+      routerConfig: goRouter,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
