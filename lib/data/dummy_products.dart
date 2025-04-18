@@ -268,3 +268,16 @@ List<Product> keyboardProducts = [
       imageUrl: "https://picsum.photos/seed/k_apple_magic/250/250",
       price: 99.00),
 ];
+
+
+// Bạn có thể tạo thêm một list tổng hợp nếu cần
+// List<Product> allProducts = [
+//   ...discountedProducts,
+//   ...newProducts,
+//   ...bestSellers,
+//   ...storageProducts,
+//   ...monitorProducts,
+//   ...laptopProducts,
+//   ...mouseProducts,
+//   ...keyboardProducts,
+// ];
