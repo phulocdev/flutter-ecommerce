@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce/models/cart_item.dart';
 import 'package:flutter_ecommerce/providers/cart_providers.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_ecommerce/models/product.dart';
@@ -15,6 +16,32 @@ class ProductCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    void addProductToCart() {
+      final newCartItem = ref.watch(cartProvider.notifier).addCartItem(
+            CartItem(
+              id: DateTime.now().toString(),
+              quantity: 1,
+              price: product.price,
+              product: product,
+            ),
+          );
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${product.name} added to cart!'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'UNDO',
+            onPressed: () {
+              ref.read(cartProvider.notifier).removeCartItem(newCartItem.id);
+            },
+          ),
+        ),
+      );
+    }
+
     final TextTheme textTheme = Theme.of(context).textTheme;
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
@@ -89,26 +116,7 @@ class ProductCard extends ConsumerWidget {
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     tooltip: 'Add to Cart',
-                    onPressed: () {
-                      ref.read(cartNotifierProvider.notifier).addItem(product);
-
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${product.name} added to cart!'),
-                          duration: const Duration(seconds: 2),
-                          behavior: SnackBarBehavior.floating,
-                          action: SnackBarAction(
-                            label: 'UNDO',
-                            onPressed: () {
-                              ref
-                                  .read(cartNotifierProvider.notifier)
-                                  .removeSingleItem(product.id);
-                            },
-                          ),
-                        ),
-                      );
-                    },
+                    onPressed: addProductToCart,
                   ),
                 ],
               ),

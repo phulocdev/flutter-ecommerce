@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/product.dart';
-import 'package:flutter_ecommerce/screens/product_detail_screen.dart';
 import 'package:flutter_ecommerce/widgets/product_card.dart';
+import 'package:go_router/go_router.dart';
 
 class ProductsListHorizontal extends StatelessWidget {
   final List<Product> products;
@@ -12,11 +12,10 @@ class ProductsListHorizontal extends StatelessWidget {
   });
 
   void _navigateToProductDetail(BuildContext context, Product product) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (ctx) => ProductDetailScreen(
-        product: product,
-      ),
-    ));
+    context.go(
+      '/product/${product.id}',
+      extra: product,
+    );
   }
 
   @override

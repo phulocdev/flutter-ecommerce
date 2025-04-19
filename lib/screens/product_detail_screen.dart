@@ -1,15 +1,48 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_ecommerce/models/cart_item.dart';
+import 'package:flutter_ecommerce/providers/cart_providers.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_ecommerce/models/product.dart';
-import 'package:flutter_ecommerce/providers/cart_provider.dart';
-import 'package:flutter_ecommerce/screens/cart_screen.dart';
+import 'package:go_router/go_router.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends ConsumerWidget {
   const ProductDetailScreen({super.key, required this.product});
   final Product product;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    void addProductToCart() {
+      ref.read(cartProvider.notifier).addCartItem(
+            CartItem(
+              id: DateTime.now().toString(),
+              quantity: 1,
+              price: product.price,
+              product: product,
+            ),
+          );
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${product.name} đã được thêm vào giỏ!'),
+          duration: const Duration(seconds: 2),
+          backgroundColor: Colors.green[700],
+          action: SnackBarAction(
+            label: 'Xem giỏ hàng',
+            textColor: Colors.white,
+            onPressed: () {
+              // Navigate to cart screen using GoRouter
+              context.goNamed(AppRoute.cart.name);
+            },
+          ),
+        ),
+      );
+    }
+
+    void handleBuyNow() {
+      print('Handle Buy Now');
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -20,7 +53,6 @@ class ProductDetailScreen extends StatelessWidget {
               color: Colors.white, fontWeight: FontWeight.w500, fontSize: 20),
           overflow: TextOverflow.ellipsis,
         ),
-
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -58,7 +90,8 @@ class ProductDetailScreen extends StatelessWidget {
                           height: 300,
                           color: Colors.grey[200],
                           child: const Center(
-                            child: Icon(Icons.broken_image, color: Colors.grey, size: 50),
+                            child: Icon(Icons.broken_image,
+                                color: Colors.grey, size: 50),
                           ),
                         );
                       },
@@ -110,34 +143,13 @@ class ProductDetailScreen extends StatelessWidget {
                 child: OutlinedButton.icon(
                   icon: const Icon(Icons.add_shopping_cart_outlined),
                   label: const Text('Thêm vào giỏ'),
-                  onPressed: () {
-                    final cart = Provider.of<CartProvider>(context, listen: false);
-                    cart.addItem(product);
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${product.name} đã được thêm vào giỏ!'),
-                        duration: const Duration(seconds: 2),
-                        backgroundColor: Colors.green[700],
-                        action: SnackBarAction(
-                          label: 'XEM GIỎ',
-                          textColor: Colors.white,
-                          onPressed: () {
-                            Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (ctx) => const CartScreen(),
-                                  ),
-                                );
-                          },
-                        ),
-                      ),
-                    );
-                    print('Thêm vào giỏ hàng: ${product.name}');
-                  },
+                  onPressed: addProductToCart,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.primary, side: BorderSide(color: Theme.of(context).colorScheme.primary),
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                    side: BorderSide(
+                        color: Theme.of(context).colorScheme.primary),
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                     shape: RoundedRectangleBorder(
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
@@ -146,24 +158,16 @@ class ProductDetailScreen extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
-                  child: const Text('Mua ngay'),
-                  onPressed: () {
-                     final cart = Provider.of<CartProvider>(context, listen: false);
-                     cart.addItem(product);
-
-                    print('Mua ngay: ${product.name}');
-                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Chức năng Mua ngay đang phát triển!')),
-                    );
-                  },
+                  onPressed: handleBuyNow,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                     shape: RoundedRectangleBorder(
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
+                  child: const Text('Mua ngay'),
                 ),
               ),
             ],

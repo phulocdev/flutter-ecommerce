@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/apis/auth_api_service.dart';
 import 'package:flutter_ecommerce/models/dto/login_request_dto.dart';
-import 'package:flutter_ecommerce/screens/forgot_password_screen.dart';
-import 'package:flutter_ecommerce/screens/main_screen.dart';
-import 'package:flutter_ecommerce/screens/registration_screen.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +17,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authApiService = AuthApiService();
   String? _email, _password;
   bool _isLoading = false;
+  var _hiddenPassword = true;
+
+  void _toggleShowPassword() {
+    setState(() {
+      _hiddenPassword = !_hiddenPassword;
+    });
+  }
 
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) {
@@ -33,13 +39,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await _authApiService.login(loginDto);
-      print('Login successful: $response');
 
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
+        context.go('/');
       }
     } on ApiException catch (e) {
       if (mounted) {
@@ -95,12 +97,29 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Email',
-                      prefixIcon: Icon(Icons.email),
-                      border: OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.email),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: const BorderSide(
+                          color: Colors.grey, // Border color when unfocused
+                          width: 1.0,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: const BorderSide(
+                          color: Colors.blue, // Border color when focused
+                          width: 2.0,
+                        ),
+                      ),
                     ),
                     keyboardType: TextInputType.emailAddress,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     onSaved: (value) => _email = value,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -114,13 +133,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Password',
-                      prefixIcon: Icon(Icons.lock),
-                      border: OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        onPressed: _toggleShowPassword,
+                        icon: Icon(_hiddenPassword
+                            ? Icons.visibility
+                            : Icons.visibility_off),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: const BorderSide(
+                          color: Colors.grey, // Border color when unfocused
+                          width: 1.0,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: const BorderSide(
+                          color: Colors.blue, // Border color when focused
+                          width: 2.0,
+                        ),
+                      ),
                     ),
-                    obscureText: true,
                     onSaved: (value) => _password = value,
+                    obscureText: _hiddenPassword,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your password';
@@ -160,13 +202,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _isLoading
                         ? null
                         : () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const ForgotPasswordScreen(),
-                              ),
-                            );
+                            // Navigate to forgot password screen using GoRouter
+                            context.push(AppRoute.forgotPassword.path);
                           },
                     child: const Text('Forgot Password?'),
                   ),
@@ -179,13 +216,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         onTap: _isLoading
                             ? null
                             : () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const RegistrationScreen(),
-                                  ),
-                                );
+                                // Navigate to registration screen using GoRouter
+                                context.push(AppRoute.register.path);
                               },
                         child: const Text(
                           'Register',

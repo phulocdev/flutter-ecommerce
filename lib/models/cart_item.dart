@@ -2,36 +2,32 @@ import 'package:flutter_ecommerce/models/product.dart';
 
 class CartItem {
   final String id;
-  final String name;
   final int quantity;
   final double price;
-  final String imageUrl;
+  final bool isChecked;
+  final Product product;
 
   CartItem({
     required this.id,
-    required this.name,
     required this.quantity,
     required this.price,
-    required this.imageUrl,
+    this.isChecked = false,
+    required this.product,
   });
 
-  factory CartItem.fromProduct(Product product, {int quantity = 1}) {
+  CartItem copyWith({
+    String? id,
+    int? quantity,
+    double? price,
+    bool? isChecked,
+    Product? product,
+  }) {
     return CartItem(
-      id: product.id,
-      name: product.name,
-      quantity: quantity,
-      price: product.price,
-      imageUrl: product.imageUrl,
-    );
-  }
-
-  CartItem copyWith({int? quantity}) {
-    return CartItem(
-      id: id,
-      name: name,
+      id: id ?? this.id,
       quantity: quantity ?? this.quantity,
-      price: price,
-      imageUrl: imageUrl,
+      price: price ?? this.price,
+      isChecked: isChecked ?? this.isChecked,
+      product: product ?? this.product,
     );
   }
 }

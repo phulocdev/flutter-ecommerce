@@ -42,10 +42,26 @@ class _OTPScreenState extends State<OTPScreen> {
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'OTP',
-                      prefixIcon: Icon(Icons.security),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: 'OTP Code',
+                      prefixIcon: const Icon(Icons.lock),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: const BorderSide(
+                          color: Colors.grey, // Border color when unfocused
+                          width: 1.0,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: const BorderSide(
+                          color: Colors.blue, // Border color when focused
+                          width: 2.0,
+                        ),
+                      ),
                     ),
                     onSaved: (value) => _otp = value,
                     validator: (value) {

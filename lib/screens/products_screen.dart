@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/data/dummy_products.dart';
-import 'package:flutter_ecommerce/providers/cart_providers.dart';
-import 'package:flutter_ecommerce/widgets/cart_icon_button.dart';
 import 'package:flutter_ecommerce/widgets/products_each_category_section.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -11,11 +9,7 @@ class ProductScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
     final TextTheme textTheme = theme.textTheme;
-
-    final cartItemCount = ref.watch(cartTotalQuantityProvider);
-
     const double screenHorizontalPadding = 12.0;
     const double sectionTitleBottomPadding = 12.0;
 
@@ -33,9 +27,7 @@ class ProductScreen extends ConsumerWidget {
                   fontSize: 24),
         ),
         centerTitle: true,
-        actions: [
-          CartAppBarIcon(),
-        ],
+        actions: [Icon(Icons.shopping_cart)],
       ),
       body: SingleChildScrollView(
         child: Column(
