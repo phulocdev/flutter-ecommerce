@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/providers/cart_providers.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart'; // If using riverpod for cart badge
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class ScaffoldWithNavBar extends ConsumerWidget {
   // Use ConsumerWidget if reading providers
@@ -18,7 +18,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Optional: Watch cart provider for badge count
     final cartItemCount =
-        ref.watch(cartTotalQuantityProvider); // Use your specific provider
+        ref.watch(cartProvider).length; // Use your specific provider
 
     return Scaffold(
       // The body will be filled by the navigationShell

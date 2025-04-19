@@ -1,18 +1,32 @@
 // widgets/cart_list_item.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_ecommerce/models/cart_item.dart';
-import 'package:flutter_ecommerce/providers/cart_provider.dart';
-import 'package:flutter_ecommerce/screens/product_detail_screen.dart';
+import 'package:flutter_ecommerce/providers/cart_providers.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class CartListItemWidget extends StatelessWidget {
+class CartListItemWidget extends ConsumerWidget {
   final CartItem cartItem;
 
   const CartListItemWidget({super.key, required this.cartItem});
 
   @override
-  Widget build(BuildContext context) {
-    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    void toogleSelectCartItem() {
+      ref.read(cartProvider.notifier).toggleSelectCartItem(cartItem.product.id);
+    }
+
+    void removeCartItem(String cartItemId) {
+      ref.read(cartProvider.notifier).removeCartItem(cartItemId);
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${cartItem.product.name} đã bị xóa.'),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    }
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -26,7 +40,7 @@ class CartListItemWidget extends StatelessWidget {
             Checkbox(
               value: cartItem.isChecked,
               onChanged: (value) {
-                cartProvider.toggleItemChecked(cartItem.product.id);
+                toogleSelectCartItem();
               },
               activeColor: Theme.of(context).colorScheme.primary,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -34,11 +48,7 @@ class CartListItemWidget extends StatelessWidget {
             Expanded(
               child: InkWell(
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (ctx) => ProductDetail(product: cartItem.product),
-                    ),
-                  );
+                  // context.goNamed(AppRoute.changePassword.path);
                 },
                 borderRadius: BorderRadius.circular(8.0),
                 child: Row(
@@ -52,9 +62,15 @@ class CartListItemWidget extends StatelessWidget {
                           cartItem.product.imageUrl,
                           fit: BoxFit.cover,
                           loadingBuilder: (context, child, progress) =>
-                              progress == null ? child : const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                              progress == null
+                                  ? child
+                                  : const Center(
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2)),
                           errorBuilder: (context, error, stackTrace) =>
-                              const Center(child: Icon(Icons.image_not_supported, color: Colors.grey)),
+                              const Center(
+                                  child: Icon(Icons.image_not_supported,
+                                      color: Colors.grey)),
                         ),
                       ),
                     ),
@@ -65,7 +81,10 @@ class CartListItemWidget extends StatelessWidget {
                         children: [
                           Text(
                             cartItem.product.name,
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(fontWeight: FontWeight.w600),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -90,34 +109,38 @@ class CartListItemWidget extends StatelessWidget {
                                       Icons.remove,
                                       cartItem.quantity > 1
                                           ? () {
-                                              cartProvider.updateQuantity(cartItem.product.id, cartItem.quantity - 1);
+                                              ref
+                                                  .read(cartProvider.notifier)
+                                                  .updateCartItem(cartItem.id,
+                                                      cartItem.quantity - 1);
                                             }
                                           : null),
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0),
                                     child: Text(
                                       '${cartItem.quantity}',
-                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                   _buildQuantityButton(context, Icons.add, () {
-                                    cartProvider.updateQuantity(cartItem.product.id, cartItem.quantity + 1);
+                                    ref
+                                        .read(cartProvider.notifier)
+                                        .updateCartItem(
+                                            cartItem.id, cartItem.quantity + 1);
                                   }),
                                 ],
                               ),
                               IconButton(
-                                icon: Icon(Icons.delete_outline, color: Colors.red[400], size: 22),
+                                icon: Icon(Icons.delete_outline,
+                                    color: Colors.red[400], size: 22),
                                 tooltip: 'Xóa sản phẩm',
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
                                 onPressed: () {
-                                  cartProvider.removeItem(cartItem.product.id);
-                                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text('${cartItem.product.name} đã bị xóa.'),
-                                        duration: const Duration(seconds: 1)),
-                                  );
+                                  removeCartItem(cartItem.id);
                                 },
                               )
                             ],
@@ -135,22 +158,22 @@ class CartListItemWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildQuantityButton(BuildContext context, IconData icon, VoidCallback? onPressed) {
-     return InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(4),
-        child: Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            border: Border.all(color: onPressed != null ? Colors.grey[400]! : Colors.grey[200]!),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Icon(
-              icon,
-              size: 18,
-              color: onPressed != null ? Colors.black54 : Colors.grey[400]
-          ),
+  Widget _buildQuantityButton(
+      BuildContext context, IconData icon, VoidCallback? onPressed) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          border: Border.all(
+              color: onPressed != null ? Colors.grey[400]! : Colors.grey[200]!),
+          borderRadius: BorderRadius.circular(4),
         ),
-     );
+        child: Icon(icon,
+            size: 18,
+            color: onPressed != null ? Colors.black54 : Colors.grey[400]),
+      ),
+    );
   }
 }

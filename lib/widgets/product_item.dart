@@ -1,7 +1,6 @@
-// widgets/product_item.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/product.dart';
-import 'package:flutter_ecommerce/screens/product_detail_screen.dart'; // Import màn hình chi tiết
+import 'package:go_router/go_router.dart';
 
 class ProductItem extends StatelessWidget {
   final Product product;
@@ -11,41 +10,39 @@ class ProductItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      clipBehavior: Clip.antiAlias, // Để bo tròn ảnh nếu dùng Card
-      elevation: 2.0, // Thêm đổ bóng nhẹ
-      shape: RoundedRectangleBorder( // Bo góc nhẹ cho Card
-         borderRadius: BorderRadius.circular(8.0),
+      clipBehavior: Clip.antiAlias,
+      elevation: 2.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8.0),
       ),
-      child: InkWell( // Sử dụng InkWell để có hiệu ứng ripple khi nhấn
+      child: InkWell(
         onTap: () {
-          // *** Điều hướng đến màn hình chi tiết khi nhấn vào ***
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProductDetail(product: product), // Truyền sản phẩm vào
-            ),
+          // Navigate to product detail screen using go_router
+          context.go(
+            '/product/${product.id}', // Matches AppRoute.productDetail.path
+            extra: product, // Pass the Product object
           );
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Ảnh sản phẩm
-            Expanded( // Cho ảnh chiếm phần không gian còn lại phía trên
+            Expanded(
               child: Image.network(
                 product.imageUrl,
                 width: double.infinity,
-                fit: BoxFit.cover, // Đảm bảo ảnh che phủ không gian
-                // Thêm placeholder và error widget cho ảnh preview
+                fit: BoxFit.cover,
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
-                  return const Center(child: CircularProgressIndicator(strokeWidth: 2.0));
+                  return const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2.0));
                 },
                 errorBuilder: (context, error, stackTrace) {
-                  return const Center(child: Icon(Icons.image_not_supported, color: Colors.grey, size: 40));
+                  return const Center(
+                      child: Icon(Icons.image_not_supported,
+                          color: Colors.grey, size: 40));
                 },
               ),
             ),
-            // Thông tin tên và giá
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -53,11 +50,12 @@ class ProductItem extends StatelessWidget {
                 children: [
                   Text(
                     product.name,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500
-                    ),
-                    maxLines: 2, // Giới hạn 2 dòng
-                    overflow: TextOverflow.ellipsis, // Hiển thị '...' nếu quá dài
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w500),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
