@@ -61,7 +61,7 @@ class CartScreen extends ConsumerWidget {
             child: cartItems.isEmpty
                 ? const Center(
                     child: Text(
-                      '🛒 Giỏ hàng của bạn đang trống!',
+                      '🛒 Giỏ hàng của bạn đang trống',
                       style: TextStyle(fontSize: 18, color: Colors.grey),
                       textAlign: TextAlign.center,
                     ),
