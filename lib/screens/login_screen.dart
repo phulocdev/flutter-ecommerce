@@ -202,7 +202,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _isLoading
                         ? null
                         : () {
-                            // Navigate to forgot password screen using GoRouter
                             context.push(AppRoute.forgotPassword.path);
                           },
                     child: const Text('Forgot Password?'),
@@ -216,7 +215,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         onTap: _isLoading
                             ? null
                             : () {
-                                // Navigate to registration screen using GoRouter
                                 context.push(AppRoute.register.path);
                               },
                         child: const Text(

@@ -14,8 +14,8 @@ class ProfileScreen extends StatelessWidget {
       body: ListView(
         children: [
           const UserAccountsDrawerHeader(
-            accountName: Text('Nguyễn Văn A'),
-            accountEmail: Text('nguyenvana@example.com'),
+            accountName: Text('Nguyễn Văn B'),
+            accountEmail: Text('nguyenvanb@gmail.com'),
             currentAccountPicture: CircleAvatar(
               backgroundImage: AssetImage('assets/images/avt.png'),
             ),
