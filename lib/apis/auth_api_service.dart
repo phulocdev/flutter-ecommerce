@@ -1,33 +1,31 @@
-import 'package:flutter_ecommerce/models/dto/login_request_dto.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/services/token_service.dart';
 
+import '../models/dto/login_request_dto.dart';
+import '../models/dto/login_response_dto.dart';
+
 class AuthApiService {
-  final ApiClient _apiClient = ApiClient();
-  final TokenService _tokenService = TokenService();
+  final ApiClient _apiClient;
+  final TokenService _tokenService;
 
-  Future<dynamic> login(LoginRequestDto dto) async {
+  AuthApiService(this._apiClient, this._tokenService);
+  
+  
+  Future<LoginResponseDto> login(LoginRequestDto dto) async {
     try {
-      final response = await _apiClient.post(
-        '/auth/login',
-        body: dto.toJson(),
-      );
+      final response =
+        await _apiClient.post('/auth/login', body: dto.toJson());
 
-      if (response is Map<String, dynamic> &&
-          response.containsKey('accessToken') &&
-          response.containsKey('refreshToken')) {
-        final String accessToken = response['accessToken'];
-        final String refreshToken = response['refreshToken'];
-        await _tokenService.saveTokens(accessToken, refreshToken);
-      } else {
-        print('Warning: Login response did not contain expected tokens.');
-      }
-      return response;
+      return LoginResponseDto.fromJson(response);
     } catch (e) {
+      if (e is Map<String, dynamic>) {
+        print("Error: ${e['message']}");
+      } else {
+        print("Error: $e");
+      }
       rethrow;
     }
   }
-
   Future<void> logout() async {
     await _tokenService.deleteTokens();
   }

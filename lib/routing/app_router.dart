@@ -59,26 +59,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     name: AppRoute.productDetail.name,
                     parentNavigatorKey: _rootNavigatorKey,
                     builder: (context, state) {
-                      final productId = state.pathParameters['id'];
-                      final Product? product = state.extra as Product?;
-                      if (product != null) {
-                        return ProductDetailScreen(product: product);
-                      } else if (productId != null) {
-                        return ProductDetailScreen(
-                          product: Product(
-                            id: DateTime.now().toString(),
-                            name: 'Test',
-                            description: 'test',
-                            price: 12,
-                            imageUrl:
-                                'https://picsum.photos/seed/d_monitor_curved/250/250',
-                          ),
-                        );
-                      } else {
-                        return const Scaffold(
-                          body: Center(child: Text('Product not found')),
-                        );
-                      }
+                      final productId = state.pathParameters['id']!;
+                      return ProductDetailScreen(productId: productId);
                     },
                   ),
                 ],
