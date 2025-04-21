@@ -47,9 +47,7 @@ class CartListItemWidget extends ConsumerWidget {
             ),
             Expanded(
               child: InkWell(
-                onTap: () {
-                  // context.goNamed(AppRoute.changePassword.path);
-                },
+                onTap: () {},
                 borderRadius: BorderRadius.circular(8.0),
                 child: Row(
                   children: [

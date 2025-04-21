@@ -12,7 +12,7 @@ class ProductsListHorizontal extends StatelessWidget {
   });
 
   void _navigateToProductDetail(BuildContext context, Product product) {
-    context.go(
+    context.push(
       '/product/${product.id}',
       extra: product,
     );
@@ -28,12 +28,12 @@ class ProductsListHorizontal extends StatelessWidget {
     return SizedBox(
       height: listHeight,
       child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
+        padding: const EdgeInsets.symmetric(
+            horizontal: horizontalPadding, vertical: 3),
         scrollDirection: Axis.horizontal,
         itemCount: products.length,
         itemBuilder: (context, index) {
           final product = products[index];
-
           return SizedBox(
             width: cardWidth,
             child: ProductCard(

@@ -21,7 +21,7 @@ class ProductCard extends ConsumerWidget {
             CartItem(
               id: DateTime.now().toString(),
               quantity: 1,
-              price: product.price,
+              price: product.basePrice,
               product: product,
             ),
           );

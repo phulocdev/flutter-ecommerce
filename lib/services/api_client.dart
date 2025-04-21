@@ -26,8 +26,6 @@ class ApiClient {
     final headers = await _getHeaders(customHeaders);
     final encodedBody = body != null ? jsonEncode(body) : null;
 
-    print('Request: $method $url');
-
     switch (method.toUpperCase()) {
       case 'GET':
         return await http.get(url, headers: headers);
@@ -126,36 +124,32 @@ class ApiClient {
               'Failed to decode JSON response: $e\nBody: $responseBody');
         }
       } else {
-        return null; // Return null for empty successful responses (e.g., 204 No Content)
+        return null;
       }
     } else {
-      // Throw a more specific exception based on status code
       String errorMessage = 'API Error: ${response.statusCode}';
       if (responseBody.isNotEmpty) {
         try {
-          // Try to extract error message from backend response if possible
           final decoded = jsonDecode(responseBody);
           if (decoded is Map && decoded.containsKey('message')) {
             errorMessage = decoded['message'];
           } else {
-            errorMessage =
-                responseBody; // Use raw body if no standard message field
+            errorMessage = responseBody;
           }
         } catch (_) {
-          errorMessage = responseBody; // Use raw body if decoding fails
+          errorMessage = responseBody;
         }
       }
       switch (response.statusCode) {
         case 400:
           throw BadRequestException(errorMessage);
         case 401:
-          throw AuthenticationException(
-              'Unauthorized: $errorMessage'); // Should ideally be caught by refresh logic
+          throw AuthenticationException('Unauthorized: $errorMessage');
         case 403:
           throw ForbiddenException(errorMessage);
         case 404:
           throw NotFoundException(errorMessage);
-        case 500: // Fallthrough
+        case 500:
         default:
           throw ApiException('API Error ${response.statusCode}: $errorMessage');
       }

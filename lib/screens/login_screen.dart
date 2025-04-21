@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/apis/auth_api_service.dart';
 import 'package:flutter_ecommerce/models/dto/login_request_dto.dart';
+import 'package:flutter_ecommerce/providers/auth_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:flutter_ecommerce/services/token_service.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_ecommerce/models/dto/login_response_dto.dart';
 import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,8 +18,11 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _authApiService = AuthApiService();
+  final _apiClient = ApiClient();
+  late final AuthApiService _authApiService =
+      AuthApiService(_apiClient, _tokenService);
   String? _email, _password;
+  final _tokenService = TokenService();
   bool _isLoading = false;
   var _hiddenPassword = true;
 
@@ -39,9 +46,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await _authApiService.login(loginDto);
+      final LoginResponseDto loginResponse = response;
+      final String accessToken = loginResponse.data.accessToken;
+      final String refreshToken = loginResponse.data.refreshToken;
+      final email = loginResponse.data.account.email;
+      final fullName = loginResponse.data.account.fullName;
+      final role = loginResponse.data.account.role;
+      await _tokenService.saveTokens(accessToken, refreshToken);
+
+      // Update the user in the AuthProvider
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      authProvider.setUser(User(email: email, fullName: fullName, role: role));
+
+      // Save the user data to TokenService
+      await _tokenService.saveUser(
+          email: email, fullName: fullName, role: role);
 
       if (mounted) {
-        context.go('/');
+        context.go(AppRoute.products.path);
       }
     } on ApiException catch (e) {
       if (mounted) {

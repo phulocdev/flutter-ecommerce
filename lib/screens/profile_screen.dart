@@ -9,13 +9,22 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hồ sơ cá nhân'),
+        title: Text(
+          'Hồ sơ cá nhân',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+            fontSize: 24,
+          ),
+        ),
+        backgroundColor: Colors.blue,
       ),
       body: ListView(
         children: [
-          const UserAccountsDrawerHeader(
+          UserAccountsDrawerHeader(
             accountName: Text('Nguyễn Văn A'),
             accountEmail: Text('nguyenvana@example.com'),
+            decoration: BoxDecoration(color: Colors.blue),
             currentAccountPicture: CircleAvatar(
               backgroundImage: AssetImage('assets/images/avt.png'),
             ),
