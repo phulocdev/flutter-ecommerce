@@ -5,7 +5,7 @@ class Product {
   final String name;
   final String description;
   final String imageUrl;
-  final String categoryId; // Assuming category is an ID
+  final String category; // Assuming category is an ID
   final String brand;
   final String status;
   final double basePrice;
@@ -19,7 +19,7 @@ class Product {
     required this.name,
     required this.description,
     required this.imageUrl,
-    required this.categoryId,
+    required this.category,
     required this.brand,
     required this.status,
     required this.basePrice,
@@ -41,7 +41,7 @@ class Product {
       name: json['name'] as String? ?? 'No Name',
       description: json['description'] as String? ?? 'No Description',
       imageUrl: json['imageUrl'] as String? ?? '',
-      categoryId:
+      category:
           json['category'] as String, // Assuming category is a string ID
       brand: json['brand'] as String,
       status: json['status'] as String,

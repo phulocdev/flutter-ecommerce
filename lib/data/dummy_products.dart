@@ -1,283 +1,248 @@
 // lib/data/dummy_products.dart
 import 'package:flutter_ecommerce/models/product.dart'; // Adjust import path as needed
 
-// Note: Using picsum.photos with seeds for varied images.
-// Format: https://picsum.photos/seed/{seed_name}/250/250
+final now = DateTime.now();
 
-List<Product> discountedProducts = [
-  Product(
-      id: 'd1',
-      name: "Laptop Gaming ROG",
-      description: "High-performance gaming laptop with latest GPU.",
-      imageUrl: "https://picsum.photos/seed/d_laptop_gaming/250/250",
-      basePrice: 1199.99),
-  Product(
-      id: 'd2',
-      name: "Màn hình cong 34\"",
-      description: "Ultrawide curved monitor for immersive experience.",
-      imageUrl: "https://picsum.photos/seed/d_monitor_curved/250/250",
-      basePrice: 449.50),
-  Product(
-      id: 'd3',
-      name: "Chuột Logitech G502 Hero",
-      description: "Popular high-performance wired gaming mouse.",
-      imageUrl: "https://picsum.photos/seed/d_mouse_g502/250/250",
-      basePrice: 49.99),
-  Product(
-      id: 'd4',
-      name: "Bàn phím RGB Cơ",
-      description: "Mechanical keyboard with customizable RGB lighting.",
-      imageUrl: "https://picsum.photos/seed/d_keyboard_rgb/250/250",
-      basePrice: 89.90),
-  Product(
-      id: 'd5',
-      name: "Tai nghe HyperX Cloud II",
-      description: "Comfortable gaming headset with 7.1 surround sound.",
-      imageUrl: "https://picsum.photos/seed/d_headset_hyperx/250/250",
-      basePrice: 74.99),
-];
+const categories = [
+  {
+    '_id': '6806f160f9b0714e1aaf2759',
+    'name': 'Laptop',
+    'parentCategory': null,
+    'imageUrl': ''
+  },
+  {'_id': '6806f160f9b0714e1aaf2760', 'name': 'Monitor', 'parentCategory': null, 'imageUrl': ''},
+  {'_id': '6806f160f9b0714e1aaf2761', 'name': 'Keyboard', 'parentCategory': null, 'imageUrl': ''},
+  {
+    '_id': '6806f160f9b0714e1aaf2762',
+    'name': 'Mouse',
+    'parentCategory': null,
+    'imageUrl': ''
+  },
+  {'_id': '6806f160f9b0714e1aaf2763', 'name': 'Storage', 'parentCategory': null, 'imageUrl': ''},
+  {'_id': '6806f160f9b0714e1aaf2764', 'name': 'Headphones', 'parentCategory': null, 'imageUrl': ''},
+  {'_id': '6806f160f9b0714e1aaf2765', 'name': 'Graphic Card', 'parentCategory': null, 'imageUrl': ''},
 
-List<Product> newProducts = [
-  Product(
-      id: 'n1',
-      name: "MacBook Air M3",
-      description: "Latest Apple MacBook Air with M3 chip.",
-      imageUrl: "https://picsum.photos/seed/n_macbook_air/250/250",
-      basePrice: 1199.00),
-  Product(
-      id: 'n2',
-      name: "Màn hình Studio Display",
-      description: "Apple's 5K Retina display for creators.",
-      imageUrl: "https://picsum.photos/seed/n_monitor_studio/250/250",
-      basePrice: 1599.00),
-  Product(
-      id: 'n3',
-      name: "Chuột Razer Viper Mini",
-      description: "Lightweight ambidextrous gaming mouse.",
-      imageUrl: "https://picsum.photos/seed/n_mouse_viper/250/250",
-      basePrice: 39.99),
-  Product(
-      id: 'n4',
-      name: "Bàn phím Keychron K2",
-      description: "Compact wireless mechanical keyboard.",
-      imageUrl: "https://picsum.photos/seed/n_keyboard_keychron/250/250",
-      basePrice: 89.99),
-  Product(
-      id: 'n5',
-      name: "Webcam Logitech C920",
-      description: "Popular Full HD webcam for streaming and calls.",
-      imageUrl: "https://picsum.photos/seed/n_webcam_logitech/250/250",
-      basePrice: 59.99),
-];
-
-List<Product> bestSellers = [
-  Product(
-      id: 'bs1',
-      name: "Laptop Dell XPS 15",
-      description: "Premium Windows laptop with InfinityEdge display.",
-      imageUrl: "https://picsum.photos/seed/bs_laptop_xps/250/250",
-      basePrice: 1499.00),
-  Product(
-      id: 'bs2',
-      name: "Ổ cứng SSD Samsung 980 Pro 1TB",
-      description: "Fast NVMe SSD for high-speed storage.",
-      imageUrl: "https://picsum.photos/seed/bs_ssd_980pro/250/250",
-      basePrice: 99.99),
-  Product(
-      id: 'bs3',
-      name: "Chuột không dây Logitech MX Anywhere 3",
-      description: "Compact wireless mouse for productivity on the go.",
-      imageUrl: "https://picsum.photos/seed/bs_mouse_mx/250/250",
-      basePrice: 79.99),
-  Product(
-      id: 'bs4',
-      name: "Loa Bluetooth JBL Flip 6",
-      description: "Portable waterproof Bluetooth speaker.",
-      imageUrl: "https://picsum.photos/seed/bs_speaker_jbl/250/250",
-      basePrice: 129.95),
-  Product(
-      id: 'bs5',
-      name: "Card đồ họa NVIDIA RTX 4070",
-      description: "High-end graphics card for gaming and creation.",
-      imageUrl: "https://picsum.photos/seed/bs_gpu_4070/250/250",
-      basePrice: 599.00),
-];
-
-List<Product> storageProducts = [
-  Product(
-      id: 's1',
-      name: "SSD Crucial MX500 1TB",
-      description: "Reliable SATA III SSD for everyday use.",
-      imageUrl: "https://picsum.photos/seed/s_ssd_crucial/250/250",
-      basePrice: 64.99),
-  Product(
-      id: 's2',
-      name: "HDD Seagate Barracuda 2TB",
-      description: "Internal hard drive for bulk storage.",
-      imageUrl: "https://picsum.photos/seed/s_hdd_seagate/250/250",
-      basePrice: 54.99),
-  Product(
-      id: 's3',
-      name: "Ổ cứng di động WD My Passport 4TB",
-      description: "Portable external hard drive with password protection.",
-      imageUrl: "https://picsum.photos/seed/s_hdd_wd/250/250",
-      basePrice: 109.99),
-  Product(
-      id: 's4',
-      name: "USB SanDisk Ultra 128GB",
-      description: "USB 3.0 flash drive for quick file transfers.",
-      imageUrl: "https://picsum.photos/seed/s_usb_sandisk/250/250",
-      basePrice: 14.99),
-  Product(
-      id: 's5',
-      name: "Thẻ nhớ MicroSD Samsung Evo 256GB",
-      description: "High-speed microSD card for phones and cameras.",
-      imageUrl: "https://picsum.photos/seed/s_microsd_samsung/250/250",
-      basePrice: 24.99),
-];
-
-List<Product> monitorProducts = [
-  Product(
-      id: 'm1',
-      name: "Màn hình LG UltraGear 27\" QHD",
-      description: "27-inch QHD gaming monitor with 144Hz refresh rate.",
-      imageUrl: "https://picsum.photos/seed/m_lg_ultragear/250/250",
-      basePrice: 299.99),
-  Product(
-      id: 'm2',
-      name: "Màn hình Dell UltraSharp 32\" 4K",
-      description: "32-inch 4K monitor for productivity and color accuracy.",
-      imageUrl: "https://picsum.photos/seed/m_dell_ultrasharp/250/250",
-      basePrice: 649.99),
-  Product(
-      id: 'm3',
-      name: "Màn hình ASUS TUF Gaming 24\" FHD",
-      description: "24-inch Full HD gaming monitor, high refresh rate.",
-      imageUrl: "https://picsum.photos/seed/m_asus_tuf/250/250",
-      basePrice: 199.00),
-  Product(
-      id: 'm4',
-      name: "Màn hình Xiaomi Mi Curved 34\"",
-      description: "Affordable ultrawide curved gaming monitor.",
-      imageUrl: "https://picsum.photos/seed/m_xiaomi_curved/250/250",
-      basePrice: 399.99),
-  Product(
-      id: 'm5',
-      name: "Màn hình HP 27\" FHD IPS",
-      description: "27-inch IPS monitor with thin bezels for office use.",
-      imageUrl: "https://picsum.photos/seed/m_hp_27ips/250/250",
-      basePrice: 179.99),
 ];
 
 List<Product> laptopProducts = [
   Product(
-      id: 'l1',
-      name: "MacBook Pro 14\" M3",
-      description: "Powerful Apple laptop for professionals.",
-      imageUrl: "https://picsum.photos/seed/l_macbook_pro/250/250",
-      basePrice: 1599.00),
+    id: '67dd1c4db940e33f97abacb4',
+    name: "Laptop ASUS Vivobook 15",
+    description: "Laptop Asus Vivobook 15 với bộ vi xử lý Intel Core i5.",
+    imageUrl: "https://picsum.photos/seed/Laptop_ASUS_Vivobook/250/250",
+    category: "6806f160f9b0714e1aaf2759",
+    brand: "ASUS",
+    status: "Published",
+    basePrice: 25250000,
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now.subtract(const Duration(days: 2)),
+    updatedAt: now.subtract(const Duration(days: 2)),
+  ),
   Product(
-      id: 'l2',
-      name: "Dell Inspiron 15",
-      description: "Versatile everyday laptop from Dell.",
-      imageUrl: "https://picsum.photos/seed/l_dell_inspiron/250/250",
-      basePrice: 649.99),
+    id: '67dd1c4db940e33f97abacb5',
+    name: "Laptop Dell XPS 13 Plus",
+    description: "Dell XPS 13 Plus với thiết kế tràn viền, Core i7.",
+    imageUrl: "https://picsum.photos/seed/Laptop_Dell_XPS/250/250",
+    category: "6806f160f9b0714e1aaf2759",
+    brand: "Dell",
+    status: "Published",
+    basePrice: 32990000,
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now.subtract(const Duration(days: 3)),
+    updatedAt: now.subtract(const Duration(days: 3)),
+  ),
   Product(
-      id: 'l3',
-      name: "ASUS ROG Zephyrus G14",
-      description: "Compact and powerful gaming laptop.",
-      imageUrl: "https://picsum.photos/seed/l_asus_rog/250/250",
-      basePrice: 1449.00),
-  Product(
-      id: 'l4',
-      name: "HP Spectre x360 14",
-      description: "Premium 2-in-1 convertible laptop.",
-      imageUrl: "https://picsum.photos/seed/l_hp_spectre/250/250",
-      basePrice: 1249.99),
-  Product(
-      id: 'l5',
-      name: "Lenovo Yoga Slim 7 Pro",
-      description: "Thin and light laptop with a great display.",
-      imageUrl: "https://picsum.photos/seed/l_lenovo_yoga/250/250",
-      basePrice: 999.00),
+    id: '67dd1c4db940e33f97abacbf',
+    name: "Laptop Gaming MSI Katana GF66",
+    description: "Laptop Gaming MSI Katana GF66 với RTX 3050Ti.",
+    imageUrl: "https://picsum.photos/seed/Laptop_MSI_Katana/250/250",
+    category: "6806f160f9b0714e1aaf2759",
+    brand: "MSI",
+    status: "Published",
+    basePrice: 27990000,
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now.add(const Duration(days: 5)),
+    updatedAt: now.add(const Duration(days: 5)),
+  ),
+    Product(
+    id: '67dd1c4db940e33f97abacb6',
+    name: "MacBook Pro 14 M2",
+    description: "MacBook Pro 14 M2 với hiệu năng vượt trội.",
+    imageUrl: "https://picsum.photos/seed/MacBook_Pro_14/250/250",
+    category: "6806f160f9b0714e1aaf2759",
+    brand: "Apple",
+    status: "Published",
+    basePrice: 45990000,
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now.subtract(const Duration(days: 4)),
+    updatedAt: now.subtract(const Duration(days: 4)),
+  ),
 ];
 
-List<Product> mouseProducts = [
+List<Product> monitorProducts = [
   Product(
-      id: 'mo1',
-      name: "Chuột Logitech MX Master 3S",
-      description: "Advanced wireless mouse for productivity.",
-      imageUrl: "https://picsum.photos/seed/mo_mx_master/250/250",
-      basePrice: 99.99),
-  Product(
-      id: 'mo2',
-      name: "Chuột Razer DeathAdder V2",
-      description: "Ergonomic wired gaming mouse.",
-      imageUrl: "https://picsum.photos/seed/mo_deathadder/250/250",
-      basePrice: 49.99),
-  Product(
-      id: 'mo3',
-      name: "Chuột không dây Xiaomi Mi Silent",
-      description: "Affordable and quiet wireless mouse.",
-      imageUrl: "https://picsum.photos/seed/mo_xiaomi/250/250",
-      basePrice: 14.99),
-  Product(
-      id: 'mo4',
-      name: "Chuột Corsair Dark Core RGB Pro",
-      description: "Wireless gaming mouse with multiple connection options.",
-      imageUrl: "https://picsum.photos/seed/mo_corsair/250/250",
-      basePrice: 79.99),
-  Product(
-      id: 'mo5',
-      name: "Chuột Microsoft Arc Mouse",
-      description: "Unique, foldable mouse for portability.",
-      imageUrl: "https://picsum.photos/seed/mo_microsoft_arc/250/250",
-      basePrice: 69.99),
+    id: '67dd1c4db940e33f97abacb7',
+    name: "Màn hình cong Samsung Odyssey G9",
+    description: "Màn hình cong siêu rộng cho trải nghiệm chơi game đỉnh cao.",
+    imageUrl: "https://picsum.photos/seed/Monitor_Samsung_Odyssey/250/250",
+    category: "6806f160f9b0714e1aaf2760",
+    brand: "Samsung",
+    status: "Published",
+    basePrice: 30990000,
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now.subtract(const Duration(days: 5)),
+    updatedAt: now.subtract(const Duration(days: 5)),
+  ),
+   Product(
+    id: '67dd1c4db940e33f97abacbc',
+    name: "Màn hình Dell UltraSharp U2723QE",
+    description: "Màn hình Dell UltraSharp U2723QE 4K USB-C Hub.",
+    imageUrl: "https://picsum.photos/seed/Monitor_Dell_U2723QE/250/250",
+    category: "6806f160f9b0714e1aaf2760",
+    brand: "Dell",
+    status: "Published",
+    basePrice: 15990000,
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now.add(const Duration(days: 2)),
+    updatedAt: now.add(const Duration(days: 2)),
+  ),
 ];
 
 List<Product> keyboardProducts = [
   Product(
-      id: 'k1',
-      name: "Bàn phím cơ Akko 3068B Plus",
-      description: "Compact 65% layout wireless mechanical keyboard.",
-      imageUrl: "https://picsum.photos/seed/k_akko_3068b/250/250",
-      basePrice: 95.00),
-  Product(
-      id: 'k2',
-      name: "Bàn phím Logitech G Pro X TKL",
-      description: "Tenkeyless gaming keyboard with swappable switches.",
-      imageUrl: "https://picsum.photos/seed/k_logitech_gpro/250/250",
-      basePrice: 129.99),
-  Product(
-      id: 'k3',
-      name: "Bàn phím Razer Huntsman Mini",
-      description: "60% gaming keyboard with optical switches.",
-      imageUrl: "https://picsum.photos/seed/k_razer_huntsman/250/250",
-      basePrice: 119.99),
-  Product(
-      id: 'k4',
-      name: "Bàn phím Corsair K100 RGB Optical",
-      description:
-          "Flagship gaming keyboard with optical switches and iCUE wheel.",
-      imageUrl: "https://picsum.photos/seed/k_corsair_k100/250/250",
-      basePrice: 229.99),
-  Product(
-      id: 'k5',
-      name: "Bàn phím Apple Magic Keyboard",
-      description: "Wireless keyboard designed for Mac.",
-      imageUrl: "https://picsum.photos/seed/k_apple_magic/250/250",
-      basePrice: 99.00),
+    id: '67dd1c4db940e33f97abacb8',
+    name: "Bàn phím cơ Keychron K8 Pro",
+    description: "Bàn phím cơ Keychron K8 Pro không dây, hot-swappable.",
+    imageUrl: "https://picsum.photos/seed/Keyboard_Keychron/250/250",
+    category: "6806f160f9b0714e1aaf2761",
+    brand: "Keychron",
+    status: "Published",
+    basePrice: 3199000,
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now.subtract(const Duration(days: 6)),
+    updatedAt: now.subtract(const Duration(days: 6)),
+  ),
+   Product(
+    id: '67dd1c4db940e33f97abacbe',
+    name: "Bàn phím cơ Razer BlackWidow V3",
+    description: "Bàn phím cơ Razer BlackWidow V3 với switch Razer Green.",
+    imageUrl: "https://picsum.photos/seed/Keyboard_Razer_V3/250/250",
+    category: "6806f160f9b0714e1aaf2761",
+    brand: "Razer",
+    status: "Published",
+    basePrice: 2999000,
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now.add(const Duration(days: 4)),
+    updatedAt: now.add(const Duration(days: 4)),
+  ),
 ];
 
+List<Product> mouseProducts = [
+  Product(
+    id: '67dd1c4db940e33f97abacb9',
+    name: "Chuột Logitech MX Master 3S",
+    description: "Chuột Logitech MX Master 3S với công nghệ cuộn MagSpeed.",
+    imageUrl: "https://picsum.photos/seed/Mouse_Logitech_MX/250/250",
+    category: "6806f160f9b0714e1aaf2762",
+    brand: "Logitech",
+    status: "Published",
+    basePrice: 2599000,
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now.subtract(const Duration(days: 1)),
+    updatedAt: now.subtract(const Duration(days: 1)),
+  ),
+];
 
-// Bạn có thể tạo thêm một list tổng hợp nếu cần
-// List<Product> allProducts = [
-//   ...discountedProducts,
-//   ...newProducts,
-//   ...bestSellers,
-//   ...storageProducts,
-//   ...monitorProducts,
-//   ...laptopProducts,
-//   ...mouseProducts,
-//   ...keyboardProducts,
-// ];
+List<Product> storageProducts = [
+  Product(
+    id: '67dd1c4db940e33f97abacba',
+    name: "SSD Samsung 980 Pro 1TB",
+    description: "SSD Samsung 980 Pro 1TB NVMe PCIe Gen4.",
+    imageUrl: "https://picsum.photos/seed/SSD_Samsung_980/250/250",
+    category: "6806f160f9b0714e1aaf2763",
+    brand: "Samsung",
+    status: "Published",
+    basePrice: 3799000,
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+  ),
+ Product(
+    id: '67dd1c4db940e33f97abacbd',
+    name: "Ổ cứng di động WD My Passport 4TB",
+    description: "Ổ cứng di động WD My Passport 4TB với mã hóa phần cứng.",
+    imageUrl: "https://picsum.photos/seed/WD_My_Passport/250/250",
+    category: "6806f160f9b0714e1aaf2763",
+    brand: "Western Digital",
+    status: "Published",
+    basePrice: 2790000,
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now.add(const Duration(days: 3)),
+    updatedAt: now.add(const Duration(days: 3)),
+  ),
+];
+
+List<Product> bestSellers = [
+
+  Product(
+    id: '67dd1c4db940e33f97abacc0',
+    name: "Card đồ họa ASUS ROG Strix RTX 4080",
+    description: "Card đồ họa ASUS ROG Strix RTX 4080 hiệu năng cao.",
+    imageUrl: "https://picsum.photos/seed/GPU_ASUS_4080/250/250",
+    category: "6806f160f9b0714e1aaf2765",
+    brand: "ASUS",
+    status: "Published",
+    basePrice: 35990000,
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now.add(const Duration(days: 6)),
+    updatedAt: now.add(const Duration(days: 6)),
+  ),
+
+  Product(
+    id: '67dd1c4db940e33f97abacbb',
+    name: "Tai nghe Sony WH-1000XM5",
+    description: "Tai nghe Sony WH-1000XM5 chống ồn chủ động.",
+    imageUrl: "https://picsum.photos/seed/Headphone_Sony_XM5/250/250",
+    category: "6806f160f9b0714e1aaf2764",
+    brand: "Sony",
+    status: "Published",
+    basePrice: 8990000,
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now.add(const Duration(days: 1)),
+    updatedAt: now.add(const Duration(days: 1)),
+  ),
+];
+
+List<Product> discountedProducts = [
+  Product(
+    id: '67dd1c4db940e33f97abacb4',
+    name: "Laptop ASUS Vivobook 15 (Discounted)",
+    description: "Laptop Asus Vivobook 15 với bộ vi xử lý Intel Core i5 (Discounted).",
+    imageUrl: "https://picsum.photos/seed/Laptop_ASUS_Vivobook/250/250",
+    category: "6806f160f9b0714e1aaf2759",
+    brand: "ASUS",
+    status: "Published",
+    basePrice: 25250000 * 0.9, // 10% discount
+    isDeleted: false,
+    deletedAt: null,
+    createdAt: now.subtract(const Duration(days: 2)),
+    updatedAt: now.subtract(const Duration(days: 2)),
+  ),
+];
+
+List<Product> newProducts = [
+
+];
