@@ -30,6 +30,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     try {
       final productApiService = ProductApiService(ApiClient());
       final product = await productApiService.getProductById(widget.productId);
+
+      print(product);
       setState(() {
         _product = product;
       });

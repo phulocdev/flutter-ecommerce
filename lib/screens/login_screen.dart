@@ -55,12 +55,12 @@ class _LoginScreenState extends State<LoginScreen> {
       await _tokenService.saveTokens(accessToken, refreshToken);
 
       // Update the user in the AuthProvider
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      authProvider.setUser(User(email: email, fullName: fullName, role: role));
+      // final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      // authProvider.setUser(User(email: email, fullName: fullName, role: role));
 
       // Save the user data to TokenService
-      await _tokenService.saveUser(
-          email: email, fullName: fullName, role: role);
+      // await _tokenService.saveUser(
+      //     email: email, fullName: fullName, role: role);
 
       if (mounted) {
         context.go(AppRoute.products.path);

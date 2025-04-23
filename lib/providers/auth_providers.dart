@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../services/token_service.dart';
 
 class User {
@@ -9,14 +10,12 @@ class User {
   User({required this.email, required this.fullName, required this.role});
 }
 
-class AuthProvider with ChangeNotifier {
+class AuthProvider extends StateNotifier<User> {
   User? _user;
 
   User? get user => _user;
 
-  AuthProvider() {
-    _loadUser();
-  }
+  AuthProvider() : super(_loadUser());
 
   Future<void> _loadUser() async {
     final userData = await TokenService().getUser();
@@ -34,11 +33,9 @@ class AuthProvider with ChangeNotifier {
 
   void setUser(User user) {
     _user = user;
-    notifyListeners();
   }
 
   void clearUser() {
     _user = null;
-    notifyListeners();
   }
 }
