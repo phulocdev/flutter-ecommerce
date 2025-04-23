@@ -1,12 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce/apis/auth_api_service.dart';
+import 'package:flutter_ecommerce/providers/auth_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_ecommerce/services/token_service.dart';
+import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+class ProfileScreen extends ConsumerWidget {
+  late final TokenService _tokenService;
+  late final ApiClient _apiClient;
+  late final AuthApiService _authApiService;
+
+  ProfileScreen({super.key}) {
+    _tokenService = TokenService();
+    _apiClient = ApiClient();
+    _authApiService = AuthApiService(_apiClient, _tokenService);
+  }
+
+  // Phương thức logout với xác nhận
+  Future<void> _showLogoutDialog(BuildContext context, WidgetRef ref) async {
+    // Hiển thị dialog xác nhận logout
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Không thể tắt dialog bằng cách chạm ra ngoài
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Xác nhận đăng xuất'),
+          content: const Text('Bạn có chắc chắn muốn đăng xuất không?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Hủy'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Đóng dialog nếu chọn hủy
+              },
+            ),
+            TextButton(
+              child: const Text('Đăng xuất'),
+              onPressed: () async {
+                final refreshToken = await _tokenService.getRefreshToken();
+
+                try {
+                  // Gọi API đăng xuất
+                  await _authApiService.logoutWithApi(refreshToken ?? '');
+                  Navigator.of(context).pop();
+                  // Cập nhật lại trạng thái login trong AuthProvider
+                  ref.read(authProvider.notifier).logout();
+                  // Điều hướng về trang login
+                  context.go(AppRoute.login.path);
+                } catch (e) {
+                  print('Lỗi khi đăng xuất: $e');
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -49,6 +103,12 @@ class ProfileScreen extends StatelessWidget {
             onTap: () {
               context.go(AppRoute.manageAddress.path);
             },
+          ),
+          // Thêm ListTile cho Logout
+          ListTile(
+            leading: const Icon(Icons.exit_to_app),
+            title: const Text('Đăng xuất'),
+            onTap: () => _showLogoutDialog(context, ref),
           ),
         ],
       ),

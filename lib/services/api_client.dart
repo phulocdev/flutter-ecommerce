@@ -7,15 +7,13 @@ import 'token_service.dart';
 
 class ApiClient {
   final TokenService _tokenService = TokenService();
-  final String _baseUrl =
-      dotenv.env['BASE_URL'] ?? 'https://api.example.com'; // Fallback URL
+  final String _baseUrl = dotenv.env['BASE_URL'] ?? 'https://api.example.com';
   final String _refreshPath =
-      dotenv.env['REFRESH_TOKEN_PATH'] ?? '/auth/refresh'; // Fallback path
+      dotenv.env['REFRESH_TOKEN_PATH'] ?? '/auth/refresh';
 
   bool _isRefreshing = false;
-  final List<Function> _requestQueue = []; // Queue requests during refresh
+  final List<Function> _requestQueue = [];
 
-  // --- Private Helper for Sending Requests ---
   Future<http.Response> _sendRequest({
     required String method,
     required String path,
@@ -38,18 +36,16 @@ class ApiClient {
       case 'PATCH':
         return await http.patch(url, headers: headers, body: encodedBody);
       default:
-        throw UnsupportedError('HTTP method $method not supported.');
+        throw UnsupportedError('Phương thức HTTP $method không được hỗ trợ.');
     }
   }
 
-  // --- Interceptor Logic ---
   Future<dynamic> _interceptedRequest({
     required String method,
     required String path,
     Map<String, dynamic>? body,
     Map<String, String>? customHeaders,
   }) async {
-    // Wait if a refresh is already in progress
     while (_isRefreshing) {
       await Future.delayed(const Duration(milliseconds: 100));
     }
@@ -61,7 +57,7 @@ class ApiClient {
       customHeaders: customHeaders,
     );
 
-    print('Response Status: ${response.statusCode} for $method $path');
+    print('Mã trạng thái phản hồi: ${response.statusCode} cho $method $path');
 
     if (response.statusCode == 401) {
       if (!_isRefreshing) {
@@ -71,7 +67,7 @@ class ApiClient {
           _isRefreshing = false;
 
           if (refreshed) {
-            print('Retrying request: $method $path');
+            print('Thử lại request: $method $path');
             response = await _sendRequest(
               method: method,
               path: path,
@@ -81,13 +77,13 @@ class ApiClient {
           } else {
             await _tokenService.deleteTokens();
             throw AuthenticationException(
-                'Session expired. Please log in again.');
+                'Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.');
           }
         } catch (e) {
           _isRefreshing = false;
           await _tokenService.deleteTokens();
           throw AuthenticationException(
-              'Session refresh failed: ${e.toString()}');
+              'Làm mới phiên làm việc không thành công: ${e.toString()}');
         }
       } else {
         while (_isRefreshing) {
@@ -102,7 +98,7 @@ class ApiClient {
         if (response.statusCode == 401) {
           await _tokenService.deleteTokens();
           throw AuthenticationException(
-              'Authentication failed after token refresh.');
+              'Xác thực không thành công sau khi làm mới token.');
         }
       }
     }
@@ -110,10 +106,9 @@ class ApiClient {
     return _handleResponse(response);
   }
 
-  // --- Response Handling &  ---
   dynamic _handleResponse(http.Response response) {
     final String responseBody = response.body;
-    print('Response Body: $responseBody');
+    print('Nội dung phản hồi: $responseBody');
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       if (responseBody.isNotEmpty) {
@@ -121,18 +116,27 @@ class ApiClient {
           return jsonDecode(responseBody);
         } catch (e) {
           throw FormatException(
-              'Failed to decode JSON response: $e\nBody: $responseBody');
+              'Không thể giải mã phản hồi JSON: $e\nNội dung: $responseBody');
         }
       } else {
         return null;
       }
     } else {
-      String errorMessage = 'API Error: ${response.statusCode}';
+      String errorMessage = 'Lỗi API: ${response.statusCode}';
+      List<Map<String, dynamic>>? errors;
+
       if (responseBody.isNotEmpty) {
         try {
           final decoded = jsonDecode(responseBody);
-          if (decoded is Map && decoded.containsKey('message')) {
-            errorMessage = decoded['message'];
+          if (decoded is Map<String, dynamic>) {
+            if (decoded.containsKey('message')) {
+              errorMessage = decoded['message'];
+            }
+            if (decoded.containsKey('errors') && decoded['errors'] is List) {
+              errors = (decoded['errors'] as List)
+                  .whereType<Map<String, dynamic>>()
+                  .toList();
+            }
           } else {
             errorMessage = responseBody;
           }
@@ -140,70 +144,70 @@ class ApiClient {
           errorMessage = responseBody;
         }
       }
+
       switch (response.statusCode) {
         case 400:
-          throw BadRequestException(errorMessage);
+          throw BadRequestException(errorMessage, errors: errors);
         case 401:
-          throw AuthenticationException('Unauthorized: $errorMessage');
+          throw AuthenticationException('Chưa được ủy quyền: $errorMessage',
+              errors: errors);
         case 403:
-          throw ForbiddenException(errorMessage);
+          throw ForbiddenException(errorMessage, errors: errors);
         case 404:
-          throw NotFoundException(errorMessage);
+          throw NotFoundException(errorMessage, errors: errors);
+        case 422:
+          throw UnprocessableEntityException(
+              message: errorMessage, errors: errors);
         case 500:
         default:
-          throw ApiException('API Error ${response.statusCode}: $errorMessage');
+          throw ApiException('Lỗi API ${response.statusCode}: $errorMessage',
+              errors: errors);
       }
     }
   }
 
-  // --- Token Refresh Logic ---
   Future<bool> _refreshToken() async {
-    print('Attempting to refresh token...');
+    print('Đang cố gắng làm mới token...');
     final refreshToken = await _tokenService.getRefreshToken();
     if (refreshToken == null) {
-      print('No refresh token found.');
-      return false; // Cannot refresh without a refresh token
+      print('Không tìm thấy refresh token.');
+      return false;
     }
 
     try {
       final url = Uri.parse('$_baseUrl$_refreshPath');
       final response = await http.post(
         url,
-        headers: {
-          'Content-Type': 'application/json'
-        }, // Adjust headers as needed
-        body:
-            jsonEncode({'refreshToken': refreshToken}), // Adjust body as needed
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'refreshToken': refreshToken}),
       );
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        // Adjust keys based on your backend's refresh response structure
         final newAccessToken = decoded['accessToken'] as String?;
-        final newRefreshToken = decoded['refreshToken']
-            as String?; // Optional: backend might issue a new refresh token
+        final newRefreshToken = decoded['refreshToken'] as String?;
 
         if (newAccessToken != null) {
           await _tokenService.saveTokens(
               newAccessToken, newRefreshToken ?? refreshToken);
-          print('Token refreshed successfully.');
+          print('Làm mới token thành công.');
           return true;
         } else {
-          print('Refresh response did not contain new access token.');
+          print('Phản hồi làm mới không chứa token truy cập mới.');
           return false;
         }
       } else {
-        print('Token refresh failed with status: ${response.statusCode}');
-        print('Refresh Response Body: ${response.body}');
-        return false; // Refresh failed
+        print(
+            'Làm mới token không thành công với mã trạng thái: ${response.statusCode}');
+        print('Nội dung phản hồi: ${response.body}');
+        return false;
       }
     } catch (e) {
-      print('Error during token refresh: $e');
+      print('Lỗi khi làm mới token: $e');
       return false;
     }
   }
 
-  // --- Helper to build headers ---
   Future<Map<String, String>> _getHeaders(
       Map<String, String>? customHeaders) async {
     final headers = <String, String>{
@@ -250,26 +254,45 @@ class ApiClient {
   }
 }
 
-// --- Custom Exception Classes ---
+// Các lớp ngoại lệ tùy chỉnh
 class ApiException implements Exception {
   final String message;
-  ApiException(this.message);
+  final int? statusCode;
+  final List<Map<String, dynamic>>? errors;
+
+  ApiException(this.message, {this.statusCode, this.errors});
+
   @override
   String toString() => message;
 }
 
 class AuthenticationException extends ApiException {
-  AuthenticationException(String message) : super(message);
+  AuthenticationException(String message,
+      {int? statusCode, List<Map<String, dynamic>>? errors})
+      : super(message, statusCode: statusCode, errors: errors);
+}
+
+class UnprocessableEntityException extends ApiException {
+  UnprocessableEntityException({
+    String message = "Lỗi xác thực dữ liệu",
+    List<Map<String, dynamic>>? errors,
+  }) : super(message, statusCode: 422, errors: errors);
 }
 
 class BadRequestException extends ApiException {
-  BadRequestException(String message) : super(message);
+  BadRequestException(String message,
+      {int? statusCode, List<Map<String, dynamic>>? errors})
+      : super(message, statusCode: statusCode, errors: errors);
 }
 
 class ForbiddenException extends ApiException {
-  ForbiddenException(String message) : super(message);
+  ForbiddenException(String message,
+      {int? statusCode, List<Map<String, dynamic>>? errors})
+      : super(message, statusCode: statusCode, errors: errors);
 }
 
 class NotFoundException extends ApiException {
-  NotFoundException(String message) : super(message);
+  NotFoundException(String message,
+      {int? statusCode, List<Map<String, dynamic>>? errors})
+      : super(message, statusCode: statusCode, errors: errors);
 }
