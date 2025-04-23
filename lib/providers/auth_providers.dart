@@ -1,44 +1,40 @@
-import 'package:flutter/material.dart';
-import '../services/token_service.dart';
+import 'package:flutter_ecommerce/models/user.dart';
+import 'package:flutter_ecommerce/services/token_service.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class User {
-  final String email;
-  final String fullName;
-  final String role;
-
-  User({required this.email, required this.fullName, required this.role});
-}
-
-class AuthProvider with ChangeNotifier {
-  User? _user;
-
-  User? get user => _user;
-
-  AuthProvider() {
+class AuthNotifier extends StateNotifier<User?> {
+  AuthNotifier() : super(null) {
     _loadUser();
   }
 
   Future<void> _loadUser() async {
     final userData = await TokenService().getUser();
     if (userData != null) {
-      _user = User(
-          email: userData['email'] ?? '',
-          fullName: userData['fullName'] ?? '',
-          role: userData['role'] ?? '');
+      state = User(
+        email: userData['email'] ?? '',
+        fullName: userData['fullName'] ?? '',
+        role: userData['role'] ?? '',
+      );
     } else {
-      _user = null;
+      state = null;
     }
   }
 
-  bool get isAuthenticated => _user != null;
+  User? get user => state;
+
+  bool get isAuthenticated => state != null;
 
   void setUser(User user) {
-    _user = user;
-    notifyListeners();
+    state = user;
   }
 
-  void clearUser() {
-    _user = null;
-    notifyListeners();
+  Future<void> logout() async {
+    await TokenService().deleteTokens();
+    await TokenService().clearUser();
+    state = null;
   }
 }
+
+final authProvider = StateNotifierProvider<AuthNotifier, User?>((ref) {
+  return AuthNotifier();
+});

@@ -5,11 +5,14 @@ class ProductApiService {
   final ApiClient _apiClient;
 
   ProductApiService(this._apiClient);
+
   Future<Product> getProductById(String productId) async {
     try {
       final response = await _apiClient.get('/products/$productId');
+
       if (response is Map<String, dynamic> && response.containsKey('data')) {
         final productData = response['data'];
+
         if (productData is Map<String, dynamic>) {
           return Product.fromJson(productData);
         } else {
@@ -23,6 +26,29 @@ class ProductApiService {
       }
     } catch (e) {
       print('Error fetching product with ID $productId: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Product>> getProducts() async {
+    try {
+      final response = await _apiClient.get('/products');
+
+      if (response is Map<String, dynamic> && response.containsKey('data')) {
+        final List<dynamic> productList = response['data'];
+
+        if (productList is List<dynamic>) {
+          return productList
+              .map((productJson) => Product.fromJson(productJson))
+              .toList();
+        } else {
+          throw Exception('Invalid API response: data should be list.');
+        }
+      } else {
+        throw Exception('Invalid API response: Unexpected response format.');
+      }
+    } catch (e) {
+      print('Error fetching products: $e');
       rethrow;
     }
   }

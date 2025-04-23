@@ -1,8 +1,6 @@
 import 'dart:convert';
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-// This service will handle saving, retrieving, and deleting tokens securely.
 class TokenService {
   final _storage = const FlutterSecureStorage();
   final _accessTokenKey = 'accessToken';
@@ -27,10 +25,11 @@ class TokenService {
     await _storage.delete(key: _refreshTokenKey);
   }
 
-  Future<void> saveUser(
-      {required String email,
-      required String fullName,
-      required String role}) async {
+  Future<void> saveUser({
+    required String email,
+    required String fullName,
+    required String role,
+  }) async {
     final userMap = {
       'email': email,
       'fullName': fullName,
@@ -41,9 +40,11 @@ class TokenService {
 
   Future<Map<String, String>?> getUser() async {
     final userData = await _storage.read(key: _userKey);
-    if (userData == null) {
-      return null;
-    }
+    if (userData == null) return null;
     return Map<String, String>.from(json.decode(userData));
+  }
+
+  Future<void> clearUser() async {
+    await _storage.delete(key: _userKey);
   }
 }
