@@ -133,7 +133,7 @@ class CartScreen extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content:
-                                Text('Chức năng Thanh toán đang phát triển!')),
+                                Text('Chức năng Thanh toán đang phát triển')),
                       );
                     },
               style: ElevatedButton.styleFrom(
