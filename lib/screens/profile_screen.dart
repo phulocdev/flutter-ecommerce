@@ -18,12 +18,10 @@ class ProfileScreen extends ConsumerWidget {
     _authApiService = AuthApiService(_apiClient, _tokenService);
   }
 
-  // Phương thức logout với xác nhận
   Future<void> _showLogoutDialog(BuildContext context, WidgetRef ref) async {
-    // Hiển thị dialog xác nhận logout
     showDialog(
       context: context,
-      barrierDismissible: false, // Không thể tắt dialog bằng cách chạm ra ngoài
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Xác nhận đăng xuất'),
@@ -31,9 +29,7 @@ class ProfileScreen extends ConsumerWidget {
           actions: <Widget>[
             TextButton(
               child: const Text('Hủy'),
-              onPressed: () {
-                Navigator.of(context).pop(); // Đóng dialog nếu chọn hủy
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
               child: const Text('Đăng xuất'),
@@ -41,12 +37,9 @@ class ProfileScreen extends ConsumerWidget {
                 final refreshToken = await _tokenService.getRefreshToken();
 
                 try {
-                  // Gọi API đăng xuất
                   await _authApiService.logoutWithApi(refreshToken ?? '');
                   Navigator.of(context).pop();
-                  // Cập nhật lại trạng thái login trong AuthProvider
                   ref.read(authProvider.notifier).logout();
-                  // Điều hướng về trang login
                   context.go(AppRoute.login.path);
                 } catch (e) {
                   print('Lỗi khi đăng xuất: $e');
@@ -61,55 +54,66 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authProvider);
+    final isAuthenticated = user != null;
+
+    print(
+      ">>>>> ${isAuthenticated}",
+    );
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Hồ sơ cá nhân',
           style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-            fontSize: 24,
-          ),
+              color: Colors.white, fontSize: 24, fontWeight: FontWeight.w500),
         ),
         backgroundColor: Colors.blue,
       ),
       body: ListView(
         children: [
           UserAccountsDrawerHeader(
-            accountName: Text('Nguyễn Văn A'),
-            accountEmail: Text('nguyenvana@example.com'),
-            decoration: BoxDecoration(color: Colors.blue),
-            currentAccountPicture: CircleAvatar(
+            accountName: Text(isAuthenticated ? user.fullName : 'Khách'),
+            accountEmail:
+                Text(isAuthenticated ? user.email : 'Vui lòng đăng nhập'),
+            decoration: const BoxDecoration(color: Colors.blue),
+            currentAccountPicture: const CircleAvatar(
               backgroundImage: AssetImage('assets/images/avt.png'),
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Chỉnh sửa thông tin cá nhân'),
-            onTap: () {
-              context.go(AppRoute.editProfileScreen.path);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.lock),
-            title: const Text('Thay đổi mật khẩu'),
-            onTap: () {
-              context.go(AppRoute.changePassword.path);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.location_on),
-            title: const Text('Quản lý địa chỉ giao hàng'),
-            onTap: () {
-              context.go(AppRoute.manageAddress.path);
-            },
-          ),
-          // Thêm ListTile cho Logout
-          ListTile(
-            leading: const Icon(Icons.exit_to_app),
-            title: const Text('Đăng xuất'),
-            onTap: () => _showLogoutDialog(context, ref),
-          ),
+          if (isAuthenticated) ...[
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Chỉnh sửa thông tin cá nhân'),
+              onTap: () => context.push(AppRoute.editProfileScreen.path),
+            ),
+            ListTile(
+              leading: const Icon(Icons.lock),
+              title: const Text('Thay đổi mật khẩu'),
+              onTap: () => context.push(AppRoute.changePassword.path),
+            ),
+            ListTile(
+              leading: const Icon(Icons.location_on),
+              title: const Text('Quản lý địa chỉ giao hàng'),
+              onTap: () => context.push(AppRoute.manageAddress.path),
+            ),
+            ListTile(
+              leading: const Icon(Icons.exit_to_app),
+              title: const Text('Đăng xuất'),
+              onTap: () => _showLogoutDialog(context, ref),
+            ),
+          ] else ...[
+            ListTile(
+              leading: const Icon(Icons.login),
+              title: const Text('Đăng nhập'),
+              onTap: () => context.push(AppRoute.login.path),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person_add),
+              title: const Text('Đăng ký'),
+              onTap: () => context.push(AppRoute.register.path),
+            ),
+          ]
         ],
       ),
     );

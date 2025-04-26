@@ -29,7 +29,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final isLoggedIn = user != null;
 
   return GoRouter(
-    initialLocation: AppRoute.login.path,
+    initialLocation: AppRoute.products.path,
     navigatorKey: _rootNavigatorKey,
     debugLogDiagnostics: true,
     routes: [
@@ -131,10 +131,22 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == AppRoute.register.path ||
           state.matchedLocation == AppRoute.forgotPassword.path;
 
-      if (!isLoggedIn && !loggingIn) {
+      final publicPaths = [
+        AppRoute.products.path,
+        AppRoute.productDetail.path,
+        AppRoute.profile.path,
+      ];
+
+      final isPublicPath = publicPaths.any(
+        (path) => state.matchedLocation.startsWith(path),
+      );
+
+      // Chưa đăng nhập và đang truy cập vào trang KHÔNG public, KHÔNG login
+      if (!isLoggedIn && !loggingIn && !isPublicPath) {
         return AppRoute.login.path;
       }
 
+      // Đã đăng nhập mà lại vào trang login/register/forgot => redirect về trang chính
       if (isLoggedIn && loggingIn) {
         return AppRoute.products.path;
       }
