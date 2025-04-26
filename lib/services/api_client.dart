@@ -149,7 +149,7 @@ class ApiClient {
         case 400:
           throw BadRequestException(errorMessage, errors: errors);
         case 401:
-          throw AuthenticationException('Chưa được ủy quyền: $errorMessage',
+          throw AuthenticationException('Authentication error: $errorMessage',
               errors: errors);
         case 403:
           throw ForbiddenException(errorMessage, errors: errors);
@@ -167,7 +167,6 @@ class ApiClient {
   }
 
   Future<bool> _refreshToken() async {
-    print('Đang cố gắng làm mới token...');
     final refreshToken = await _tokenService.getRefreshToken();
     if (refreshToken == null) {
       print('Không tìm thấy refresh token.');

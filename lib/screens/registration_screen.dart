@@ -259,19 +259,40 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[400],
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    onPressed: _handleRegistration,
-                    child: _isLoading
-                        ? const CircularProgressIndicator()
-                        : const Text(
-                            'Sign up',
-                            style: TextStyle(color: Colors.white),
+                    onPressed: () {
+                      if (!_isLoading) {
+                        _handleRegistration();
+                      }
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Sign Up',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w500),
+                        ),
+                        if (_isLoading) ...[
+                          const SizedBox(width: 12),
+                          const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.0,
+                            ),
                           ),
+                        ],
+                      ],
+                    ),
                   ),
                   if (_serverErrorMessage != null) ...[
                     const SizedBox(height: 8),
