@@ -17,7 +17,7 @@ class CartScreen extends ConsumerWidget {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Clear Cart successfully'),
+          content: Text('Clear Cart successfully!'),
         ),
       );
     }
