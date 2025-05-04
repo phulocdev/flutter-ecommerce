@@ -4,35 +4,54 @@ class Product {
   final String id;
   final String name;
   final String description;
-  final double price;
   final String imageUrl;
-  final List<String> additionalImages;
-  final List<String> reviews;
+  final String category; // Assuming category is an ID
+  final String brand;
+  final String status;
+  final double basePrice;
+  final bool isDeleted;
+  final DateTime? deletedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   Product({
     required this.id,
     required this.name,
     required this.description,
-    required this.price,
     required this.imageUrl,
-    this.additionalImages = const [],
-    this.reviews = const [],
+    required this.category,
+    required this.brand,
+    required this.status,
+    required this.basePrice,
+    required this.isDeleted,
+    this.deletedAt,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   String get formattedPrice {
-    final priceFormatter =
+    final formatter =
         NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
-    return priceFormatter.format(price);
+    return formatter.format(basePrice);
   }
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      id: json['id'] as String,
+      id: json['_id'] as String,
       name: json['name'] as String? ?? 'No Name',
       description: json['description'] as String? ?? 'No Description',
-      price: (json['price'] as num?)?.toDouble() ?? 0.0,
-      imageUrl:
-          json['imageUrl'] as String? ?? 'https://via.placeholder.com/250',
+      imageUrl: json['imageUrl'] as String? ?? '',
+      category:
+          json['category'] as String, // Assuming category is a string ID
+      brand: json['brand'] as String,
+      status: json['status'] as String,
+      basePrice: (json['basePrice'] as num?)?.toDouble() ?? 0.0,
+      isDeleted: json['isDeleted'] as bool,
+      deletedAt: json['deletedAt'] != null
+          ? DateTime.parse(json['deletedAt'] as String)
+          : null,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }
 }

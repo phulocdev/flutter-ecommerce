@@ -1,32 +1,70 @@
+import 'package:flutter_ecommerce/apis/product_api_service.dart';
+import 'package:flutter_ecommerce/models/product.dart';
+import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/cart_item.dart';
 import 'package:flutter_ecommerce/providers/cart_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_ecommerce/models/product.dart';
 import 'package:go_router/go_router.dart';
 
-class ProductDetailScreen extends ConsumerWidget {
-  const ProductDetailScreen({super.key, required this.product});
-  final Product product;
+class ProductDetailScreen extends ConsumerStatefulWidget {
+  const ProductDetailScreen({super.key, required this.productId});
+  final String productId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProductDetailScreen> createState() =>
+      _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
+  Product? _product;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProductDetails();
+  }
+
+  Future<void> _fetchProductDetails() async {
+    try {
+      final productApiService = ProductApiService(ApiClient());
+      final product = await productApiService.getProductById(widget.productId);
+
+      print(product);
+      setState(() {
+        _product = product;
+      });
+    } catch (e) {
+      print('Error fetching product: $e');
+      // Handle error, e.g., show a snackbar or error message
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_product == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     void addProductToCart() {
+      if (_product == null) {
+        return;
+      }
+
       ref.read(cartProvider.notifier).addCartItem(
             CartItem(
               id: DateTime.now().toString(),
               quantity: 1,
-              price: product.price,
-              product: product,
+              price: _product!.basePrice,
+              product: _product!,
             ),
           );
 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${product.name} đã được thêm vào giỏ!'),
-          duration: const Duration(seconds: 2),
+          content: Text('sản phẩm đã được thêm vào giỏ!'),
+          duration: Duration(seconds: 2),
           backgroundColor: Colors.green[700],
           action: SnackBarAction(
             label: 'Xem giỏ hàng',
@@ -48,7 +86,7 @@ class ProductDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         foregroundColor: Colors.white,
         title: Text(
-          product.name,
+          _product != null ? _product!.name : '',
           style: const TextStyle(
               color: Colors.white, fontWeight: FontWeight.w500, fontSize: 20),
           overflow: TextOverflow.ellipsis,
@@ -66,7 +104,7 @@ class ProductDetailScreen extends ConsumerWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
                     child: Image.network(
-                      product.imageUrl,
+                      _product!.imageUrl,
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: 300,
@@ -99,14 +137,14 @@ class ProductDetailScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16.0),
                   Text(
-                    product.name,
+                    _product!.name,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                   ),
                   const SizedBox(height: 8.0),
                   Text(
-                    product.formattedPrice,
+                    _product!.formattedPrice,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.bold,
@@ -121,7 +159,7 @@ class ProductDetailScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8.0),
                   Text(
-                    product.description,
+                    _product!.description,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.black87,
                           height: 1.5,

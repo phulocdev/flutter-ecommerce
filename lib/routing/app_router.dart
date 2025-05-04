@@ -14,6 +14,7 @@ import 'package:flutter_ecommerce/screens/registration_screen.dart';
 import 'package:flutter_ecommerce/widgets/scaffold_with_nav_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_ecommerce/providers/auth_providers.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHomeKey =
@@ -24,165 +25,134 @@ final _shellNavigatorProfileKey =
     GlobalKey<NavigatorState>(debugLabel: 'shellProfile');
 
 final goRouterProvider = Provider<GoRouter>((ref) {
-  // Use Provider if you need ref, otherwise just define GoRouter directly
-  // In a real app, you'd check auth state here using ref.watch(authProvider)
-  final bool isLoggedIn = true; // Placeholder: Replace with actual auth check
+  final user = ref.watch(authProvider);
+  final isLoggedIn = user != null;
 
   return GoRouter(
-    initialLocation: AppRoute.login.path, // Start at the products screen
+    initialLocation: AppRoute.products.path,
     navigatorKey: _rootNavigatorKey,
-    debugLogDiagnostics: true, // Useful for debugging routing issues
-
+    debugLogDiagnostics: true,
     routes: [
-      // Application shell using ShellRoute
-      // This provides the persistent Scaffold with BottomNavigationBar
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return ScaffoldWithNavBar(navigationShell: navigationShell);
         },
         branches: [
-          // Branch 1: Home/Products Tab
           StatefulShellBranch(
             navigatorKey: _shellNavigatorHomeKey,
             routes: [
               GoRoute(
-                path: AppRoute.products.path, // '/' or '/products'
+                path: AppRoute.products.path,
                 name: AppRoute.products.name,
                 pageBuilder: (context, state) => NoTransitionPage(
-                  key: state.pageKey, // Important for state preservation
-                  child: const ProductScreen(), // Your products screen
+                  key: state.pageKey,
+                  child: const ProductScreen(),
                 ),
                 routes: [
-                  // Nested route for product details under the home tab
                   GoRoute(
-                    path: AppRoute.productDetail.path, // 'product/:id'
+                    path: AppRoute.productDetail.path,
                     name: AppRoute.productDetail.name,
                     parentNavigatorKey: _rootNavigatorKey,
                     builder: (context, state) {
-                      final productId = state.pathParameters['id'];
-                      final Product? product = state.extra as Product?;
-                      if (product != null) {
-                        return ProductDetailScreen(product: product);
-                      } else if (productId != null) {
-                        return ProductDetailScreen(
-                          product: Product(
-                            id: DateTime.now().toString(),
-                            name: 'Test',
-                            description: 'test',
-                            price: 12,
-                            imageUrl:
-                                'https://picsum.photos/seed/d_monitor_curved/250/250',
-                          ),
-                        );
-                      } else {
-                        return const Scaffold(
-                          body: Center(child: Text('Product not found')),
-                        );
-                      }
+                      final productId = state.pathParameters['id']!;
+                      return ProductDetailScreen(productId: productId);
                     },
                   ),
                 ],
               ),
             ],
           ),
-
-          // Branch 2: Cart Tab
           StatefulShellBranch(
             navigatorKey: _shellNavigatorCartKey,
             routes: [
               GoRoute(
-                  path: AppRoute.cart.path, // '/cart'
-                  name: AppRoute.cart.name,
-                  pageBuilder: (context, state) => NoTransitionPage(
-                        key: state.pageKey,
-                        child: const CartScreen(), // Your cart screen
-                      ),
-                  routes: [
-                    // Optional: Nested routes within cart if needed, e.g., checkout
-                    // GoRoute( path: 'checkout', ... ),
-                  ]),
+                path: AppRoute.cart.path,
+                name: AppRoute.cart.name,
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const CartScreen(),
+                ),
+              ),
             ],
           ),
-
-          // Branch 3: Profile Tab
           StatefulShellBranch(
             navigatorKey: _shellNavigatorProfileKey,
             routes: [
               GoRoute(
-                path: AppRoute.profile.path, // '/profile'
+                path: AppRoute.profile.path,
                 name: AppRoute.profile.name,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: const ProfileScreen(), // Your profile screen
+                  child: ProfileScreen(),
                 ),
               ),
             ],
           ),
         ],
       ),
-
-      // Top-level routes (no bottom navigation bar)
       GoRoute(
-        path: AppRoute.login.path, // '/login'
+        path: AppRoute.login.path,
         name: AppRoute.login.name,
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
-        path: AppRoute.register.path, // '/register'
+        path: AppRoute.register.path,
         name: AppRoute.register.name,
         builder: (context, state) => const RegistrationScreen(),
       ),
       GoRoute(
-        path: AppRoute.forgotPassword.path, // '/forgot-password'
+        path: AppRoute.forgotPassword.path,
         name: AppRoute.forgotPassword.name,
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
       GoRoute(
-        path: AppRoute.changePassword.path, // '/change-password'
+        path: AppRoute.changePassword.path,
         name: AppRoute.changePassword.name,
         builder: (context, state) => const ChangePasswordScreen(),
       ),
       GoRoute(
-        path: AppRoute.editProfileScreen.path, // '/me'
+        path: AppRoute.editProfileScreen.path,
         name: AppRoute.editProfileScreen.name,
         builder: (context, state) => const EditProfileScreen(),
       ),
       GoRoute(
         path: AppRoute.otp.path,
         name: AppRoute.otp.name,
-        builder: (context, state) {
-          return const OTPScreen();
-        },
+        builder: (context, state) => const OTPScreen(),
       ),
       GoRoute(
         path: AppRoute.manageAddress.path,
         name: AppRoute.manageAddress.name,
-        builder: (context, state) =>
-            const ManageAddressScreen(), // Added for ManageAddressScreen
+        builder: (context, state) => const ManageAddressScreen(),
       ),
     ],
+    redirect: (context, state) {
+      final loggingIn = state.matchedLocation == AppRoute.login.path ||
+          state.matchedLocation == AppRoute.register.path ||
+          state.matchedLocation == AppRoute.forgotPassword.path;
 
-    // Optional: Add redirection logic (e.g., redirect to login if not authenticated)
-    // redirect: (BuildContext context, GoRouterState state) {
-    //   final bool loggedIn = isLoggedIn; // Use your auth state logic
-    //   final bool loggingIn = state.matchedLocation == AppRoute.login.path ||
-    //                          state.matchedLocation == AppRoute.register.path; // etc.
+      final publicPaths = [
+        AppRoute.products.path,
+        AppRoute.productDetail.path,
+        AppRoute.profile.path,
+      ];
 
-    //   // If not logged in and not on a public page, redirect to login
-    //   if (!loggedIn && !loggingIn && state.matchedLocation != AppRoute.forgotPassword.path) {
-    //     return AppRoute.login.path;
-    //   }
+      final isPublicPath = publicPaths.any(
+        (path) => state.matchedLocation.startsWith(path),
+      );
 
-    //   // If logged in and trying to access login/register, redirect to home
-    //   if (loggedIn && loggingIn) {
-    //     return AppRoute.products.path;
-    //   }
+      // Chưa đăng nhập và đang truy cập vào trang KHÔNG public, KHÔNG login
+      if (!isLoggedIn && !loggingIn && !isPublicPath) {
+        return AppRoute.login.path;
+      }
 
-    //   // No redirect needed
-    //   return null;
-    // },
+      // Đã đăng nhập mà lại vào trang login/register/forgot => redirect về trang chính
+      if (isLoggedIn && loggingIn) {
+        return AppRoute.products.path;
+      }
 
-    // Optional: Error handling
+      return null;
+    },
     errorBuilder: (context, state) => Scaffold(
       body: Center(
         child: Text('Page not found: ${state.error?.message}'),
