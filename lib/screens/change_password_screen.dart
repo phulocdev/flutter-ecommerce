@@ -43,7 +43,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 decoration:
                     const InputDecoration(labelText: 'Xác nhận mật khẩu'),
                 validator: (value) =>
-                    value != newPassword ? 'Không khớp' : null,
+                    value != newPassword ? 'Không khớp mật khẩu' : null,
                 onSaved: (value) => confirmPassword = value!,
               ),
               const SizedBox(height: 20),
