@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/product.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/widgets/product_card.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,9 +13,9 @@ class ProductsListHorizontal extends StatelessWidget {
   });
 
   void _navigateToProductDetail(BuildContext context, Product product) {
-    context.push(
-      '/product/${product.id}',
-      extra: product,
+    context.pushNamed(
+      AppRoute.productDetail.name,
+      pathParameters: {'id': product.id},
     );
   }
 

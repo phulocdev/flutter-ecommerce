@@ -16,7 +16,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Thay đổi mật khẩu')),
+      appBar: AppBar(title: const Text('Thay đổi   mật khẩu')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -43,7 +43,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 decoration:
                     const InputDecoration(labelText: 'Xác nhận mật khẩu'),
                 validator: (value) =>
-                    value != newPassword ? 'Không khớp' : null,
+                    value != newPassword ? 'Không khớp mật khẩu' : null,
                 onSaved: (value) => confirmPassword = value!,
               ),
               const SizedBox(height: 20),

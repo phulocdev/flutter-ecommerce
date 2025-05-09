@@ -45,12 +45,12 @@ class ScaffoldWithNavBar extends ConsumerWidget {
               isLabelVisible: cartItemCount > 0,
               child: const Icon(Icons.shopping_cart),
             ),
-            label: 'Cart',
+            label: 'Giỏ hàng',
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
-            label: 'Me',
+            label: 'Tôi',
           ),
         ],
         currentIndex:

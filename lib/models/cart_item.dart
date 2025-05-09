@@ -30,4 +30,20 @@ class CartItem {
       product: product ?? this.product,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'quantity': quantity,
+        'price': price,
+        'product': product.toJson(), // đảm bảo Product cũng có toJson
+        'isChecked': isChecked,
+      };
+
+  factory CartItem.fromJson(Map<String, dynamic> json) => CartItem(
+        id: json['id'],
+        quantity: json['quantity'],
+        price: json['price'],
+        product: Product.fromJson(json['product']),
+        isChecked: json['isChecked'] ?? false,
+      );
 }

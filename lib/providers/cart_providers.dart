@@ -1,8 +1,35 @@
+import 'dart:convert';
+
 import 'package:flutter_ecommerce/models/cart_item.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class CartNotifier extends StateNotifier<List<CartItem>> {
-  CartNotifier() : super([]);
+  static const _cartKey = 'user_cart';
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+
+  CartNotifier() : super([]) {
+    _loadCart();
+  }
+
+  Future<void> _loadCart() async {
+    final jsonString = await _secureStorage.read(key: _cartKey);
+    if (jsonString != null) {
+      final List<dynamic> decoded = jsonDecode(jsonString);
+      state = decoded.map((e) => CartItem.fromJson(e)).toList();
+    }
+  }
+
+  Future<void> _saveCart() async {
+    final jsonString = jsonEncode(state.map((e) => e.toJson()).toList());
+    await _secureStorage.write(key: _cartKey, value: jsonString);
+  }
+
+  @override
+  set state(List<CartItem> value) {
+    super.state = value;
+    _saveCart();
+  }
 
   CartItem addCartItem(CartItem newItem) {
     final existingItemIndex =

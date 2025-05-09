@@ -19,6 +19,7 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
 
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   Product? _product;
+  int _quantity = 1;
 
   @override
   void initState() {
@@ -37,7 +38,6 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       });
     } catch (e) {
       print('Error fetching product: $e');
-      // Handle error, e.g., show a snackbar or error message
     }
   }
 
@@ -46,45 +46,46 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     if (_product == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    void addProductToCart() {
+    void addProductToCart({bool isBuyNow = false}) {
       if (_product == null) {
         return;
       }
 
       ref.read(cartProvider.notifier).addCartItem(
             CartItem(
-              id: DateTime.now().toString(),
-              quantity: 1,
-              price: _product!.basePrice,
-              product: _product!,
-            ),
+                id: DateTime.now().toString(),
+                quantity: _quantity,
+                price: _product!.basePrice,
+                product: _product!,
+                isChecked: isBuyNow),
           );
 
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('sản phẩm đã được thêm vào giỏ!'),
-          duration: Duration(seconds: 2),
-          backgroundColor: Colors.green[700],
-          action: SnackBarAction(
-            label: 'Xem giỏ hàng',
-            textColor: Colors.white,
-            onPressed: () {
-              // Navigate to cart screen using GoRouter
-              context.goNamed(AppRoute.cart.name);
-            },
+      if (!isBuyNow) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã thêm sản phẩm vào giỏ hàng'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.green[700],
+            action: SnackBarAction(
+              label: 'Xem giỏ hàng',
+              textColor: Colors.white,
+              onPressed: () {
+                // Navigate to cart screen using GoRouter
+                context.goNamed(AppRoute.cart.name);
+              },
+            ),
           ),
-        ),
-      );
-    }
-
-    void handleBuyNow() {
-      print('Handle Buy Now');
+        );
+      } else {
+        context.push(AppRoute.cart.path);
+      }
     }
 
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,
+        backgroundColor: Colors.blue,
         title: Text(
           _product != null ? _product!.name : '',
           style: const TextStyle(
@@ -166,6 +167,58 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         ),
                   ),
                   const SizedBox(height: 30.0),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Số lượng:',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 16),
+                      ),
+                      const SizedBox(width: 16),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade400),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.remove),
+                              splashRadius: 20,
+                              onPressed: () {
+                                if (_quantity > 1) {
+                                  setState(() {
+                                    _quantity--;
+                                  });
+                                }
+                              },
+                            ),
+                            Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(
+                                '$_quantity',
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.add),
+                              splashRadius: 20,
+                              onPressed: () {
+                                setState(() {
+                                  _quantity++;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const SizedBox(height: 16.0),
                 ],
               ),
             ),
@@ -196,7 +249,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: handleBuyNow,
+                  onPressed: () {
+                    addProductToCart(isBuyNow: true);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,

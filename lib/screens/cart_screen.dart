@@ -36,7 +36,10 @@ class CartScreen extends ConsumerWidget {
         actions: [
           if (cartItems.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.delete_sweep_outlined),
+              icon: const Icon(
+                Icons.delete_sweep_outlined,
+                color: Colors.white,
+              ),
               tooltip: 'Xóa hết giỏ hàng',
               onPressed: () {
                 showDialog(
@@ -88,10 +91,10 @@ class CartScreen extends ConsumerWidget {
   }
 
   Widget _buildSummarySection(BuildContext context, List<CartItem> cart) {
-    final totalAmount = cart.fold<double>(
-      0.0,
-      (previousValue, item) => previousValue + (item.price * item.quantity),
-    );
+    final totalAmount = cart.where((item) => item.isChecked).fold<double>(
+          0.0,
+          (previousValue, item) => previousValue + (item.price * item.quantity),
+        );
     final priceFormatter =
         NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
     final formattedTotalAmount = priceFormatter.format(totalAmount);
