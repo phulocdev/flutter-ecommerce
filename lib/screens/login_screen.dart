@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/apis/auth_api_service.dart';
 import 'package:flutter_ecommerce/models/dto/login_request_dto.dart';
-import 'package:flutter_ecommerce/models/dto/login_response_dto.dart';
 import 'package:flutter_ecommerce/models/user.dart';
 import 'package:flutter_ecommerce/providers/auth_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
@@ -82,10 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         if (e.statusCode == 422 && e.errors != null && e.errors!.isNotEmpty) {
           final fieldError = e.errors!.firstWhere(
-            (err) {
-              print(err);
-              return err['field'] == 'password';
-            },
+            (err) => err['field'] == 'password',
             orElse: () => {},
           );
           setState(() {
@@ -93,14 +89,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Login Failed: ${e.message}')),
+            SnackBar(content: Text('Đăng nhập thất bại: ${e.message}')),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An unexpected error occurred: $e')),
+          SnackBar(content: Text('Đã xảy ra lỗi không xác định: $e')),
         );
       }
     } finally {
@@ -118,7 +114,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       appBar: AppBar(
         foregroundColor: Colors.white,
         title: const Text(
-          'Login',
+          'Đăng nhập',
           style: TextStyle(
               color: Colors.white, fontWeight: FontWeight.w500, fontSize: 24),
           textAlign: TextAlign.center,
@@ -135,7 +131,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    'Welcome Back!',
+                    'Chào mừng bạn quay trở lại!',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
@@ -162,9 +158,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onSaved: (value) => _email = value,
                     validator: (value) {
                       if (value == null || value.isEmpty)
-                        return 'Please enter your email';
+                        return 'Vui lòng nhập email';
                       if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                        return 'Please enter a valid email address';
+                        return 'Vui lòng nhập đúng định dạng email';
                       }
                       return null;
                     },
@@ -172,7 +168,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     decoration: InputDecoration(
-                      labelText: 'Password',
+                      labelText: 'Mật khẩu',
                       prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
                         onPressed: _toggleShowPassword,
@@ -198,9 +194,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onSaved: (value) => _password = value,
                     validator: (value) {
                       if (value == null || value.isEmpty)
-                        return 'Please enter your password';
+                        return 'Vui lòng nhập mật khẩu';
                       if (value.length < 6)
-                        return 'Password must be at least 6 characters';
+                        return 'Mật khẩu phải có ít nhất 6 ký tự';
                       return null;
                     },
                   ),
@@ -231,7 +227,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Text(
-                          'Sign In',
+                          'Đăng nhập',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w500),
                         ),
@@ -256,13 +252,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         : () {
                             context.push(AppRoute.forgotPassword.path);
                           },
-                    child: const Text('Forgot Password?'),
+                    child: const Text('Quên mật khẩu?'),
                   ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account? "),
+                      const Text("Chưa có tài khoản? "),
                       GestureDetector(
                         onTap: _isLoading
                             ? null
@@ -270,7 +266,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 context.push(AppRoute.register.path);
                               },
                         child: const Text(
-                          'Register',
+                          'Đăng ký',
                           style: TextStyle(
                               color: Colors.blue, fontWeight: FontWeight.bold),
                         ),

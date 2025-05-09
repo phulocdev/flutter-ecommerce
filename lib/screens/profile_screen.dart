@@ -57,10 +57,6 @@ class ProfileScreen extends ConsumerWidget {
     final user = ref.watch(authProvider);
     final isAuthenticated = user != null;
 
-    print(
-      ">>>>> ${isAuthenticated}",
-    );
-
     return Scaffold(
       appBar: AppBar(
         title: const Text(

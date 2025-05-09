@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecommerce/models/product.dart';
+import 'package:flutter_ecommerce/providers/auth_providers.dart';
 import 'package:flutter_ecommerce/screens/cart_screen.dart';
 import 'package:flutter_ecommerce/screens/change_password_screen.dart';
 import 'package:flutter_ecommerce/screens/edit_profile_screen.dart';
@@ -14,7 +14,6 @@ import 'package:flutter_ecommerce/screens/registration_screen.dart';
 import 'package:flutter_ecommerce/widgets/scaffold_with_nav_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_ecommerce/providers/auth_providers.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHomeKey =
@@ -52,9 +51,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: AppRoute.productDetail.path,
                     name: AppRoute.productDetail.name,
-                    parentNavigatorKey: _rootNavigatorKey,
                     builder: (context, state) {
-                      final productId = state.pathParameters['id']!;
+                      final productId = state.pathParameters[
+                          'id']!; // Get the _id from pathParameters
                       return ProductDetailScreen(productId: productId);
                     },
                   ),
@@ -135,6 +134,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         AppRoute.products.path,
         AppRoute.productDetail.path,
         AppRoute.profile.path,
+        AppRoute.cart.path
       ];
 
       final isPublicPath = publicPaths.any(
@@ -166,8 +166,8 @@ enum AppRoute {
   register('/register'),
   forgotPassword('/forgot-password'),
   otp('/otp'),
-  products('/'),
-  productDetail('product/:id'),
+  products('/products'),
+  productDetail('products/:id'),
   cart('/cart'),
   profile('/profile'),
   changePassword('/change-password'),
