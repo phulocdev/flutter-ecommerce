@@ -1,7 +1,6 @@
 import 'package:flutter_ecommerce/models/dto/register_request_dto.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/services/token_service.dart';
-
 import '../models/dto/login_request_dto.dart';
 import '../models/dto/login_response_dto.dart';
 

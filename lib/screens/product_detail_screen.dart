@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter_ecommerce/apis/product_api_service.dart';
 import 'package:flutter_ecommerce/models/product.dart';
+import 'package:flutter_ecommerce/models/sku.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/cart_item.dart';
@@ -19,6 +22,8 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
 
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   Product? _product;
+  Sku? _selectedSku;
+
   int _quantity = 1;
 
   @override
@@ -32,9 +37,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       final productApiService = ProductApiService(ApiClient());
       final product = await productApiService.getProductById(widget.productId);
 
-      print(product);
       setState(() {
         _product = product;
+        final sortedSkus = [...(product.skus ?? [])]
+          ..sort((a, b) => a.sellingPrice.compareTo(b.sellingPrice));
+        _selectedSku = sortedSkus.isNotEmpty ? sortedSkus.first : null;
       });
     } catch (e) {
       print('Error fetching product: $e');
@@ -53,11 +60,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
       ref.read(cartProvider.notifier).addCartItem(
             CartItem(
-                id: DateTime.now().toString(),
-                quantity: _quantity,
-                price: _product!.basePrice,
-                product: _product!,
-                isChecked: isBuyNow),
+              id: DateTime.now().toString(),
+              quantity: _quantity,
+              price: _selectedSku!.sellingPrice,
+              product: _product!,
+              isChecked: isBuyNow,
+              sku: _selectedSku,
+            ),
           );
 
       if (!isBuyNow) {
@@ -78,7 +87,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           ),
         );
       } else {
-        context.push(AppRoute.cart.path);
+        context.go(AppRoute.cart.path);
       }
     }
 
@@ -145,7 +154,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   ),
                   const SizedBox(height: 8.0),
                   Text(
-                    _product!.formattedPrice,
+                    _selectedSku!.formattedPrice,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.bold,
@@ -167,6 +176,70 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         ),
                   ),
                   const SizedBox(height: 30.0),
+
+                  // Variants
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Phân loại hàng:',
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _product!.skus!.map((sku) {
+                          final isSelected = _selectedSku?.id == sku.id;
+                          final variantsName = sku.attributes
+                              ?.map((att) => att.value)
+                              .join(' - ');
+
+                          return InkWell(
+                            onTap: () {
+                              setState(() {
+                                _selectedSku = sku;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Colors.grey.shade400,
+                                  width: isSelected ? 2 : 1,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                                color: isSelected
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.1)
+                                    : Colors.transparent,
+                              ),
+                              child: Text(
+                                variantsName ?? '',
+                                style: TextStyle(
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Colors.black87,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -226,41 +299,54 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         ),
       ),
       bottomNavigationBar: BottomAppBar(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        elevation: 10,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.add_shopping_cart_outlined),
-                  label: const Text('Thêm vào giỏ'),
-                  onPressed: addProductToCart,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.primary,
-                    side: BorderSide(
-                        color: Theme.of(context).colorScheme.primary),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+                child: SizedBox(
+                  height: 56,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.shopping_cart_outlined, size: 22),
+                    label: const Text(
+                      'Thêm vào giỏ',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    onPressed: addProductToCart,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      side: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    addProductToCart(isBuyNow: true);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+                child: SizedBox(
+                  height: 56,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.flash_on_outlined, size: 22),
+                    label: const Text(
+                      'Mua ngay',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    onPressed: () => addProductToCart(isBuyNow: true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
                     ),
                   ),
-                  child: const Text('Mua ngay'),
                 ),
               ),
             ],

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/cart_item.dart';
 import 'package:flutter_ecommerce/providers/cart_providers.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/widgets/cart_list_item.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -17,13 +19,14 @@ class CartScreen extends ConsumerWidget {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Clear Cart successfully'),
+          content: Text('Đã xóa tất cả sản phẩm trong giỏ hàng'),
         ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
+        foregroundColor: Colors.white,
         title: Text(
           'Giỏ hàng',
           style: const TextStyle(
@@ -131,13 +134,7 @@ class CartScreen extends ConsumerWidget {
               onPressed: totalAmount <= 0
                   ? null
                   : () {
-                      print(
-                          'Tiến hành thanh toán với tổng tiền: $formattedTotalAmount');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content:
-                                Text('Chức năng Thanh toán đang phát triển!')),
-                      );
+                      context.go(AppRoute.checkout.path);
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,

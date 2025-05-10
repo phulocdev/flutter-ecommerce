@@ -5,19 +5,24 @@ import 'package:flutter_ecommerce/widgets/products_list_horizontal.dart';
 class ProductsEachCategorySection extends StatelessWidget {
   final String title;
   final List<Product> products;
+  final bool showSeeAll;
 
   const ProductsEachCategorySection({
     super.key,
     required this.title,
     required this.products,
+    this.showSeeAll = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    const double sectionVerticalPadding = 32.0;
-    const double horizontalPadding = 12.0;
+    const double sectionVerticalPadding = 16.0;
+    const double horizontalPadding = 16.0;
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-    if (products.isEmpty) {}
+    if (products.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: sectionVerticalPadding / 2),
@@ -27,9 +32,29 @@ class ProductsEachCategorySection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(
                 horizontal: horizontalPadding, vertical: 12),
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                if (showSeeAll && products.length > 5)
+                  TextButton(
+                    onPressed: () {
+                      // Navigate to see all products in this category
+                    },
+                    child: Text(
+                      'See All',
+                      style: TextStyle(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           ProductsListHorizontal(products: products),

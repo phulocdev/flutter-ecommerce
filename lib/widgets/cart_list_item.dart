@@ -11,8 +11,13 @@ class CartListItemWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final variantsName =
+        cartItem.sku?.attributes?.map((att) => att.value).join(' - ');
+
     void toogleSelectCartItem() {
-      ref.read(cartProvider.notifier).toggleSelectCartItem(cartItem.product.id);
+      ref
+          .read(cartProvider.notifier)
+          .toggleSelectCartItem(cartItem.sku?.id ?? '');
     }
 
     void removeCartItem(String cartItemId) {
@@ -85,8 +90,15 @@ class CartListItemWidget extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Text('Phân loại: '),
+                              Text(variantsName ?? '')
+                            ],
+                          ),
+                          const SizedBox(height: 6),
                           Text(
-                            cartItem.product.formattedPrice,
+                            cartItem.sku!.formattedPrice,
                             style: TextStyle(
                               fontSize: 15,
                               color: Theme.of(context).colorScheme.primary,
