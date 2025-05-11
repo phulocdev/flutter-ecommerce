@@ -1,6 +1,8 @@
+import 'package:flutter_ecommerce/models/dto/register_for_guest_request.dto.dart';
 import 'package:flutter_ecommerce/models/dto/register_request_dto.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/services/token_service.dart';
+
 import '../models/dto/login_request_dto.dart';
 import '../models/dto/login_response_dto.dart';
 
@@ -23,11 +25,38 @@ class AuthApiService {
     }
   }
 
+  Future<RegisterForGuestResponseDto> registerForGuest(
+      RegisterForGuestRequestDto dto) async {
+    try {
+      final response =
+          await _apiClient.post('/auth/register/guest', body: dto.toJson());
+      return RegisterForGuestResponseDto.fromJson(response);
+    } on ApiException catch (e) {
+      _handleApiError(e);
+      rethrow;
+    } catch (e) {
+      print("Lỗi không xác định: $e");
+      rethrow;
+    }
+  }
+
   Future<LoginResponseDto> register(RegisterRequestDto dto) async {
     try {
       final response =
           await _apiClient.post('/auth/register', body: dto.toJson());
       return LoginResponseDto.fromJson(response);
+    } on ApiException catch (e) {
+      _handleApiError(e);
+      rethrow;
+    } catch (e) {
+      print("Lỗi không xác định: $e");
+      rethrow;
+    }
+  }
+
+  Future changePassword(dto) async {
+    try {
+      await _apiClient.post('/auth/change-password', body: dto.toJson());
     } on ApiException catch (e) {
       _handleApiError(e);
       rethrow;

@@ -91,6 +91,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       }
     }
 
+    print(">>>>>>>> ${_product!.toJson()}");
+
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,

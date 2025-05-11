@@ -71,6 +71,10 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
     state = state.where((item) => item.id != cartItemId).toList();
   }
 
+  void removeCartItems(List<String> cartItemIds) {
+    state = state.where((item) => !cartItemIds.contains(item.id)).toList();
+  }
+
   void toggleSelectCartItem(String skuId) {
     final cartItemIndex = state.indexWhere((item) => item.sku?.id == skuId);
 

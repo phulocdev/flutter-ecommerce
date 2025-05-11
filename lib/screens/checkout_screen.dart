@@ -1,13 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce/apis/auth_api_service.dart';
+import 'package:flutter_ecommerce/apis/order_api_service.dart';
+import 'package:flutter_ecommerce/models/cart_item.dart';
+import 'package:flutter_ecommerce/models/dto/create_order_dto.dart';
+import 'package:flutter_ecommerce/models/dto/register_for_guest_request.dto.dart';
+import 'package:flutter_ecommerce/models/dto/register_request_dto.dart';
+import 'package:flutter_ecommerce/providers/cart_providers.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:flutter_ecommerce/services/token_service.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 
-class CheckoutScreen extends StatefulWidget {
-  const CheckoutScreen({Key? key}) : super(key: key);
+class CheckoutScreen extends ConsumerStatefulWidget {
+  const CheckoutScreen({super.key});
 
   @override
-  State<CheckoutScreen> createState() => _CheckoutScreenState();
+  ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
 }
 
-class _CheckoutScreenState extends State<CheckoutScreen> {
+class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _formKey = GlobalKey<FormState>();
 
   String name = '';
@@ -16,21 +29,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String address = '';
   String paymentMethod = 'credit_card';
 
-  // Sample order items - in a real app, these would come from your cart
-  final List<Map<String, dynamic>> orderItems = [
-    {'name': 'Product 1', 'quantity': 2, 'price': 25.99},
-    {'name': 'Product 2', 'quantity': 1, 'price': 34.50},
-  ];
+  final _apiClient = ApiClient();
+  final _tokenService = TokenService();
+  late final AuthApiService _authApiService =
+      AuthApiService(_apiClient, _tokenService);
+  late final OrderApiService _orderApiService = OrderApiService(_apiClient);
 
-  double get subtotal => orderItems.fold(
-      0, (sum, item) => sum + (item['quantity'] * item['price']));
-  double get shipping => 5.99;
-  double get total => subtotal + shipping;
-
-  void _submitOrder() {
+  void _submitOrder() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      // Show a more attractive loading indicator
+
+      // Show loading indicator
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -39,26 +48,86 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
       );
 
-      // Simulate processing
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.pop(context); // Close loading dialog
+      try {
+        final registerDto = RegisterForGuestRequestDto(
+          email: email,
+          address: address,
+          fullName: name,
+        );
+
+        final registerRes = await _authApiService.registerForGuest(registerDto);
+        final userId = registerRes.data.id;
+
+        final cartItems =
+            ref.read(cartProvider).where((item) => item.isChecked);
+        final totalPrice = cartItems.fold(
+            0, (sum, item) => sum + (item.quantity * item.price).toInt());
+
+        final createOrderDto = CreateOrderRequestDto(
+            items: cartItems
+                .map((item) => OrderItem(
+                    sku: item.sku!.id,
+                    quantity: item.quantity,
+                    costPrice: item.sku!.costPrice,
+                    sellingPrice: item.price))
+                .toList(),
+            userId: userId,
+            totalPrice: totalPrice,
+            paymentMethod: paymentMethod == 'cod' ? 0 : 1,
+            shippingInfo: ShippingInfo(
+                name: name,
+                email: email,
+                phoneNumber: phoneNumber,
+                address: address));
+
+        // create new order
+        final createOrderRes = await _orderApiService.create(createOrderDto);
+
+        ref
+            .read(cartProvider.notifier)
+            .removeCartItems(cartItems.map((item) => item.sku!.id).toList());
+
+        // Close loading dialog
+        if (context.mounted) {
+          Navigator.pop(context);
+        }
 
         // Show success dialog
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Đặt hàng thành công'),
-            content: const Text(
-                'Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng của bạn ngay lập tức.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Đóng'),
-              ),
-            ],
-          ),
-        );
-      });
+        if (context.mounted) {
+          await showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Đặt hàng thành công'),
+              content: const Text(
+                  'Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng của bạn ngay lập tức.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Đóng'),
+                ),
+              ],
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) Navigator.pop(context); // Close loading on error
+
+        if (context.mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Lỗi'),
+              content: Text('Không thể đặt hàng: $e'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Đóng'),
+                ),
+              ],
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -154,7 +223,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildOrderSummary() {
+  Widget _buildOrderSummary(List<CartItem> cartItems) {
+    final subTotal = cartItems.fold(
+        0, (sum, item) => sum + (item.quantity * item.price).toInt());
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -169,19 +241,93 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                ...orderItems.map((item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
+                ...cartItems.map((item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '${item['name']} x${item['quantity']}',
-                            style: const TextStyle(fontSize: 15),
+                          // Product Image
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: SizedBox(
+                              width: 70,
+                              height: 70,
+                              child: item.product.imageUrl != null
+                                  ? Image.network(
+                                      item.product.imageUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              Container(
+                                        color: Colors.grey.shade200,
+                                        child: const Center(
+                                          child:
+                                              Icon(Icons.image_not_supported),
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      color: Colors.grey.shade200,
+                                      child: const Center(
+                                        child: Icon(Icons.image),
+                                      ),
+                                    ),
+                            ),
                           ),
-                          Text(
-                            '${(item['price'] * item['quantity']).toStringAsFixed(2)}đ',
-                            style: const TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w500),
+                          const SizedBox(width: 12),
+                          // Product Details
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.product.name,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  NumberFormat.currency(
+                                    locale: 'vi_VN',
+                                    symbol: 'đ',
+                                    decimalDigits: 0,
+                                  ).format(item.price),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Số lượng: ${item.quantity}',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Total Price
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                NumberFormat.currency(
+                                  locale: 'vi_VN',
+                                  symbol: 'đ',
+                                  decimalDigits: 0,
+                                ).format(item.price * item.quantity),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -193,7 +339,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Tạm tính'),
-                      Text('${subtotal.toStringAsFixed(2)}đ'),
+                      Text(NumberFormat.currency(
+                              locale: 'vi_VN', symbol: 'đ', decimalDigits: 0)
+                          .format(subTotal)),
                     ],
                   ),
                 ),
@@ -203,7 +351,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Phí vận chuyển'),
-                      Text('${shipping.toStringAsFixed(2)}đ'),
+                      Text(NumberFormat.currency(
+                              locale: 'vi_VN', symbol: 'đ', decimalDigits: 0)
+                          .format(30000)),
                     ],
                   ),
                 ),
@@ -219,7 +369,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       Text(
-                        '${total.toStringAsFixed(2)}đ',
+                        NumberFormat.currency(
+                                locale: 'vi_VN', symbol: 'đ', decimalDigits: 0)
+                            .format(subTotal + 30000),
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -239,6 +391,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Sample order items - in a real app, these would come from your cart
+    final cartItems = ref.watch(cartProvider);
+    final selectedCartItems = cartItems.map((item) => item.isChecked);
+
+    // if (selectedCartItems.isEmpty) {
+    //   context.go(AppRoute.products.path);
+    // }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Thanh toán'),
@@ -319,7 +479,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                 ),
                 _buildPaymentMethodSelector(),
-                _buildOrderSummary(),
+                _buildOrderSummary(cartItems),
                 const SizedBox(height: 32),
                 ElevatedButton(
                   onPressed: _submitOrder,

@@ -39,24 +39,49 @@ class Data {
 }
 
 class Account {
+  final String _id;
   final String avatarUrl;
   final String email;
   final String fullName;
   final String role;
 
   Account({
+    required String id,
     required this.avatarUrl,
     required this.email,
     required this.fullName,
     required this.role,
-  });
+  }) : _id = id;
+
+  String get id => _id;
 
   factory Account.fromJson(Map<String, dynamic> json) {
     return Account(
+      id: json['_id'] as String,
       avatarUrl: json['avatarUrl'] as String,
       email: json['email'] as String,
       fullName: json['fullName'] as String,
       role: json['role'] as String,
+    );
+  }
+}
+
+class RegisterForGuestResponseDto {
+  final int statusCode;
+  final String message;
+  final Account data;
+
+  RegisterForGuestResponseDto({
+    required this.statusCode,
+    required this.message,
+    required this.data,
+  });
+
+  factory RegisterForGuestResponseDto.fromJson(Map<String, dynamic> json) {
+    return RegisterForGuestResponseDto(
+      statusCode: json['statusCode'] as int,
+      message: json['message'] as String,
+      data: Account.fromJson(json['data'] as Map<String, dynamic>),
     );
   }
 }
