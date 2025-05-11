@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/providers/auth_providers.dart';
+import 'package:flutter_ecommerce/screens/admin_home_screen.dart';
 import 'package:flutter_ecommerce/screens/cart_screen.dart';
 import 'package:flutter_ecommerce/screens/change_password_screen.dart';
 import 'package:flutter_ecommerce/screens/edit_profile_screen.dart';
@@ -8,9 +9,11 @@ import 'package:flutter_ecommerce/screens/login_screen.dart';
 import 'package:flutter_ecommerce/screens/manage_address_screen.dart';
 import 'package:flutter_ecommerce/screens/otp_screen.dart';
 import 'package:flutter_ecommerce/screens/product_detail_screen.dart';
+import 'package:flutter_ecommerce/screens/dashboard.dart';
 import 'package:flutter_ecommerce/screens/products_screen.dart';
 import 'package:flutter_ecommerce/screens/profile_screen.dart';
 import 'package:flutter_ecommerce/screens/registration_screen.dart';
+import 'package:flutter_ecommerce/screens/user_managenent_screen.dart';
 import 'package:flutter_ecommerce/widgets/scaffold_with_nav_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -124,6 +127,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: AppRoute.manageAddress.name,
         builder: (context, state) => const ManageAddressScreen(),
       ),
+      GoRoute(
+        path: AppRoute.adminHome.path,
+        name: AppRoute.adminHome.name,
+        builder: (context, state) => const AdminHomeScreen(), 
+      ),
+      GoRoute(
+        path: AppRoute.dashboard.path,
+        name: AppRoute.dashboard.name,
+        builder: (context, state) => const AdminDashboard(),
+      ),
+      GoRoute(
+        path: AppRoute.userManagement.path,
+        name: AppRoute.userManagement.name,
+        builder: (context, state) => const UserManagementScreen(),
+      ),
     ],
     redirect: (context, state) {
       final loggingIn = state.matchedLocation == AppRoute.login.path ||
@@ -134,7 +152,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         AppRoute.products.path,
         AppRoute.productDetail.path,
         AppRoute.profile.path,
-        AppRoute.cart.path
+        AppRoute.cart.path,
+        AppRoute.dashboard.path,
+        AppRoute.adminHome.path
+
       ];
 
       final isPublicPath = publicPaths.any(
@@ -172,7 +193,10 @@ enum AppRoute {
   profile('/profile'),
   changePassword('/change-password'),
   editProfileScreen('/me'),
-  manageAddress('/manage-address');
+  manageAddress('/manage-address'),
+  adminHome('/admin-home'),
+  dashboard('/dashboard'),
+  userManagement('/user-management');
 
   const AppRoute(this.path);
   final String path;
