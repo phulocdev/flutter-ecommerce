@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/screens/dashboard.dart';
+import 'package:flutter_ecommerce/screens/product_management_screen.dart';
 import 'package:flutter_ecommerce/screens/user_managenent_screen.dart';
 import 'package:flutter_ecommerce/widgets/admin_drawer.dart';
 
@@ -15,8 +16,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   final List<Widget> _pages = [
     const AdminDashboard(),
-    const UserManagementScreen(), 
-    const Placeholder(), // Product Management
+    const UserManagementScreen(),
+    const ProductManagementScreen(), // Product Management
     const Placeholder(), // Order Management
     const Placeholder(), // Coupon Management
     const Placeholder(), // Customer Support
@@ -44,13 +45,20 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   String _getAppBarTitle(int index) {
     switch (index) {
-      case 0: return 'Dashboard';
-      case 1: return 'User Management';
-      case 2: return 'Product Management';
-      case 3: return 'Order Management';
-      case 4: return 'Coupon Management';
-      case 5: return 'Customer Support';
-      default: return 'Admin Panel';
+      case 0:
+        return 'Dashboard';
+      case 1:
+        return 'User Management';
+      case 2:
+        return 'Product Management';
+      case 3:
+        return 'Order Management';
+      case 4:
+        return 'Coupon Management';
+      case 5:
+        return 'Customer Support';
+      default:
+        return 'Admin Panel';
     }
   }
 }

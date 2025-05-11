@@ -30,7 +30,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
           const BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
-            label: 'Home',
+            label: 'Sản phẩm',
           ),
           BottomNavigationBarItem(
             icon: Badge(

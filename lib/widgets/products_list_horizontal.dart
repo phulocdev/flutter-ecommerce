@@ -28,7 +28,8 @@ class ProductsListHorizontal extends StatelessWidget {
     return SizedBox(
       height: listHeight,
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
+        padding: const EdgeInsets.symmetric(
+            horizontal: horizontalPadding, vertical: 2),
         scrollDirection: Axis.horizontal,
         itemCount: products.length,
         itemBuilder: (context, index) {

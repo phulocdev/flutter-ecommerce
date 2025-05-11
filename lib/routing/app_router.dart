@@ -9,6 +9,7 @@ import 'package:flutter_ecommerce/screens/forgot_password_screen.dart';
 import 'package:flutter_ecommerce/screens/login_screen.dart';
 import 'package:flutter_ecommerce/screens/manage_address_screen.dart';
 import 'package:flutter_ecommerce/screens/otp_screen.dart';
+import 'package:flutter_ecommerce/screens/payment_success.dart';
 import 'package:flutter_ecommerce/screens/product_detail_screen.dart';
 import 'package:flutter_ecommerce/screens/dashboard.dart';
 import 'package:flutter_ecommerce/screens/products_screen.dart';
@@ -147,6 +148,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: AppRoute.userManagement.name,
         builder: (context, state) => const UserManagementScreen(),
       ),
+      GoRoute(
+          path: (AppRoute.paymentSuccess.path),
+          name: AppRoute.paymentSuccess.name,
+          builder: (context, state) => const PaymentSuccessScreen())
     ],
     redirect: (context, state) {
       final loggingIn = state.matchedLocation == AppRoute.login.path ||
@@ -159,8 +164,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         AppRoute.profile.path,
         AppRoute.cart.path,
         AppRoute.checkout.path,
+        // Test UI - Remove them when complete
         AppRoute.dashboard.path,
-        AppRoute.adminHome.path
+        AppRoute.adminHome.path,
+        AppRoute.paymentSuccess.path
       ];
 
       final isPublicPath = publicPaths.any(
@@ -200,7 +207,8 @@ enum AppRoute {
   manageAddress('/manage-address'),
   adminHome('/admin-home'),
   dashboard('/dashboard'),
-  userManagement('/user-management');
+  userManagement('/user-management'),
+  paymentSuccess('/payment-success');
 
   const AppRoute(this.path);
   final String path;

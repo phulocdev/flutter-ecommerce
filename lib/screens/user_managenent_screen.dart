@@ -118,7 +118,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       context,
                       title: 'New Today',
                       value: _users
-                          .where((user) => user.createdAt != null &&
+                          .where((user) =>
+                              user.createdAt != null &&
                               user.createdAt!.day == DateTime.now().day)
                           .length,
                       icon: Icons.new_releases,
@@ -201,7 +202,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       UserManagementTable(
                         users: _users,
                         onDelete: _deleteUser,
-                        onEdit: _updateUser, onToggleAdmin: (String userId) {  },
+                        onEdit: _updateUser,
+                        // onToggleAdmin: (String userId) {},
                       ),
                       const SizedBox(height: 16),
                       // Pagination and Summary

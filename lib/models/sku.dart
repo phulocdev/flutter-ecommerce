@@ -41,7 +41,7 @@ class Sku {
         costPrice: (json['costPrice'] as num).toDouble(),
         sellingPrice: (json['sellingPrice'] as num).toDouble(),
         stockOnHand: json['stockOnHand'],
-        imageUrl: json['imageUrl'],
+        imageUrl: json['imageUrl']?.toString() ?? '',
         createdAt: DateTime.parse(json['createdAt']),
         updatedAt: DateTime.parse(json['updatedAt']),
         attributes: json['attributes'] != null
@@ -52,6 +52,7 @@ class Sku {
       );
 
   Map<String, dynamic> toJson() => {
+        '_id': _id,
         'sku': sku,
         'barcode': barcode,
         'costPrice': costPrice,

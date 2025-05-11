@@ -53,8 +53,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
 
     try {
       final response = await _authApiService.register(registerDto);
-      final registerResponse = response;
-      final data = registerResponse.data;
+      final data = response.data;
 
       await _tokenService.saveTokens(data.accessToken, data.refreshToken);
       await _tokenService.saveUser(
@@ -76,9 +75,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
       if (mounted) {
         if (e.statusCode == 422 && e.errors != null && e.errors!.isNotEmpty) {
           final fieldError = e.errors!.firstWhere(
-            (err) {
-              return err['field'] == 'email';
-            },
+            (err) => err['field'] == 'email',
             orElse: () => {},
           );
           setState(() {
@@ -86,14 +83,14 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Registration Failed: ${e.message}')),
+            SnackBar(content: Text('Đăng ký thất bại: ${e.message}')),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An unexpected error occurred: $e')),
+          SnackBar(content: Text('Đã xảy ra lỗi: $e')),
         );
       }
     } finally {
@@ -111,10 +108,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
       appBar: AppBar(
         foregroundColor: Colors.white,
         title: const Text(
-          'Register',
+          'Đăng ký',
           style: TextStyle(
               color: Colors.white, fontWeight: FontWeight.w500, fontSize: 24),
-          textAlign: TextAlign.center,
         ),
         backgroundColor: Colors.blue,
       ),
@@ -128,7 +124,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    'Create Account',
+                    'Tạo tài khoản',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
@@ -155,9 +151,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     onSaved: (value) => _email = value,
                     validator: (value) {
                       if (value == null || value.isEmpty)
-                        return 'Please enter your email';
+                        return 'Vui lòng nhập email';
                       if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                        return 'Please enter a valid email address';
+                        return 'Email không hợp lệ';
                       }
                       return null;
                     },
@@ -165,7 +161,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     decoration: InputDecoration(
-                      labelText: 'Full name',
+                      labelText: 'Họ và tên',
                       prefixIcon: const Icon(Icons.person),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0)),
@@ -184,10 +180,10 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     onSaved: (value) => _fullName = value,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your full name';
+                        return 'Vui lòng nhập họ tên';
                       }
                       if (value.length < 8) {
-                        return 'Please enter at least 8 characters';
+                        return 'Họ tên phải có ít nhất 8 ký tự';
                       }
                       return null;
                     },
@@ -195,7 +191,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     decoration: InputDecoration(
-                      labelText: 'Address',
+                      labelText: 'Địa chỉ',
                       prefixIcon: const Icon(Icons.location_on),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0)),
@@ -214,10 +210,10 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your address';
+                        return 'Vui lòng nhập địa chỉ';
                       }
                       if (value.length < 8) {
-                        return 'Please enter at least 8 characters';
+                        return 'Địa chỉ phải có ít nhất 8 ký tự';
                       }
                       return null;
                     },
@@ -225,7 +221,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     decoration: InputDecoration(
-                      labelText: 'Password',
+                      labelText: 'Mật khẩu',
                       prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
                         onPressed: _toggleShowPassword,
@@ -250,9 +246,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     onSaved: (value) => _password = value,
                     validator: (value) {
                       if (value == null || value.isEmpty)
-                        return 'Please enter your password';
+                        return 'Vui lòng nhập mật khẩu';
                       if (value.length < 8)
-                        return 'Password must be at least 8 characters';
+                        return 'Mật khẩu phải có ít nhất 8 ký tự';
                       return null;
                     },
                   ),
@@ -276,7 +272,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Text(
-                          'Sign Up',
+                          'Đăng ký',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w500),
                         ),
@@ -305,12 +301,12 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Already have an account?'),
+                      const Text('Bạn đã có tài khoản?'),
                       TextButton(
                         onPressed: () {
                           context.go(AppRoute.login.path);
                         },
-                        child: const Text('Log in'),
+                        child: const Text('Đăng nhập'),
                       ),
                     ],
                   ),
