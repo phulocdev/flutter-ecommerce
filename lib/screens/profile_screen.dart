@@ -98,12 +98,12 @@ class ProfileScreen extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.lock),
               title: const Text('Thay đổi mật khẩu'),
-              onTap: () => context.push(AppRoute.changePassword.path),
+              onTap: () => context.go(AppRoute.changePassword.path),
             ),
             ListTile(
               leading: const Icon(Icons.location_on),
               title: const Text('Quản lý địa chỉ giao hàng'),
-              onTap: () => context.push(AppRoute.manageAddress.path),
+              onTap: () => context.go(AppRoute.manageAddress.path),
             ),
             ListTile(
               leading: const Icon(Icons.exit_to_app),
@@ -114,12 +114,12 @@ class ProfileScreen extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.login),
               title: const Text('Đăng nhập'),
-              onTap: () => context.push(AppRoute.login.path),
+              onTap: () => context.go(AppRoute.login.path),
             ),
             ListTile(
               leading: const Icon(Icons.person_add),
               title: const Text('Đăng ký'),
-              onTap: () => context.push(AppRoute.register.path),
+              onTap: () => context.go(AppRoute.register.path),
             ),
           ],
         ],

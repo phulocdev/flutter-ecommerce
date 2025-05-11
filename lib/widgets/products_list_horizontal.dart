@@ -13,38 +13,36 @@ class ProductsListHorizontal extends StatelessWidget {
   });
 
   void _navigateToProductDetail(BuildContext context, Product product) {
-    context.pushNamed(
-      AppRoute.productDetail.name,
-      pathParameters: {'id': product.id},
+    context.go(
+      '${AppRoute.products.path}/${product.id}', // Chú ý dấu '/' ở giữa
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    const double cardWidth = 150.0;
-    const double listHeight = 240.0;
-    const double horizontalPadding = 12.0;
-    const double itemSpacing = 10.0;
+    const double cardWidth = 160.0;
+    const double listHeight = 260.0;
+    const double horizontalPadding = 16.0;
+    const double itemSpacing = 16.0;
 
     return SizedBox(
       height: listHeight,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(
-            horizontal: horizontalPadding, vertical: 3),
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
         scrollDirection: Axis.horizontal,
         itemCount: products.length,
         itemBuilder: (context, index) {
           final product = products[index];
-          return SizedBox(
+          return Container(
             width: cardWidth,
+            margin: EdgeInsets.only(
+                right: index == products.length - 1 ? 0 : itemSpacing),
             child: ProductCard(
               product: product,
               onTap: () => _navigateToProductDetail(context, product),
             ),
           );
         },
-        separatorBuilder: (context, index) =>
-            const SizedBox(width: itemSpacing),
       ),
     );
   }

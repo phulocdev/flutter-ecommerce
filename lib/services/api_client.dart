@@ -57,7 +57,7 @@ class ApiClient {
       customHeaders: customHeaders,
     );
 
-    print('Mã trạng thái phản hồi: ${response.statusCode} cho $method $path');
+    // print('Mã trạng thái phản hồi: ${response.statusCode} cho $method $path');
 
     if (response.statusCode == 401) {
       if (!_isRefreshing) {
@@ -67,7 +67,7 @@ class ApiClient {
           _isRefreshing = false;
 
           if (refreshed) {
-            print('Thử lại request: $method $path');
+            // print('Thử lại request: $method $path');
             response = await _sendRequest(
               method: method,
               path: path,
@@ -108,7 +108,7 @@ class ApiClient {
 
   dynamic _handleResponse(http.Response response) {
     final String responseBody = response.body;
-    print('Nội dung phản hồi: $responseBody');
+    // print('Nội dung phản hồi: $responseBody');
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       if (responseBody.isNotEmpty) {

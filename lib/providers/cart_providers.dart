@@ -33,7 +33,7 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
 
   CartItem addCartItem(CartItem newItem) {
     final existingItemIndex =
-        state.indexWhere((item) => item.product.id == newItem.product.id);
+        state.indexWhere((item) => item.sku?.id == newItem.sku?.id);
 
     if (existingItemIndex > -1) {
       final existingItem = state[existingItemIndex];
@@ -71,9 +71,12 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
     state = state.where((item) => item.id != cartItemId).toList();
   }
 
-  void toggleSelectCartItem(String productId) {
-    final cartItemIndex =
-        state.indexWhere((item) => item.product.id == productId);
+  void removeCartItems(List<String> cartItemIds) {
+    state = state.where((item) => !cartItemIds.contains(item.id)).toList();
+  }
+
+  void toggleSelectCartItem(String skuId) {
+    final cartItemIndex = state.indexWhere((item) => item.sku?.id == skuId);
 
     if (cartItemIndex < 0) {
       return;

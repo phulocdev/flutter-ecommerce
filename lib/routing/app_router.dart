@@ -3,6 +3,7 @@ import 'package:flutter_ecommerce/providers/auth_providers.dart';
 import 'package:flutter_ecommerce/screens/admin_home_screen.dart';
 import 'package:flutter_ecommerce/screens/cart_screen.dart';
 import 'package:flutter_ecommerce/screens/change_password_screen.dart';
+import 'package:flutter_ecommerce/screens/checkout_screen.dart';
 import 'package:flutter_ecommerce/screens/edit_profile_screen.dart';
 import 'package:flutter_ecommerce/screens/forgot_password_screen.dart';
 import 'package:flutter_ecommerce/screens/login_screen.dart';
@@ -52,11 +53,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 ),
                 routes: [
                   GoRoute(
-                    path: AppRoute.productDetail.path,
+                    path: AppRoute.productDetail.path, // 'detail/:id'
                     name: AppRoute.productDetail.name,
                     builder: (context, state) {
-                      final productId = state.pathParameters[
-                          'id']!; // Get the _id from pathParameters
+                      final productId = state.pathParameters['id']!;
                       return ProductDetailScreen(productId: productId);
                     },
                   ),
@@ -103,6 +103,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const RegistrationScreen(),
       ),
       GoRoute(
+        path: AppRoute.checkout.path,
+        name: AppRoute.checkout.name,
+        builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
         path: AppRoute.forgotPassword.path,
         name: AppRoute.forgotPassword.name,
         builder: (context, state) => const ForgotPasswordScreen(),
@@ -130,7 +135,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoute.adminHome.path,
         name: AppRoute.adminHome.name,
-        builder: (context, state) => const AdminHomeScreen(), 
+        builder: (context, state) => const AdminHomeScreen(),
       ),
       GoRoute(
         path: AppRoute.dashboard.path,
@@ -153,21 +158,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         AppRoute.productDetail.path,
         AppRoute.profile.path,
         AppRoute.cart.path,
+        AppRoute.checkout.path,
         AppRoute.dashboard.path,
         AppRoute.adminHome.path
-
       ];
 
       final isPublicPath = publicPaths.any(
         (path) => state.matchedLocation.startsWith(path),
       );
 
-      // Chưa đăng nhập và đang truy cập vào trang KHÔNG public, KHÔNG login
       if (!isLoggedIn && !loggingIn && !isPublicPath) {
         return AppRoute.login.path;
       }
 
-      // Đã đăng nhập mà lại vào trang login/register/forgot => redirect về trang chính
       if (isLoggedIn && loggingIn) {
         return AppRoute.products.path;
       }
@@ -188,7 +191,8 @@ enum AppRoute {
   forgotPassword('/forgot-password'),
   otp('/otp'),
   products('/products'),
-  productDetail('products/:id'),
+  productDetail(':id'),
+  checkout('/checkout'),
   cart('/cart'),
   profile('/profile'),
   changePassword('/change-password'),

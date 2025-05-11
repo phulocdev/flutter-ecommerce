@@ -1,4 +1,5 @@
 import 'package:flutter_ecommerce/models/product.dart';
+import 'package:flutter_ecommerce/models/sku.dart';
 
 class CartItem {
   final String id;
@@ -6,6 +7,7 @@ class CartItem {
   final double price;
   final bool isChecked;
   final Product product;
+  final Sku? sku;
 
   CartItem({
     required this.id,
@@ -13,6 +15,7 @@ class CartItem {
     required this.price,
     this.isChecked = false,
     required this.product,
+    required this.sku,
   });
 
   CartItem copyWith({
@@ -21,6 +24,7 @@ class CartItem {
     double? price,
     bool? isChecked,
     Product? product,
+    Sku? sku,
   }) {
     return CartItem(
       id: id ?? this.id,
@@ -28,6 +32,7 @@ class CartItem {
       price: price ?? this.price,
       isChecked: isChecked ?? this.isChecked,
       product: product ?? this.product,
+      sku: sku ?? this.sku,
     );
   }
 
@@ -45,5 +50,6 @@ class CartItem {
         price: json['price'],
         product: Product.fromJson(json['product']),
         isChecked: json['isChecked'] ?? false,
+        sku: null,
       );
 }
