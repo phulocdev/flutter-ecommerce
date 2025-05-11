@@ -57,26 +57,38 @@ class ProfileScreen extends ConsumerWidget {
     final user = ref.watch(authProvider);
     final isAuthenticated = user != null;
 
+<<<<<<< HEAD
+=======
+    print(">>>>> ${isAuthenticated}");
+
+>>>>>>> restore-phanthihuyen
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'Hồ sơ cá nhân',
           style: TextStyle(
-              color: Colors.white, fontSize: 24, fontWeight: FontWeight.w500),
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         backgroundColor: Colors.blue,
       ),
       body: ListView(
         children: [
           UserAccountsDrawerHeader(
-            accountName: Text(isAuthenticated ? user.fullName : 'Khách'),
-            accountEmail:
-                Text(isAuthenticated ? user.email : 'Vui lòng đăng nhập'),
+            accountName: Text(
+              isAuthenticated ? user.fullName : 'Nguyen van A',
+            ),
+            accountEmail: Text(
+              isAuthenticated ? user.email : 'Nguyen van A.com',
+            ),
             decoration: const BoxDecoration(color: Colors.blue),
             currentAccountPicture: const CircleAvatar(
               backgroundImage: AssetImage('assets/images/avt.png'),
             ),
           ),
+
           if (isAuthenticated) ...[
             ListTile(
               leading: const Icon(Icons.person),
@@ -109,7 +121,7 @@ class ProfileScreen extends ConsumerWidget {
               title: const Text('Đăng ký'),
               onTap: () => context.go(AppRoute.register.path),
             ),
-          ]
+          ],
         ],
       ),
     );
