@@ -17,6 +17,7 @@ import 'package:flutter_ecommerce/screens/profile_screen.dart';
 import 'package:flutter_ecommerce/screens/registration_screen.dart';
 import 'package:flutter_ecommerce/screens/user_managenent_screen.dart';
 import 'package:flutter_ecommerce/widgets/scaffold_with_nav_bar.dart';
+import 'package:flutter_ecommerce/screens/admin_dashboard_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -151,7 +152,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
           path: (AppRoute.paymentSuccess.path),
           name: AppRoute.paymentSuccess.name,
-          builder: (context, state) => const PaymentSuccessScreen())
+          builder: (context, state) => const PaymentSuccessScreen()),
+      GoRoute(
+        path: '/admin',
+        name: 'admin',
+        builder: (context, state) => const AdminDashboardScreen(),
+      ),
+
     ],
     redirect: (context, state) {
       final loggingIn = state.matchedLocation == AppRoute.login.path ||
@@ -167,7 +174,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         // Test UI - Remove them when complete
         AppRoute.dashboard.path,
         AppRoute.adminHome.path,
-        AppRoute.paymentSuccess.path
+        AppRoute.paymentSuccess.path,
+        '/admin'
       ];
 
       final isPublicPath = publicPaths.any(
