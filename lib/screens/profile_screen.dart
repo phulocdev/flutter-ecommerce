@@ -85,6 +85,11 @@ class ProfileScreen extends ConsumerWidget {
           ),
           if (isAuthenticated) ...[
             ListTile(
+              leading: const Icon(Icons.location_on),
+              title: const Text('Quản lý cửa hàng'),
+              onTap: () => context.go(AppRoute.adminHome.path),
+            ),
+            ListTile(
               leading: const Icon(Icons.person),
               title: const Text('Chỉnh sửa thông tin cá nhân'),
               onTap: () => context.push(AppRoute.editProfileScreen.path),
