@@ -85,30 +85,31 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
         ref
             .read(cartProvider.notifier)
-            .removeCartItems(cartItems.map((item) => item.sku!.id).toList());
+            .removeCartItems(cartItems.map((item) => item.id).toList());
 
         // Close loading dialog
         if (context.mounted) {
           Navigator.pop(context);
         }
 
-        // Show success dialog
-        if (context.mounted) {
-          await showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Đặt hàng thành công'),
-              content: const Text(
-                  'Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng của bạn ngay lập tức.'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Đóng'),
-                ),
-              ],
-            ),
-          );
-        }
+        context.pushReplacement(AppRoute.paymentSuccess.path);
+        // // Show success dialog
+        // if (context.mounted) {
+        //   await showDialog(
+        //     context: context,
+        //     builder: (context) => AlertDialog(
+        //       title: const Text('Đặt hàng thành công'),
+        //       content: const Text(
+        //           'Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng của bạn ngay lập tức.'),
+        //       actions: [
+        //         TextButton(
+        //           onPressed: () => Navigator.pop(context),
+        //           child: const Text('Đóng'),
+        //         ),
+        //       ],
+        //     ),
+        //   );
+        // }
       } catch (e) {
         if (context.mounted) Navigator.pop(context); // Close loading on error
 
@@ -393,11 +394,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Widget build(BuildContext context) {
     // Sample order items - in a real app, these would come from your cart
     final cartItems = ref.watch(cartProvider);
-    final selectedCartItems = cartItems.map((item) => item.isChecked);
-
-    // if (selectedCartItems.isEmpty) {
-    //   context.go(AppRoute.products.path);
-    // }
+    final selectedCartItems =
+        cartItems.where((item) => item.isChecked).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -479,7 +477,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   ),
                 ),
                 _buildPaymentMethodSelector(),
-                _buildOrderSummary(cartItems),
+                _buildOrderSummary(selectedCartItems),
                 const SizedBox(height: 32),
                 ElevatedButton(
                   onPressed: _submitOrder,

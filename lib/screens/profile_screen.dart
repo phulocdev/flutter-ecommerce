@@ -57,11 +57,6 @@ class ProfileScreen extends ConsumerWidget {
     final user = ref.watch(authProvider);
     final isAuthenticated = user != null;
 
-<<<<<<< HEAD
-=======
-    print(">>>>> ${isAuthenticated}");
-
->>>>>>> restore-phanthihuyen
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -88,7 +83,6 @@ class ProfileScreen extends ConsumerWidget {
               backgroundImage: AssetImage('assets/images/avt.png'),
             ),
           ),
-
           if (isAuthenticated) ...[
             ListTile(
               leading: const Icon(Icons.person),

@@ -45,6 +45,10 @@ dependencies:
   go_router: ^13.2.0
   image_picker: ^1.1.2
   shimmer: ^3.0.0
+  lottie: ^3.3.1
+  fluttertoast: ^8.2.2
+  cached_network_image: ^3.4.1
+  fl_chart: ^0.71.0
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +79,7 @@ flutter:
   assets:
     - .env
     - assets/images/avt.png
+    - assets/images/empty_products.webp
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

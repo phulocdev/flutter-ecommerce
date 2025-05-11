@@ -30,7 +30,7 @@ class Category {
         id: json['_id'] as String,
         name: json['name'] as String,
         parentCategory: json['parentCategory'] as String?,
-        imageUrl: json['imageUrl'] as String,
+        imageUrl: json['imageUrl']?.toString() ?? '',
         createdAt: json['createdAt'] != null
             ? DateTime.parse(json['createdAt'])
             : DateTime.fromMillisecondsSinceEpoch(0),

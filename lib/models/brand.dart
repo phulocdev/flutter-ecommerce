@@ -21,7 +21,7 @@ class Brand {
         id: json['_id'] as String,
         name: json['name'] as String,
         countryOfOrigin: json['countryOfOrigin'] as String?,
-        imageUrl: json['imageUrl'] as String,
+        imageUrl: json['imageUrl']?.toString() ?? '',
         createdAt: DateTime.parse(json['createdAt']),
         updatedAt: DateTime.parse(json['updatedAt']),
       );

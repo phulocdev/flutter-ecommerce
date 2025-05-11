@@ -44,34 +44,51 @@ class Product {
     return formatter.format(basePrice);
   }
 
-  factory Product.fromJson(Map<String, dynamic> json) => Product(
-        id: json['_id'] as String,
-        code: json['code'] as String,
-        name: json['name'] as String,
-        description: json['description'] as String,
-        imageUrl: json['imageUrl'] as String,
-        category: json['category'] is Map<String, dynamic>
-            ? Category.fromJson(json['category'])
-            : null,
-        brand: json['brand'] is Map<String, dynamic>
-            ? Brand.fromJson(json['brand'])
-            : null,
-        status: json['status'] as String,
-        basePrice: (json['basePrice'] as num).toDouble(),
-        createdAt: DateTime.parse(json['createdAt']),
-        updatedAt: DateTime.parse(json['updatedAt']),
-        views: json['views'] as int,
-        skus: json['skus'] != null
-            ? (json['skus'] as List<dynamic>)
-                .map((e) => Sku.fromJson(e))
-                .toList()
-            : null,
-        // attributeOptions: json['attributeOptions'] != null
-        //     ? (json['attributeOptions'] as List<dynamic>)
-        //         .map((e) => AttributeOption.fromJson(e))
-        //         .toList()
-        //     : null,
+  factory Product.fromJson(Map<String, dynamic> json) {
+    try {
+      final id = json['_id'] as String;
+      final code = json['code'] as String;
+      final name = json['name'] as String;
+      final description = json['description'] as String;
+      final imageUrl = json['imageUrl'] as String;
+      final category = json['category'] is Map<String, dynamic>
+          ? Category.fromJson(json['category'])
+          : null;
+      final brand = json['brand'] is Map<String, dynamic>
+          ? Brand.fromJson(json['brand'])
+          : null;
+      final status = json['status'] as String;
+      final basePrice = (json['basePrice'] as num).toDouble();
+      final createdAt = DateTime.parse(json['createdAt']);
+      final updatedAt = DateTime.parse(json['updatedAt']);
+      final views = json['views'] as int;
+      final skus = json['skus'] != null
+          ? (json['skus'] as List<dynamic>).map((e) => Sku.fromJson(e)).toList()
+          : null;
+
+      return Product(
+        id: id,
+        code: code,
+        name: name,
+        description: description,
+        imageUrl: imageUrl,
+        category: category,
+        brand: brand,
+        status: status,
+        basePrice: basePrice,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        views: views,
+        skus: skus,
       );
+    } catch (e, stackTrace) {
+      print('❌ Failed to parse Product.fromJson');
+      print('🔎 JSON: $json');
+      print('⚠️ Error: $e');
+      print('🧱 Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
 
   Map<String, dynamic> toJson() => {
         '_id': _id,

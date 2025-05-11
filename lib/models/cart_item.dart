@@ -40,16 +40,48 @@ class CartItem {
         'id': id,
         'quantity': quantity,
         'price': price,
-        'product': product.toJson(), // đảm bảo Product cũng có toJson
         'isChecked': isChecked,
+        'product': product.toJson(),
+        'sku': sku?.toJson(), // Handle nullable sku
       };
 
-  factory CartItem.fromJson(Map<String, dynamic> json) => CartItem(
-        id: json['id'],
-        quantity: json['quantity'],
-        price: json['price'],
-        product: Product.fromJson(json['product']),
-        isChecked: json['isChecked'] ?? false,
-        sku: null,
+  factory CartItem.fromJson(Map<String, dynamic> json) {
+    try {
+      return CartItem(
+        id: json['id'] as String,
+        quantity: json['quantity'] as int,
+        price: (json['price'] is int)
+            ? (json['price'] as int).toDouble()
+            : json['price'] as double,
+        isChecked: json['isChecked'] as bool? ?? false,
+        product: Product.fromJson(json['product'] as Map<String, dynamic>),
+        sku: json['sku'] != null
+            ? Sku.fromJson(json['sku'] as Map<String, dynamic>)
+            : null,
       );
+    } catch (e) {
+      print('Error parsing CartItem: $e');
+      print('Json data: $json');
+      // Try to identify which part is causing the issue
+      if (json['product'] != null) {
+        try {
+          print('Testing product parsing...');
+          Product.fromJson(json['product'] as Map<String, dynamic>);
+          print('Product parsing succeeded');
+        } catch (productError) {
+          print('Error in product parsing: $productError');
+        }
+      }
+      if (json['sku'] != null) {
+        try {
+          print('Testing sku parsing...');
+          Sku.fromJson(json['sku'] as Map<String, dynamic>);
+          print('Sku parsing succeeded');
+        } catch (skuError) {
+          print('Error in sku parsing: $skuError');
+        }
+      }
+      rethrow;
+    }
+  }
 }

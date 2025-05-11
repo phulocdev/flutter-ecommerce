@@ -14,6 +14,7 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
 
   Future<void> _loadCart() async {
     final jsonString = await _secureStorage.read(key: _cartKey);
+    print(jsonString);
     if (jsonString != null) {
       final List<dynamic> decoded = jsonDecode(jsonString);
       state = decoded.map((e) => CartItem.fromJson(e)).toList();

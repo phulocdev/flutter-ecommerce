@@ -1,19 +1,19 @@
 import 'package:flutter_ecommerce/models/sku_item.dart';
 
-class CartItem {
+class CartItemV2 {
   final SkuItem sku;
   final int quantity;
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  const CartItem({
+  const CartItemV2({
     required this.sku,
     required this.quantity,
     required this.createdAt,
     required this.updatedAt,
   });
 
-  factory CartItem.fromJson(Map<String, dynamic> json) => CartItem(
+  factory CartItemV2.fromJson(Map<String, dynamic> json) => CartItemV2(
         sku: SkuItem.fromJson(json['sku']),
         quantity: json['quantity'],
         createdAt: DateTime.parse(json['createdAt']),
