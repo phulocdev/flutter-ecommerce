@@ -1,7 +1,7 @@
 import 'package:flutter_ecommerce/models/dto/create_sku_dto.dart';
+import 'package:intl/intl.dart';
 
-class Product {
-  final String id;
+class CreateProductDto {
   final String name;
   final String description;
   final String category;
@@ -10,11 +10,10 @@ class Product {
   final int minStockLevel;
   final int maxStockLevel;
   final List<String>? attributeNames;
-  final List<Sku>? skus;
+  final List<CreateSkuDto>? skus;
   final String? imageUrl;
 
-  Product({
-    required this.id,
+  CreateProductDto({
     required this.name,
     required this.description,
     required this.category,
@@ -27,8 +26,7 @@ class Product {
     this.imageUrl,
   });
 
-  Product copyWith({
-    String? id,
+  CreateProductDto copyWith({
     String? name,
     String? description,
     String? category,
@@ -37,11 +35,10 @@ class Product {
     int? minStockLevel,
     int? maxStockLevel,
     List<String>? attributeNames,
-    List<Sku>? skus,
+    List<CreateSkuDto>? skus,
     String? imageUrl,
   }) {
-    return Product(
-      id: id ?? this.id,
+    return CreateProductDto(
       name: name ?? this.name,
       description: description ?? this.description,
       category: category ?? this.category,
@@ -55,5 +52,24 @@ class Product {
     );
   }
 
-  String get formattedPrice => '\$${basePrice.toStringAsFixed(2)}';
+  String get formattedPrice {
+    final formatter =
+        NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
+    return formatter.format(basePrice);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+      'category': category,
+      'brand': brand,
+      'basePrice': basePrice,
+      'minStockLevel': minStockLevel,
+      'maxStockLevel': maxStockLevel,
+      'attributeNames': attributeNames,
+      'skus': skus?.map((sku) => sku.toJson()).toList(),
+      'imageUrl': imageUrl,
+    };
+  }
 }

@@ -13,6 +13,8 @@ class Product {
   final Brand? brand;
   final String status;
   final double basePrice;
+  final int minStockLevel;
+  final int maxStockLevel;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int views;
@@ -28,6 +30,8 @@ class Product {
     this.category,
     this.brand,
     required this.status,
+    required this.minStockLevel,
+    required this.maxStockLevel,
     required this.basePrice,
     required this.createdAt,
     required this.updatedAt,
@@ -59,6 +63,8 @@ class Product {
           : null;
       final status = json['status'] as String;
       final basePrice = (json['basePrice'] as num).toDouble();
+      final minStockLevel = (json['minStockLevel'] as num).toInt();
+      final maxStockLevel = (json['maxStockLevel'] as num).toInt();
       final createdAt = DateTime.parse(json['createdAt']);
       final updatedAt = DateTime.parse(json['updatedAt']);
       final views = json['views'] as int;
@@ -75,6 +81,8 @@ class Product {
         category: category,
         brand: brand,
         status: status,
+        minStockLevel: minStockLevel,
+        maxStockLevel: maxStockLevel,
         basePrice: basePrice,
         createdAt: createdAt,
         updatedAt: updatedAt,
@@ -100,6 +108,8 @@ class Product {
         'brand': brand?.toJson(),
         'status': status,
         'basePrice': basePrice,
+        'minStockLevel': minStockLevel,
+        'maxStockLevel': maxStockLevel,
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),
         'views': views,

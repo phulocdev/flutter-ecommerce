@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AdminDrawer extends StatelessWidget {
-  final int selectedIndex;
+  final int? selectedIndex;
   final Function(int) onItemTapped;
 
   const AdminDrawer({

@@ -1,3 +1,4 @@
+import 'package:flutter_ecommerce/models/dto/create_product_dto.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 
@@ -49,6 +50,18 @@ class ProductApiService {
       }
     } catch (e) {
       print('Error fetching products: $e');
+      rethrow;
+    }
+  }
+
+  Future create(CreateProductDto dto) async {
+    try {
+      final response = await _apiClient.post('/products', body: dto.toJson());
+      return response;
+    } on ApiException catch (e) {
+      rethrow;
+    } catch (e) {
+      print("Lỗi không xác định: $e");
       rethrow;
     }
   }

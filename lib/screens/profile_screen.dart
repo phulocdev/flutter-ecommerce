@@ -73,10 +73,10 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           UserAccountsDrawerHeader(
             accountName: Text(
-              isAuthenticated ? user.fullName : 'Nguyen van A',
+              isAuthenticated ? user.fullName : 'Khách vãng lai',
             ),
             accountEmail: Text(
-              isAuthenticated ? user.email : 'Nguyen van A.com',
+              isAuthenticated ? user.email : 'Vui lòng đăng nhập',
             ),
             decoration: const BoxDecoration(color: Colors.blue),
             currentAccountPicture: const CircleAvatar(
