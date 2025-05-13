@@ -1,7 +1,6 @@
 class Brand {
   final String _id;
   final String name;
-  final String? countryOfOrigin;
   final String imageUrl;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -9,7 +8,6 @@ class Brand {
   const Brand({
     required String id,
     required this.name,
-    this.countryOfOrigin,
     required this.imageUrl,
     required this.createdAt,
     required this.updatedAt,
@@ -20,15 +18,18 @@ class Brand {
   factory Brand.fromJson(Map<String, dynamic> json) => Brand(
         id: json['_id'] as String,
         name: json['name'] as String,
-        countryOfOrigin: json['countryOfOrigin'] as String?,
         imageUrl: json['imageUrl']?.toString() ?? '',
-        createdAt: DateTime.parse(json['createdAt']),
-        updatedAt: DateTime.parse(json['updatedAt']),
+        createdAt: json['createdAt'] != null
+            ? DateTime.parse(json['createdAt'])
+            : DateTime.fromMillisecondsSinceEpoch(0),
+        updatedAt: json['updatedAt'] != null
+            ? DateTime.parse(json['updatedAt'])
+            : DateTime.fromMillisecondsSinceEpoch(0),
       );
 
   Map<String, dynamic> toJson() => {
+        '_id': _id,
         'name': name,
-        'countryOfOrigin': countryOfOrigin,
         'imageUrl': imageUrl,
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),

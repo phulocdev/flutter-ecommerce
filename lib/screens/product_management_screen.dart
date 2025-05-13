@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce/apis/category_api_service.dart';
+import 'package:flutter_ecommerce/apis/product_api_service.dart';
+import 'package:flutter_ecommerce/models/category.dart';
 import 'package:flutter_ecommerce/models/dto/create_product_dto.dart';
+import 'package:flutter_ecommerce/models/product.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/widgets/product_form.dart';
+import 'package:flutter_ecommerce/widgets/product_management_table.dart';
 import 'package:flutter_ecommerce/widgets/responsive_builder.dart';
+import 'package:go_router/go_router.dart';
 
 class ProductManagementScreen extends StatefulWidget {
   const ProductManagementScreen({super.key});
@@ -12,7 +20,9 @@ class ProductManagementScreen extends StatefulWidget {
 }
 
 class _ProductManagementScreenState extends State<ProductManagementScreen> {
-  final List<Product> _products = [];
+  late List<Product> _productList = [];
+  late List<Category> _categoryList = [];
+
   bool _isLoading = false;
   String _searchQuery = '';
   String? _selectedCategory;
@@ -20,16 +30,31 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProducts();
+    _loadProductsAndCategories();
   }
 
-  Future<void> _loadProducts() async {
+  Future<void> _loadProductsAndCategories() async {
     setState(() {
       _isLoading = true;
     });
 
-    // Mock loading delay
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final productApiService = ProductApiService(ApiClient());
+      final productList = await productApiService.getProducts();
+      final categoriesApiService = CategoryApiService(ApiClient());
+      final categoryList = await categoriesApiService.getCategories();
+
+      setState(() {
+        _productList = productList;
+        _categoryList = categoryList;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('Error fetching product list: $e');
+    }
 
     // In a real app, you would fetch products from an API
     setState(() {
@@ -37,17 +62,14 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
     });
   }
 
-  void _addProduct(Product product) {
-    setState(() {
-      _products.add(product);
-    });
+  void _addProduct(CreateProductDto product) async {
+    final productApiService = ProductApiService(ApiClient());
+    await productApiService.create(product);
+    final productList = await productApiService.getProducts();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Thêm sản phẩm thành công'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    setState(() {
+      _productList = productList;
+    });
   }
 
   void _navigateToAddProduct() {
@@ -113,11 +135,14 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                       ),
                       ElevatedButton.icon(
                         onPressed: _navigateToAddProduct,
-                        icon: const Icon(Icons.add),
+                        icon: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                        ),
                         label: const Text('Thêm sản phẩm'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: colorScheme.primary,
-                          foregroundColor: colorScheme.onPrimary,
+                          foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 12),
                         ),
@@ -148,6 +173,11 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      borderSide: const BorderSide(
+                                          color: Colors.grey, width: 1.0),
+                                    ),
                                     contentPadding: const EdgeInsets.symmetric(
                                         vertical: 12),
                                   ),
@@ -167,15 +197,10 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                                     value: null,
                                     child: Text('Tất cả danh mục'),
                                   ),
-                                  ...[
-                                    'Electronics',
-                                    'Clothing',
-                                    'Home',
-                                    'Books'
-                                  ].map(
+                                  ..._categoryList.map(
                                     (category) => DropdownMenuItem<String>(
-                                      value: category,
-                                      child: Text(category),
+                                      value: category.id,
+                                      child: Text(category.name),
                                     ),
                                   ),
                                 ],
@@ -227,10 +252,9 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
 
                   // Products table or grid
                   Expanded(
-                    child: _products.isEmpty
+                    child: _productList.isEmpty
                         ? _buildEmptyState()
-                        : const Center(
-                            child: Text('Product list will appear here')),
+                        : ProductManagementTable(products: _productList),
                   ),
                 ],
               ),

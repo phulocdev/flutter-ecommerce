@@ -34,6 +34,12 @@ class Sku {
     return formatter.format(sellingPrice);
   }
 
+  String get formattedCostPrice {
+    final formatter =
+        NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
+    return formatter.format(costPrice);
+  }
+
   factory Sku.fromJson(Map<String, dynamic> json) => Sku(
         id: json['_id'],
         sku: json['sku'],

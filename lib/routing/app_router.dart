@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/providers/auth_providers.dart';
 import 'package:flutter_ecommerce/screens/admin_home_screen.dart';
@@ -12,6 +14,8 @@ import 'package:flutter_ecommerce/screens/otp_screen.dart';
 import 'package:flutter_ecommerce/screens/payment_success.dart';
 import 'package:flutter_ecommerce/screens/product_detail_screen.dart';
 import 'package:flutter_ecommerce/screens/dashboard.dart';
+import 'package:flutter_ecommerce/screens/product_detail_screen_admin.dart';
+import 'package:flutter_ecommerce/screens/product_management_screen.dart';
 import 'package:flutter_ecommerce/screens/products_screen.dart';
 import 'package:flutter_ecommerce/screens/profile_screen.dart';
 import 'package:flutter_ecommerce/screens/registration_screen.dart';
@@ -19,6 +23,24 @@ import 'package:flutter_ecommerce/screens/user_managenent_screen.dart';
 import 'package:flutter_ecommerce/widgets/scaffold_with_nav_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+
+// Create a custom refresh listenable to handle auth state changes
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic>? stream) {
+    _subscription = stream?.listen(
+      (_) => notifyListeners(),
+    );
+  }
+
+  late final StreamSubscription<dynamic>? _subscription;
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+}
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHomeKey =
@@ -28,14 +50,21 @@ final _shellNavigatorCartKey =
 final _shellNavigatorProfileKey =
     GlobalKey<NavigatorState>(debugLabel: 'shellProfile');
 
+// This provider is no longer needed since we'll access the stream directly
+// final authStateChangesProvider = StreamProvider<dynamic>((ref) {
+//   return ref.watch(authProvider.notifier).authStateChanges();
+// });
+
 final goRouterProvider = Provider<GoRouter>((ref) {
-  final user = ref.watch(authProvider);
-  final isLoggedIn = user != null;
+  // Enable the use of the URL's path in the web platform
+  setUrlStrategy(PathUrlStrategy());
 
   return GoRouter(
-    initialLocation: AppRoute.products.path,
-    navigatorKey: _rootNavigatorKey,
+    // Remove initialLocation to allow the app to start from the current URL
     debugLogDiagnostics: true,
+    navigatorKey: _rootNavigatorKey,
+    refreshListenable: GoRouterRefreshStream(
+        ref.read(authProvider.notifier).authStateChanges()),
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -54,7 +83,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 ),
                 routes: [
                   GoRoute(
-                    path: AppRoute.productDetail.path, // 'detail/:id'
+                    path: AppRoute.productDetail.path,
                     name: AppRoute.productDetail.name,
                     builder: (context, state) {
                       final productId = state.pathParameters['id']!;
@@ -149,11 +178,31 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const UserManagementScreen(),
       ),
       GoRoute(
+        path: AppRoute.productManagement.path,
+        name: AppRoute.productManagement.name,
+        builder: (context, state) => const ProductManagementScreen(),
+        routes: [
+          GoRoute(
+            path: AppRoute.productDetailAdmin.path,
+            name: AppRoute.productDetailAdmin.name,
+            builder: (context, state) {
+              final productId = state.pathParameters['id']!;
+              return ProductDetailAdminScreen(productId: productId);
+            },
+          ),
+        ],
+      ),
+      GoRoute(
           path: (AppRoute.paymentSuccess.path),
           name: AppRoute.paymentSuccess.name,
           builder: (context, state) => const PaymentSuccessScreen())
     ],
     redirect: (context, state) {
+      // Get the current auth state directly in the redirect function
+      final user = ref.read(authProvider);
+      final isLoggedIn = user != null;
+      final isAdmin = user?.role == 'Admin';
+
       final loggingIn = state.matchedLocation == AppRoute.login.path ||
           state.matchedLocation == AppRoute.register.path ||
           state.matchedLocation == AppRoute.forgotPassword.path;
@@ -164,17 +213,26 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         AppRoute.profile.path,
         AppRoute.cart.path,
         AppRoute.checkout.path,
-        // Test UI - Remove them when complete
-        AppRoute.dashboard.path,
-        AppRoute.adminHome.path,
         AppRoute.paymentSuccess.path
       ];
 
+      final adminPaths = [
+        AppRoute.productManagement.path,
+        AppRoute.userManagement.path,
+        AppRoute.adminHome.path,
+        AppRoute.dashboard.path,
+        AppRoute.productDetailAdmin.path,
+      ];
+
       final isPublicPath = publicPaths.any(
-        (path) => state.matchedLocation.startsWith(path),
+        (path) => state.matchedLocation.contains(path),
       );
 
-      if (!isLoggedIn && !loggingIn && !isPublicPath) {
+      final isAdminPath =
+          adminPaths.any((path) => state.matchedLocation.contains(path));
+
+      if ((!isLoggedIn && !loggingIn && !isPublicPath) ||
+          !isAdmin && isAdminPath) {
         return AppRoute.login.path;
       }
 
@@ -208,7 +266,12 @@ enum AppRoute {
   adminHome('/admin-home'),
   dashboard('/dashboard'),
   userManagement('/user-management'),
-  paymentSuccess('/payment-success');
+  productManagement('/product-management'),
+  productDetailAdmin(':id'),
+  orderManagement('/order-management'),
+  couponManagement('/coupon-management'),
+  paymentSuccess('/payment-success'),
+  ;
 
   const AppRoute(this.path);
   final String path;

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'token_service.dart';
 
 class ApiClient {
@@ -10,6 +12,7 @@ class ApiClient {
   final String _baseUrl = dotenv.env['BASE_URL'] ?? 'https://api.example.com';
   final String _refreshPath =
       dotenv.env['REFRESH_TOKEN_PATH'] ?? '/auth/refresh';
+  final String _uploadPath = '/media/upload/single';
 
   bool _isRefreshing = false;
   final List<Function> _requestQueue = [];
@@ -250,6 +253,177 @@ class ApiClient {
       {Map<String, dynamic>? body, Map<String, String>? headers}) async {
     return await _interceptedRequest(
         method: 'PATCH', path: path, body: body, customHeaders: headers);
+  }
+
+  /// Image upload functionality
+
+  /// Uploads an image to the server
+  /// Returns the URL of the uploaded image or null if upload failed
+  Future<String?> uploadImage({
+    required Uint8List imageBytes,
+    required String folderName,
+    required String fileName,
+    String? mimeType,
+  }) async {
+    // Determine mime type if not provided
+    final String contentType = mimeType ?? getMimeTypeFromBytes(imageBytes);
+
+    try {
+      final Uri uri = Uri.parse('$_baseUrl$_uploadPath');
+      final Map<String, String> authHeaders = await _getHeaders({
+        'folder-name': folderName,
+      });
+
+      // Create multipart request
+      final request = http.MultipartRequest('POST', uri);
+
+      // Add auth headers and other headers
+      request.headers.addAll(authHeaders);
+
+      // Create multipart file
+      final multipartFile = http.MultipartFile.fromBytes(
+        'file',
+        imageBytes,
+        filename: fileName,
+        contentType: MediaType.parse(contentType),
+      );
+
+      // Add file to request
+      request.files.add(multipartFile);
+
+      // Intercept for token refresh if needed
+      http.StreamedResponse streamedResponse;
+      try {
+        streamedResponse = await request.send();
+      } catch (e) {
+        throw ApiException('Error sending upload request: ${e.toString()}');
+      }
+
+      // Handle 401 with token refresh
+      if (streamedResponse.statusCode == 401) {
+        if (!_isRefreshing) {
+          _isRefreshing = true;
+          try {
+            final bool refreshed = await _refreshToken();
+            _isRefreshing = false;
+
+            if (refreshed) {
+              // Retry the upload with new token
+              final newAuthHeaders = await _getHeaders({
+                'folder-name': folderName,
+              });
+
+              final newRequest = http.MultipartRequest('POST', uri);
+              newRequest.headers.addAll(newAuthHeaders);
+
+              final newMultipartFile = http.MultipartFile.fromBytes(
+                'file',
+                imageBytes,
+                filename: fileName,
+                contentType: MediaType.parse(contentType),
+              );
+
+              newRequest.files.add(newMultipartFile);
+              streamedResponse = await newRequest.send();
+            } else {
+              await _tokenService.deleteTokens();
+              throw AuthenticationException(
+                  'Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.');
+            }
+          } catch (e) {
+            _isRefreshing = false;
+            await _tokenService.deleteTokens();
+            throw AuthenticationException(
+                'Làm mới phiên làm việc không thành công: ${e.toString()}');
+          }
+        }
+      }
+
+      // Convert streamed response to a regular response for consistent error handling
+      final responseBytes = await streamedResponse.stream.toBytes();
+      final response = http.Response(
+        utf8.decode(responseBytes),
+        streamedResponse.statusCode,
+        headers: streamedResponse.headers,
+      );
+
+      // Use the existing response handler
+      final result = _handleResponse(response);
+
+      // Extract image URL from the response
+      if (result != null &&
+          result is Map<String, dynamic> &&
+          result.containsKey('data')) {
+        final data = result['data'];
+        if (data is Map<String, dynamic> && data.containsKey('result')) {
+          return data['result'] as String?;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      print('Error uploading image: $e');
+      if (e is ApiException) {
+        // Re-throw API exceptions
+        rethrow;
+      }
+      throw ApiException('Error uploading image: ${e.toString()}');
+    }
+  }
+
+  /// Helper to determine mime type from bytes (basic implementation)
+  String getMimeTypeFromBytes(Uint8List bytes) {
+    // Check for JPEG signature
+    if (bytes.length >= 3 &&
+        bytes[0] == 0xFF &&
+        bytes[1] == 0xD8 &&
+        bytes[2] == 0xFF) {
+      return 'image/jpeg';
+    }
+
+    // Check for PNG signature
+    if (bytes.length >= 8 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47 &&
+        bytes[4] == 0x0D &&
+        bytes[5] == 0x0A &&
+        bytes[6] == 0x1A &&
+        bytes[7] == 0x0A) {
+      return 'image/png';
+    }
+
+    // Check for GIF signature - 'GIF87a' or 'GIF89a'
+    if (bytes.length >= 6 &&
+        bytes[0] == 0x47 && // G
+        bytes[1] == 0x49 && // I
+        bytes[2] == 0x46 && // F
+        bytes[3] == 0x38 && // 8
+        (bytes[4] == 0x37 || bytes[4] == 0x39) && // 7 or 9
+        bytes[5] == 0x61) {
+      // a
+      return 'image/gif';
+    }
+
+    // Check for WebP signature
+    // WebP files start with RIFF....WEBP
+    if (bytes.length >= 12 &&
+        bytes[0] == 0x52 && // R
+        bytes[1] == 0x49 && // I
+        bytes[2] == 0x46 && // F
+        bytes[3] == 0x46 && // F
+        // Skip 4 bytes (file size)
+        bytes[8] == 0x57 && // W
+        bytes[9] == 0x45 && // E
+        bytes[10] == 0x42 && // B
+        bytes[11] == 0x50) {
+      // P
+      return 'image/webp';
+    }
+
+    // Default to octet-stream if cannot determine
+    return 'application/octet-stream';
   }
 }
 

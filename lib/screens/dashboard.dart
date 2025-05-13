@@ -7,8 +7,12 @@ class AdminDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: const Text(
+          'Dashboard',
+          style: TextStyle(color: Colors.white),
+        ),
         elevation: 0,
+        backgroundColor: Colors.blueGrey,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -18,11 +22,11 @@ class AdminDashboard extends StatelessWidget {
             // Header Welcome
             _buildWelcomeHeader(),
             const SizedBox(height: 20),
-            
+
             // Stats Cards Row
             _buildStatsCards(context),
             const SizedBox(height: 20),
-            
+
             // Recent Activity
             _buildRecentActivitySection(),
           ],
@@ -146,7 +150,8 @@ class AdminDashboard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            _buildActivityItem('Người dùng mới: Nguyễn Văn A', Icons.person_add),
+            _buildActivityItem(
+                'Người dùng mới: Nguyễn Văn A', Icons.person_add),
             _buildActivityItem('Đơn hàng #1234 đã thanh toán', Icons.payment),
             _buildActivityItem('Sản phẩm mới được thêm', Icons.add_box),
             _buildActivityItem('Phiếu giảm giá đã tạo', Icons.discount),
@@ -161,7 +166,8 @@ class AdminDashboard extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       leading: Icon(icon, color: Colors.indigo),
       title: Text(text),
-      trailing: const Text('10 phút trước', style: TextStyle(color: Colors.grey)),
+      trailing:
+          const Text('10 phút trước', style: TextStyle(color: Colors.grey)),
     );
   }
 }
