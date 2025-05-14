@@ -24,7 +24,7 @@ class ProductsEachCategorySection extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Padding(
+    return Container(
       padding: const EdgeInsets.symmetric(vertical: sectionVerticalPadding / 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,19 +39,25 @@ class ProductsEachCategorySection extends StatelessWidget {
                   title,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
+                        fontSize: 20,
                       ),
                 ),
                 if (showSeeAll && products.length > 5)
-                  TextButton(
+                  TextButton.icon(
                     onPressed: () {
                       // Navigate to see all products in this category
                     },
-                    child: Text(
+                    icon: Text(
                       'See All',
                       style: TextStyle(
                         color: colorScheme.primary,
                         fontWeight: FontWeight.bold,
                       ),
+                    ),
+                    label: Icon(
+                      Icons.arrow_forward,
+                      size: 16,
+                      color: colorScheme.primary,
                     ),
                   ),
               ],

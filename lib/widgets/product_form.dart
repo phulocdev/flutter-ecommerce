@@ -8,7 +8,7 @@ import 'package:flutter_ecommerce/apis/brand_api_service.dart';
 import 'package:flutter_ecommerce/apis/category_api_service.dart';
 import 'package:flutter_ecommerce/apis/image_upload_service.dart';
 import 'package:flutter_ecommerce/apis/image_upload_service_v2.dart';
-import 'package:flutter_ecommerce/models/Brand.dart';
+import 'package:flutter_ecommerce/models/brand.dart';
 import 'package:flutter_ecommerce/models/category.dart';
 import 'package:flutter_ecommerce/models/dto/create_product_dto.dart';
 import 'package:flutter_ecommerce/models/dto/create_sku_dto.dart';

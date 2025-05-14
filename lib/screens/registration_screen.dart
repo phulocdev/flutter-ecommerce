@@ -70,7 +70,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             ),
           );
 
-      if (mounted) context.go(AppRoute.products.path);
+      if (mounted) context.go(AppRoute.productCatalog.path);
     } on ApiException catch (e) {
       if (mounted) {
         if (e.statusCode == 422 && e.errors != null && e.errors!.isNotEmpty) {

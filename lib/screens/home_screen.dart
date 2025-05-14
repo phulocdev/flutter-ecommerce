@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce/apis/category_api_service.dart';
 import 'package:flutter_ecommerce/apis/product_api_service.dart';
 import 'package:flutter_ecommerce/models/category.dart';
+import 'package:flutter_ecommerce/models/dto/date_range_query.dart';
+import 'package:flutter_ecommerce/models/dto/pagination_query.dart';
+import 'package:flutter_ecommerce/models/dto/product_query_dto.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/widgets/category_tabs.dart';
+import 'package:flutter_ecommerce/widgets/home_app_bar.dart';
 import 'package:flutter_ecommerce/widgets/products_each_category_section.dart';
 import 'package:flutter_ecommerce/widgets/products_grid-view.dart';
 import 'package:flutter_ecommerce/widgets/shimmer_loading.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class ProductScreen extends ConsumerStatefulWidget {
-  const ProductScreen({super.key});
+class HomeScreen extends ConsumerStatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  ConsumerState<ProductScreen> createState() => _ProductScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _ProductScreenState extends ConsumerState<ProductScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   late List<Product> _productList = [];
+  late List<Category> _categoryList = [];
   bool _isLoading = true;
   bool _hasError = false;
   String _errorMessage = '';
@@ -25,30 +31,44 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   Category? _selectedCategory;
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
+  final ScrollController _scrollController = ScrollController();
+  final productApiService = ProductApiService(ApiClient());
+  final categoryApiService = CategoryApiService(ApiClient());
 
   @override
   void initState() {
     super.initState();
-    _fetchProductList();
+    _fetchProductAndCategories();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  Future<void> _fetchProductList() async {
+  Future<void> _fetchProductAndCategories() async {
     setState(() {
       _isLoading = true;
       _hasError = false;
     });
 
     try {
-      final productApiService = ProductApiService(ApiClient());
-      final productList = await productApiService.getProducts();
+      final query = ProductQuery(
+        pagination: PaginationQuery(page: 1, limit: 20),
+        dateRange: DateRangeQuery(
+          from: DateTime(2024, 1, 1),
+          to: DateTime(2025, 10, 30),
+        ),
+      );
+
+      final productList = await productApiService.getProducts(query: query);
+      final categoryList = await categoryApiService.getCategories();
+
       setState(() {
         _productList = productList;
+        _categoryList = categoryList;
         _isLoading = false;
       });
     } catch (e) {
@@ -66,7 +86,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
       return _productList;
     }
     return _productList
-        .where((product) => product.category == _selectedCategory)
+        .where((product) => product.category!.id == _selectedCategory!.id)
         .toList();
   }
 
@@ -81,18 +101,41 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
         .toList();
   }
 
+  void _toggleSearch() {
+    setState(() {
+      _isSearching = !_isSearching;
+      if (!_isSearching) {
+        _searchController.clear();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: _buildAppBar(theme, colorScheme),
-      body: _isLoading
-          ? ShimmerLoading(isGridView: _isGridView)
-          : _hasError
-              ? _buildErrorView()
-              : _buildProductContent(),
+      body: SafeArea(
+        child: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              HomeAppBar(
+                isSearching: _isSearching,
+                searchController: _searchController,
+                onSearchChanged: (value) => setState(() {}),
+                onToggleSearch: _toggleSearch,
+                colorScheme: colorScheme,
+              ),
+            ];
+          },
+          body: _isLoading
+              ? ShimmerLoading(isGridView: _isGridView)
+              : _hasError
+                  ? _buildErrorView()
+                  : _buildProductContent(),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           setState(() {
@@ -108,42 +151,9 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(ThemeData theme, ColorScheme colorScheme) {
-    return AppBar(
-      foregroundColor: theme.appBarTheme.foregroundColor ?? Colors.white,
-      backgroundColor: theme.appBarTheme.backgroundColor ?? colorScheme.primary,
-      elevation: theme.appBarTheme.elevation ?? 0.0,
-      title: _isSearching
-          ? TextField(
-              controller: _searchController,
-              style: TextStyle(color: colorScheme.onPrimary),
-              decoration: InputDecoration(
-                hintText: 'Search products...',
-                hintStyle:
-                    TextStyle(color: colorScheme.onPrimary.withOpacity(0.7)),
-                border: InputBorder.none,
-              ),
-              onChanged: (value) {
-                setState(() {});
-              },
-              autofocus: true,
-            )
-          : Text(
-              'Flutter E-Commerce',
-              style: theme.appBarTheme.titleTextStyle ??
-                  TextStyle(
-                    color: colorScheme.onPrimary,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 20,
-                  ),
-            ),
-      centerTitle: false,
-    );
-  }
-
   Widget _buildErrorView() {
     return RefreshIndicator(
-      onRefresh: _fetchProductList,
+      onRefresh: _fetchProductAndCategories,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -157,8 +167,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: _fetchProductList,
-              child: const Text('Tải lại'),
+              onPressed: _fetchProductAndCategories,
+              child: const Text('Try Again'),
             ),
           ],
         ),
@@ -168,12 +178,12 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
 
   Widget _buildProductContent() {
     return RefreshIndicator(
-      onRefresh: _fetchProductList,
+      onRefresh: _fetchProductAndCategories,
       child: Column(
         children: [
           if (_productList.isNotEmpty)
             CategoryTabs(
-              categories: [],
+              categories: _categoryList,
               selectedCategory: _selectedCategory,
               onCategorySelected: (category) {
                 setState(() {
@@ -186,34 +196,41 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                 ? _buildEmptyState()
                 : _isGridView
                     ? ProductsGridView(products: _searchedProducts)
-                    : SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ProductsEachCategorySection(
-                              title: 'Sản phẩm nổi bật',
-                              // p.discountPercentage > 0
-                              products: _searchedProducts
-                                  .where((p) => 1 > 0)
-                                  .toList(),
-                              showSeeAll: true,
-                            ),
-                            ProductsEachCategorySection(
-                              title: 'Sản phẩm mới',
-                              products: _searchedProducts,
-                              showSeeAll: true,
-                            ),
-                            ProductsEachCategorySection(
-                              title: 'Bán chạy nhất',
-                              products: _searchedProducts,
-                              showSeeAll: true,
-                            ),
-                            const SizedBox(height: 80), // Space for FAB
-                          ],
-                        ),
-                      ),
+                    : _buildCategorySections(),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategorySections() {
+    // Create different product sections for better organization
+    final featuredProducts = _searchedProducts.take(5).toList();
+    final newProducts = _searchedProducts.skip(5).take(5).toList();
+    final bestSellers = _searchedProducts.skip(10).take(5).toList();
+
+    return SingleChildScrollView(
+      controller: _scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ProductsEachCategorySection(
+            title: 'Featured Products',
+            products: featuredProducts,
+            showSeeAll: true,
+          ),
+          ProductsEachCategorySection(
+            title: 'New Arrivals',
+            products: newProducts,
+            showSeeAll: true,
+          ),
+          ProductsEachCategorySection(
+            title: 'Best Sellers',
+            products: bestSellers,
+            showSeeAll: true,
+          ),
+          const SizedBox(height: 80), // Space for FAB
         ],
       ),
     );
@@ -224,18 +241,16 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(
-            'assets/images/empty_products.png',
-            width: 150,
-            height: 150,
-            // If you don't have this asset, replace with:
-            // Icon(Icons.inventory_2_outlined, size: 100, color: Colors.grey.shade300),
+          Icon(
+            Icons.search_off_rounded,
+            size: 100,
+            color: Colors.grey.shade300,
           ),
           const SizedBox(height: 16),
           Text(
             _searchController.text.isNotEmpty
-                ? 'No products match your search'
-                : 'No products found in this category',
+                ? 'Danh sách sản phẩm trống'
+                : 'Danh sách sản phẩm trống',
             style: const TextStyle(fontSize: 16),
             textAlign: TextAlign.center,
           ),
@@ -245,7 +260,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                 _searchController.clear();
                 setState(() {});
               },
-              child: const Text('Clear Search'),
+              child: const Text('Xóa'),
             ),
         ],
       ),

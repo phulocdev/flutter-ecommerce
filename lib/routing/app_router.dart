@@ -12,11 +12,12 @@ import 'package:flutter_ecommerce/screens/login_screen.dart';
 import 'package:flutter_ecommerce/screens/manage_address_screen.dart';
 import 'package:flutter_ecommerce/screens/otp_screen.dart';
 import 'package:flutter_ecommerce/screens/payment_success.dart';
+import 'package:flutter_ecommerce/screens/product_catalog_screen.dart';
 import 'package:flutter_ecommerce/screens/product_detail_screen.dart';
 import 'package:flutter_ecommerce/screens/dashboard.dart';
 import 'package:flutter_ecommerce/screens/product_detail_screen_admin.dart';
 import 'package:flutter_ecommerce/screens/product_management_screen.dart';
-import 'package:flutter_ecommerce/screens/products_screen.dart';
+import 'package:flutter_ecommerce/screens/home_screen.dart';
 import 'package:flutter_ecommerce/screens/profile_screen.dart';
 import 'package:flutter_ecommerce/screens/registration_screen.dart';
 import 'package:flutter_ecommerce/screens/user_managenent_screen.dart';
@@ -61,6 +62,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     // Remove initialLocation to allow the app to start from the current URL
+    initialLocation: AppRoute.home.path,
     debugLogDiagnostics: true,
     navigatorKey: _rootNavigatorKey,
     refreshListenable: GoRouterRefreshStream(
@@ -75,11 +77,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             navigatorKey: _shellNavigatorHomeKey,
             routes: [
               GoRoute(
-                path: AppRoute.products.path,
-                name: AppRoute.products.name,
+                path: AppRoute.home.path,
+                name: AppRoute.home.name,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: const ProductScreen(),
+                  child: const HomeScreen(),
+                ),
+              ),
+              GoRoute(
+                path: AppRoute.productCatalog.path,
+                name: AppRoute.productCatalog.name,
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const ProductCatalogScreen(),
                 ),
                 routes: [
                   GoRoute(
@@ -119,6 +129,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: AppRoute.productManagement.path,
+        name: AppRoute.productManagement.name,
+        builder: (context, state) => const ProductManagementScreen(),
+        routes: [
+          GoRoute(
+            path: AppRoute.productDetailAdmin.path,
+            name: AppRoute.productDetailAdmin.name,
+            builder: (context, state) {
+              final productId = state.pathParameters['id']!;
+              return ProductDetailAdminScreen(productId: productId);
+            },
           ),
         ],
       ),
@@ -178,21 +203,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const UserManagementScreen(),
       ),
       GoRoute(
-        path: AppRoute.productManagement.path,
-        name: AppRoute.productManagement.name,
-        builder: (context, state) => const ProductManagementScreen(),
-        routes: [
-          GoRoute(
-            path: AppRoute.productDetailAdmin.path,
-            name: AppRoute.productDetailAdmin.name,
-            builder: (context, state) {
-              final productId = state.pathParameters['id']!;
-              return ProductDetailAdminScreen(productId: productId);
-            },
-          ),
-        ],
-      ),
-      GoRoute(
           path: (AppRoute.paymentSuccess.path),
           name: AppRoute.paymentSuccess.name,
           builder: (context, state) => const PaymentSuccessScreen())
@@ -208,9 +218,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == AppRoute.forgotPassword.path;
 
       final publicPaths = [
-        AppRoute.products.path,
+        AppRoute.productCatalog.path,
         AppRoute.productDetail.path,
         AppRoute.profile.path,
+        AppRoute.home.path,
         AppRoute.cart.path,
         AppRoute.checkout.path,
         AppRoute.paymentSuccess.path
@@ -232,12 +243,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           adminPaths.any((path) => state.matchedLocation.contains(path));
 
       if ((!isLoggedIn && !loggingIn && !isPublicPath) ||
-          !isAdmin && isAdminPath) {
+          (!isAdmin && isAdminPath)) {
         return AppRoute.login.path;
       }
 
       if (isLoggedIn && loggingIn) {
-        return AppRoute.products.path;
+        return AppRoute.home.path;
       }
 
       return null;
@@ -255,7 +266,8 @@ enum AppRoute {
   register('/register'),
   forgotPassword('/forgot-password'),
   otp('/otp'),
-  products('/products'),
+  home('/'),
+  productCatalog('/products'),
   productDetail(':id'),
   checkout('/checkout'),
   cart('/cart'),

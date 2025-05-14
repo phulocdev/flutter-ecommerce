@@ -78,7 +78,7 @@ class PaymentSuccessScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 // Navigate to shopping screen
-                context.go(AppRoute.products.path);
+                context.go(AppRoute.productCatalog.path);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,

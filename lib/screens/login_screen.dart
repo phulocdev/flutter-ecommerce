@@ -34,7 +34,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final user = ref.read(authProvider);
     if (user != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.go(AppRoute.products.path);
+        context.go(AppRoute.home.path);
       });
     }
   }
@@ -76,7 +76,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           );
 
-      if (mounted) context.go(AppRoute.products.path);
+      if (mounted) context.go(AppRoute.home.path);
     } on ApiException catch (e) {
       if (mounted) {
         if (e.statusCode == 422 && e.errors != null && e.errors!.isNotEmpty) {

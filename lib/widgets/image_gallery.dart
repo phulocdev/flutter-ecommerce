@@ -4,11 +4,9 @@ import 'package:flutter_ecommerce/widgets/responsive_builder.dart';
 
 class ImageGallery extends StatefulWidget {
   final List<String> images;
+  final int? currentImageOrder;
 
-  const ImageGallery({
-    super.key,
-    required this.images,
-  });
+  const ImageGallery({super.key, required this.images, this.currentImageOrder});
 
   @override
   State<ImageGallery> createState() => _ImageGalleryState();
@@ -17,6 +15,25 @@ class ImageGallery extends StatefulWidget {
 class _ImageGalleryState extends State<ImageGallery> {
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.currentImageOrder != null) {
+      _selectedIndex = widget.currentImageOrder!;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant ImageGallery oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.currentImageOrder != null &&
+        widget.currentImageOrder != oldWidget.currentImageOrder) {
+      setState(() {
+        _selectedIndex = widget.currentImageOrder!;
+      });
+    }
+  }
 
   @override
   void dispose() {

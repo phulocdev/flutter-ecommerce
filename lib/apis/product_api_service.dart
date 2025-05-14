@@ -1,4 +1,5 @@
 import 'package:flutter_ecommerce/models/dto/create_product_dto.dart';
+import 'package:flutter_ecommerce/models/dto/product_query_dto.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 
@@ -31,9 +32,15 @@ class ProductApiService {
     }
   }
 
-  Future<List<Product>> getProducts() async {
+  Future<List<Product>> getProducts({ProductQuery? query}) async {
     try {
-      final response = await _apiClient.get('/products');
+      final queryParams = query?.toQueryMap() ?? {};
+      final uri = Uri(
+        path: '/products',
+        queryParameters: queryParams,
+      );
+
+      final response = await _apiClient.get(uri.toString());
 
       if (response is Map<String, dynamic> && response.containsKey('data')) {
         final List<dynamic> productList = response['data'];
@@ -43,7 +50,7 @@ class ProductApiService {
               .map((productJson) => Product.fromJson(productJson))
               .toList();
         } else {
-          throw Exception('Invalid API response: data should be list.');
+          throw Exception('Invalid API response: data should be a list.');
         }
       } else {
         throw Exception('Invalid API response: Unexpected response format.');
