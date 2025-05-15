@@ -10,7 +10,6 @@ class SimpleDashboardView extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<Product> topSellingProducts = bestSellers.take(5).toList();
 
-    // Dữ liệu mẫu cho biểu đồ
     final List<FlSpot> chartData = [
       const FlSpot(0, 500),
       const FlSpot(1, 800),

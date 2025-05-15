@@ -17,7 +17,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   final List<Widget> _pages = [
     const AdminDashboard(),
     const UserManagementScreen(),
-    const ProductManagementScreen(), // Product Management
+    const ProductManagementScreen(), 
     const Placeholder(), // Order Management
     const Placeholder(), // Coupon Management
     const Placeholder(), // Customer Support
