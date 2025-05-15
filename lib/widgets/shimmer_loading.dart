@@ -35,7 +35,7 @@ class ShimmerLoading extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildShimmerCategoryTabs(),
+          // _buildShimmerCategoryTabs(),
           _buildShimmerSection(),
           _buildShimmerSection(),
           _buildShimmerSection(),
@@ -90,7 +90,7 @@ class ShimmerLoading extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: 3,
+              itemCount: 10,
               itemBuilder: (context, index) {
                 return Container(
                   width: 180,

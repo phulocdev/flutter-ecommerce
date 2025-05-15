@@ -133,21 +133,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(
-        path: AppRoute.productManagement.path,
-        name: AppRoute.productManagement.name,
-        builder: (context, state) => const ProductManagementScreen(),
-        routes: [
-          GoRoute(
-            path: AppRoute.productDetailAdmin.path,
-            name: AppRoute.productDetailAdmin.name,
-            builder: (context, state) {
-              final productId = state.pathParameters['id']!;
-              return ProductDetailAdminScreen(productId: productId);
-            },
-          ),
-        ],
-      ),
-      GoRoute(
         path: AppRoute.login.path,
         name: AppRoute.login.name,
         builder: (context, state) => const LoginScreen(),
@@ -198,6 +183,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const AdminDashboard(),
       ),
       GoRoute(
+        path: AppRoute.productManagement.path,
+        name: AppRoute.productManagement.name,
+        builder: (context, state) => const ProductManagementScreen(),
+        routes: [
+          GoRoute(
+            path: AppRoute.productDetailAdmin.path,
+            name: AppRoute.productDetailAdmin.name,
+            builder: (context, state) {
+              final productId = state.pathParameters['id']!;
+              return ProductDetailAdminScreen(productId: productId);
+            },
+          ),
+        ],
+      ),
+      GoRoute(
         path: AppRoute.userManagement.path,
         name: AppRoute.userManagement.name,
         builder: (context, state) => const UserManagementScreen(),
@@ -217,33 +217,22 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == AppRoute.register.path ||
           state.matchedLocation == AppRoute.forgotPassword.path;
 
-      final publicPaths = [
-        AppRoute.productCatalog.path,
-        AppRoute.productDetail.path,
-        AppRoute.profile.path,
-        AppRoute.home.path,
-        AppRoute.cart.path,
-        AppRoute.checkout.path,
-        AppRoute.paymentSuccess.path
-      ];
+      final privatePaths = [];
 
       final adminPaths = [
         AppRoute.productManagement.path,
         AppRoute.userManagement.path,
         AppRoute.adminHome.path,
         AppRoute.dashboard.path,
-        AppRoute.productDetailAdmin.path,
       ];
-
-      final isPublicPath = publicPaths.any(
-        (path) => state.matchedLocation.contains(path),
-      );
 
       final isAdminPath =
           adminPaths.any((path) => state.matchedLocation.contains(path));
 
-      if ((!isLoggedIn && !loggingIn && !isPublicPath) ||
-          (!isAdmin && isAdminPath)) {
+      final isPrivatePath =
+          privatePaths.any((path) => state.matchedLocation.contains(path));
+
+      if ((!isAdmin && isAdminPath) || (!isLoggedIn && isPrivatePath)) {
         return AppRoute.login.path;
       }
 
@@ -251,6 +240,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         return AppRoute.home.path;
       }
 
+      return AppRoute.userManagement.path;
       return null;
     },
     errorBuilder: (context, state) => Scaffold(

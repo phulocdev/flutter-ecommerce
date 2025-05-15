@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/product.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:go_router/go_router.dart';
 
 class ProductListItem extends StatelessWidget {
   final Product product;
@@ -22,11 +24,8 @@ class ProductListItem extends StatelessWidget {
       child: InkWell(
         onTap: () {
           // Navigate to product details
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Selected: ${product.name}'),
-              duration: const Duration(seconds: 1),
-            ),
+          context.go(
+            '${AppRoute.productCatalog.path}/${product.id}',
           );
         },
         borderRadius: BorderRadius.circular(12),

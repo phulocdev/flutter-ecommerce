@@ -22,6 +22,7 @@ class AuthNotifier extends StateNotifier<User?> {
     final userData = await TokenService().getUser();
     if (userData != null) {
       final user = User(
+        id: userData['_id'] ?? '',
         email: userData['email'] ?? '',
         fullName: userData['fullName'] ?? '',
         role: userData['role'] ?? '',

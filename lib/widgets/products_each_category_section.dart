@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/product.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/widgets/products_list_horizontal.dart';
+import 'package:go_router/go_router.dart';
 
 class ProductsEachCategorySection extends StatelessWidget {
   final String title;
@@ -45,10 +47,10 @@ class ProductsEachCategorySection extends StatelessWidget {
                 if (showSeeAll && products.length > 5)
                   TextButton.icon(
                     onPressed: () {
-                      // Navigate to see all products in this category
+                      context.push(AppRoute.productCatalog.path);
                     },
                     icon: Text(
-                      'See All',
+                      'Xem tất cả',
                       style: TextStyle(
                         color: colorScheme.primary,
                         fontWeight: FontWeight.bold,

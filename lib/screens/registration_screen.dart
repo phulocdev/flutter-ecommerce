@@ -64,6 +64,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
 
       ref.read(authProvider.notifier).setUser(
             User(
+              id: data.account.id,
               email: data.account.email,
               fullName: data.account.fullName,
               role: data.account.role,

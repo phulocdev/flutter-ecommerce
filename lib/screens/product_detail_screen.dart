@@ -13,8 +13,7 @@ import 'package:flutter_ecommerce/widgets/product_info_cart.dart';
 import 'package:flutter_ecommerce/widgets/responsive_builder.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-// Thêm import cho các widget mới
+import 'package:intl/intl.dart';
 import 'package:flutter_ecommerce/models/review.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
@@ -467,6 +466,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
   Widget _buildProductInfo() {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final numberFormat = NumberFormat.decimalPattern(); // uses current locale
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -483,15 +483,15 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             Icon(Icons.star, color: Colors.amber, size: 20),
             const SizedBox(width: 4),
             Text(
-              '999', // Mock rating
+              numberFormat.format(999),
               style: const TextStyle(fontWeight: FontWeight.w500),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 12),
             Text(
-              '(1999)', // Mock review count
+              '| Lượt xem: (${numberFormat.format(1999)}) |',
               style: TextStyle(color: Colors.grey.shade600),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -622,7 +622,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       : Colors.transparent,
                 ),
                 child: Text(
-                  variantsName ?? '',
+                  variantsName ?? 'Không có',
                   style: TextStyle(
                     fontWeight:
                         isSelected ? FontWeight.bold : FontWeight.normal,
@@ -785,12 +785,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
   // Thêm phương thức xây dựng phần đánh giá sản phẩm
   Widget _buildReviewSection() {
+    final numberFormat = NumberFormat.decimalPattern('vi_VN'); // or 'de_DE'
+    final totalRating = numberFormat.format(99999);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Divider(height: 40),
         Text(
-          'Đánh giá & Nhận xét',
+          'Đánh giá & Nhận xét (${totalRating})',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),

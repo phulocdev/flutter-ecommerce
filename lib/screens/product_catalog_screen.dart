@@ -27,8 +27,8 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
 
   bool _isLoading = false;
   bool _hasMoreData = true;
-  bool _isGridView = true;
   String _sortOption = 'createdAt.desc';
+  bool _isGridView = true;
 
   List<Product> _products = [];
   int _currentPage = 1;
@@ -71,22 +71,19 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
 
     try {
       final query = ProductQuery(
-          pagination: PaginationQuery(
-              page: resetCurrentPage != null ? 1 : _currentPage,
-              limit: _pageSize),
-          dateRange: DateRangeQuery(
-            from: DateTime(2024, 1, 1),
-            to: DateTime(2025, 10, 30),
-          ),
-          categoryIds: _selectedCategoryIds,
-          brandIds: _selectedBrandIds,
-          minPrice: _priceRange.start,
-          maxPrice: _priceRange.end,
-          sort: _sortOption);
-
-      final a = _sortOption;
-
-      //  sortBy: _sortOption,
+        pagination: PaginationQuery(
+            page: resetCurrentPage != null ? 1 : _currentPage,
+            limit: _pageSize),
+        // dateRange: DateRangeQuery(
+        //   from: DateTime(2024, 1, 1),
+        //   to: DateTime(2025, 10, 30),
+        // ),
+        categoryIds: _selectedCategoryIds,
+        brandIds: _selectedBrandIds,
+        minPrice: _priceRange.start,
+        maxPrice: _priceRange.end,
+        sort: _sortOption,
+      );
       //   minRating: _minRating,
 
       final newProducts = await _productService.getProducts(query: query);
@@ -115,10 +112,10 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
     try {
       final query = ProductQuery(
           pagination: PaginationQuery(page: _currentPage + 1, limit: _pageSize),
-          dateRange: DateRangeQuery(
-            from: DateTime(2024, 1, 1),
-            to: DateTime(2025, 10, 30),
-          ),
+          // dateRange: DateRangeQuery(
+          //   from: DateTime(2024, 1, 1),
+          //   to: DateTime(2025, 10, 30),
+          // ),
           categoryIds: _selectedCategoryIds,
           brandIds: _selectedBrandIds,
           minPrice: _priceRange.start,
@@ -140,7 +137,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
       setState(() {
         _isLoading = false;
       });
-      _showErrorSnackBar('Failed to load more products');
+      _showErrorSnackBar('Lỗi khi tải thêm sản phẩm');
     }
   }
 

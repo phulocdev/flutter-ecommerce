@@ -3,51 +3,22 @@ class User {
   final String email;
   final String fullName;
   final String role;
-  final DateTime? createdAt; // Made nullable for backward compatibility
-  final bool? isActive; // Made nullable for backward compatibility
-  final String? phone; // Optional field
-  final String? address; // Optional field
+  final DateTime? createdAt;
+  final bool? isActive;
+  final String? phone;
+  final String? address;
 
-  User({
+  const User({
+    required this.id,
     required this.email,
     required this.fullName,
     required this.role,
-    this.id = '', // Default empty string for backward compatibility
     this.createdAt,
     this.isActive,
     this.phone,
     this.address,
   });
 
-  // Add fromJson factory constructor for API compatibility
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'] ?? '',
-      email: json['email'],
-      fullName: json['fullName'] ?? json['name'] ?? '', // Handle both fullName and name
-      role: json['role'],
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
-      isActive: json['isActive'] ?? true,
-      phone: json['phone'],
-      address: json['address'],
-    );
-  }
-
-  // Add toJson method for API compatibility
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'email': email,
-      'fullName': fullName,
-      'role': role,
-      'createdAt': createdAt?.toIso8601String(),
-      'isActive': isActive,
-      'phone': phone,
-      'address': address,
-    };
-  }
-
-  // Helper method to create a copy with updated fields
   User copyWith({
     String? id,
     String? email,
@@ -68,5 +39,33 @@ class User {
       phone: phone ?? this.phone,
       address: address ?? this.address,
     );
+  }
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'] as String,
+      email: json['email'] as String,
+      fullName: json['fullName'] as String,
+      role: json['role'] as String,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : null,
+      isActive: json['isActive'] as bool?,
+      phone: json['phone'] as String?,
+      address: json['address'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'email': email,
+      'fullName': fullName,
+      'role': role,
+      'createdAt': createdAt?.toIso8601String(),
+      'isActive': isActive,
+      'phone': phone,
+      'address': address,
+    };
   }
 }

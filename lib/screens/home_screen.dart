@@ -7,7 +7,6 @@ import 'package:flutter_ecommerce/models/dto/pagination_query.dart';
 import 'package:flutter_ecommerce/models/dto/product_query_dto.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
-import 'package:flutter_ecommerce/widgets/category_tabs.dart';
 import 'package:flutter_ecommerce/widgets/home_app_bar.dart';
 import 'package:flutter_ecommerce/widgets/products_each_category_section.dart';
 import 'package:flutter_ecommerce/widgets/products_grid-view.dart';
@@ -22,8 +21,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  late List<Product> _productList = [];
-  late List<Category> _categoryList = [];
+  late List<Product> _featuredProducts = [];
+  late List<Product> _newProducts = [];
+  late List<Product> _bestSellerProducts = [];
   bool _isLoading = true;
   bool _hasError = false;
   String _errorMessage = '';
@@ -55,20 +55,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
 
     try {
-      final query = ProductQuery(
-        pagination: PaginationQuery(page: 1, limit: 20),
-        dateRange: DateRangeQuery(
-          from: DateTime(2024, 1, 1),
-          to: DateTime(2025, 10, 30),
-        ),
+      final featureProductsQuery = ProductQuery(
+        pagination: PaginationQuery(page: 1, limit: 15),
+        sort: 'views.desc',
       );
 
-      final productList = await productApiService.getProducts(query: query);
-      final categoryList = await categoryApiService.getCategories();
+      final newProductsQuery = ProductQuery(
+        pagination: PaginationQuery(page: 1, limit: 15),
+        sort: 'createdAt.desc',
+      );
+
+      final bestSellerProductsQuery = ProductQuery(
+        pagination: PaginationQuery(page: 1, limit: 15),
+        sort: 'soldQuantity.desc',
+      );
+
+      final featureProducts =
+          await productApiService.getProducts(query: featureProductsQuery);
+      final newProducts =
+          await productApiService.getProducts(query: newProductsQuery);
+      final bestSellerProducts =
+          await productApiService.getProducts(query: bestSellerProductsQuery);
 
       setState(() {
-        _productList = productList;
-        _categoryList = categoryList;
+        _featuredProducts = featureProducts;
+        _newProducts = newProducts;
+        _bestSellerProducts = bestSellerProducts;
         _isLoading = false;
       });
     } catch (e) {
@@ -81,25 +93,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  List<Product> get _filteredProducts {
-    if (_selectedCategory == null) {
-      return _productList;
-    }
-    return _productList
-        .where((product) => product.category!.id == _selectedCategory!.id)
-        .toList();
-  }
+  // List<Product> get _filteredProducts {
+  //   if (_selectedCategory == null) {
+  //     return _productList;
+  //   }
+  //   return _productList
+  //       .where((product) => product.category!.id == _selectedCategory!.id)
+  //       .toList();
+  // }
 
-  List<Product> get _searchedProducts {
-    if (_searchController.text.isEmpty) {
-      return _filteredProducts;
-    }
-    return _filteredProducts
-        .where((product) => product.name
-            .toLowerCase()
-            .contains(_searchController.text.toLowerCase()))
-        .toList();
-  }
+  // List<Product> get _searchedProducts {
+  //   if (_searchController.text.isEmpty) {
+  //     return _filteredProducts;
+  //   }
+  //   return _filteredProducts
+  //       .where((product) => product.name
+  //           .toLowerCase()
+  //           .contains(_searchController.text.toLowerCase()))
+  //       .toList();
+  // }
 
   void _toggleSearch() {
     setState(() {
@@ -181,34 +193,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       onRefresh: _fetchProductAndCategories,
       child: Column(
         children: [
-          if (_productList.isNotEmpty)
-            CategoryTabs(
-              categories: _categoryList,
-              selectedCategory: _selectedCategory,
-              onCategorySelected: (category) {
-                setState(() {
-                  _selectedCategory = category;
-                });
-              },
+          if (_featuredProducts.isNotEmpty &&
+              _bestSellerProducts.isNotEmpty &&
+              _newProducts.isNotEmpty)
+            // CategoryTabs(
+            //   categories: _categoryList,
+            //   selectedCategory: _selectedCategory,
+            //   onCategorySelected: (category) {
+            //     setState(() {
+            //       _selectedCategory = category;
+            //     });
+            //   },
+            // ),
+            Expanded(
+              child: _featuredProducts.isEmpty ||
+                      _bestSellerProducts.isEmpty ||
+                      _newProducts.isEmpty
+                  ? _buildEmptyState()
+                  : _isGridView
+                      ? ProductsGridView(products: _featuredProducts)
+                      : _buildCategorySections(),
             ),
-          Expanded(
-            child: _searchedProducts.isEmpty
-                ? _buildEmptyState()
-                : _isGridView
-                    ? ProductsGridView(products: _searchedProducts)
-                    : _buildCategorySections(),
-          ),
         ],
       ),
     );
   }
 
   Widget _buildCategorySections() {
-    // Create different product sections for better organization
-    final featuredProducts = _searchedProducts.take(5).toList();
-    final newProducts = _searchedProducts.skip(5).take(5).toList();
-    final bestSellers = _searchedProducts.skip(10).take(5).toList();
-
     return SingleChildScrollView(
       controller: _scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
@@ -216,18 +227,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ProductsEachCategorySection(
-            title: 'Featured Products',
-            products: featuredProducts,
+            title: 'Sản phẩm nổi bật',
+            products: _featuredProducts,
             showSeeAll: true,
           ),
           ProductsEachCategorySection(
-            title: 'New Arrivals',
-            products: newProducts,
+            title: 'Sản phẩm mới',
+            products: _newProducts,
             showSeeAll: true,
           ),
           ProductsEachCategorySection(
-            title: 'Best Sellers',
-            products: bestSellers,
+            title: 'Bán chạy nhất',
+            products: _bestSellerProducts,
             showSeeAll: true,
           ),
           const SizedBox(height: 80), // Space for FAB
