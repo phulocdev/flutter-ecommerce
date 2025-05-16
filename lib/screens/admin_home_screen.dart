@@ -17,12 +17,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    const AdminDashboard(),
-    const UserManagementScreen(),
-    const ProductManagementScreen(), // Product Management
-    const Placeholder(), // Order Management
-    const Placeholder(), // Coupon Management
-    const Placeholder(), // Customer Support
+    const AdminDashboard(),               // Trang thống kê tổng quan
+    const UserManagementScreen(),        // Trang quản lý người dùng
+    const ProductManagementScreen(),     // Trang quản lý sản phẩm
+    const Placeholder(),                 // Trang quản lý đơn hàng (chưa triển khai)
+    const Placeholder(),                 // Trang quản lý mã giảm giá (chưa triển khai)
+    const Placeholder(),                 // Trang hỗ trợ khách hàng (chưa triển khai)
   ];
 
   final List<String> _paths = [
