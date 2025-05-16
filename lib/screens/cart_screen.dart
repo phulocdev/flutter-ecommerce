@@ -26,16 +26,13 @@ class CartScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
         title: Text(
           'Giỏ hàng',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-            fontSize: 24,
+          style: TextStyle(
+            color: Colors.lightBlue,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.blue,
         actions: [
           if (cartItems.isNotEmpty)
             IconButton(

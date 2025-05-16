@@ -62,12 +62,10 @@ class ProfileScreen extends ConsumerWidget {
         title: const Text(
           'Hồ sơ cá nhân',
           style: TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.w500,
+            color: Colors.lightBlue,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.blue,
       ),
       body: ListView(
         children: [

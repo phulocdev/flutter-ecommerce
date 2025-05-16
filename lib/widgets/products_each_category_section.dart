@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/product.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/widgets/products_list_horizontal.dart';
+import 'package:go_router/go_router.dart';
 
 class ProductsEachCategorySection extends StatelessWidget {
   final String title;
@@ -24,7 +26,7 @@ class ProductsEachCategorySection extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Padding(
+    return Container(
       padding: const EdgeInsets.symmetric(vertical: sectionVerticalPadding / 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,19 +41,25 @@ class ProductsEachCategorySection extends StatelessWidget {
                   title,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
+                        fontSize: 20,
                       ),
                 ),
                 if (showSeeAll && products.length > 5)
-                  TextButton(
+                  TextButton.icon(
                     onPressed: () {
-                      // Navigate to see all products in this category
+                      context.push(AppRoute.productCatalog.path);
                     },
-                    child: Text(
-                      'See All',
+                    icon: Text(
+                      'Xem tất cả',
                       style: TextStyle(
                         color: colorScheme.primary,
                         fontWeight: FontWeight.bold,
                       ),
+                    ),
+                    label: Icon(
+                      Icons.arrow_forward,
+                      size: 16,
+                      color: colorScheme.primary,
                     ),
                   ),
               ],

@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce/apis/product_api_service.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:flutter_ecommerce/widgets/product_form.dart';
 import 'package:go_router/go_router.dart';
 
 class ProductManagementTable extends StatefulWidget {
   final List<Product> products;
   final Function(String)? onDelete;
   final Function(Product)? onEdit;
+  final ScrollController? scrollController; // Add scroll controller parameter
 
   const ProductManagementTable({
     super.key,
     required this.products,
     this.onDelete,
     this.onEdit,
+    this.scrollController, // Make it optional
   });
 
   @override
@@ -56,15 +61,17 @@ class _ProductManagementTableState extends State<ProductManagementTable> {
                       _buildHeaderCell('Giá', 150),
                       _buildHeaderCell('Trạng thái', 120),
                       _buildHeaderCell('Ngày tạo', 120),
-                      _buildHeaderCell('Ngày cập nhật', 120),
+                      _buildHeaderCell('Ngày cập nhật', 150),
                       _buildHeaderCell('Hành động', 120),
                     ],
                   ),
                 ),
 
-                // Table body with vertical scrolling
+                // Table body with vertical scrolling - use the passed scroll controller
                 Expanded(
                   child: ListView.builder(
+                    controller: widget
+                        .scrollController, // Use the passed scroll controller
                     itemCount: widget.products.length,
                     itemBuilder: (context, index) {
                       final product = widget.products[index];
@@ -72,9 +79,8 @@ class _ProductManagementTableState extends State<ProductManagementTable> {
                         onTap: () {
                           // Navigate to product detail page
                           context.go(
-                            '${AppRoute.productManagement.path}/${product.id}', // Chú ý dấu '/' ở giữa
+                            '${AppRoute.productManagement.path}/${product.id}',
                           );
-                          // context.go('/product-detail/${product.id}');
                         },
                         onHover: (isHovered) {
                           setState(() {
@@ -214,7 +220,7 @@ class _ProductManagementTableState extends State<ProductManagementTable> {
                                     color: Colors.grey.shade700,
                                   ),
                                 ),
-                                120,
+                                150,
                               ),
                               _buildCell(
                                 Row(
@@ -223,17 +229,42 @@ class _ProductManagementTableState extends State<ProductManagementTable> {
                                     IconButton(
                                       icon: const Icon(Icons.edit,
                                           color: Colors.blue),
-                                      tooltip: 'Edit Product',
+                                      tooltip: 'Chỉnh sửa sản phẩm',
                                       onPressed: () {
-                                        if (widget.onEdit != null) {
-                                          widget.onEdit!(product);
-                                        }
+                                        // Navigate to product form with product data
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) => Scaffold(
+                                              appBar: AppBar(
+                                                title: const Text(
+                                                    'Chỉnh sửa sản phẩm'),
+                                              ),
+                                              body: SingleChildScrollView(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                      16.0),
+                                                  child: ProductForm(
+                                                    product:
+                                                        _convertToCreateProductDto(
+                                                            product),
+                                                    onSave: (updatedProduct) {
+                                                      if (widget.onEdit !=
+                                                          null) {
+                                                        widget.onEdit!(product);
+                                                      }
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
                                       },
                                     ),
                                     IconButton(
                                       icon: const Icon(Icons.delete,
                                           color: Colors.red),
-                                      tooltip: 'Delete Product',
+                                      tooltip: 'Xóa sản phẩm',
                                       onPressed: () => _showDeleteConfirmation(
                                           context, product.id),
                                     ),
@@ -254,6 +285,22 @@ class _ProductManagementTableState extends State<ProductManagementTable> {
         );
       },
     );
+  }
+
+  // Helper method to convert Product to CreateProductDto
+  // This is a simplified conversion - you may need to adjust based on your actual models
+  dynamic _convertToCreateProductDto(Product product) {
+    return {
+      'name': product.name,
+      'description': product.description,
+      'category': product.category?.id ?? '',
+      'brand': product.brand?.id ?? '',
+      'basePrice': product.basePrice,
+      'minStockLevel': 1,
+      'maxStockLevel': 20,
+      'imageUrl': product.imageUrl,
+      // Add other fields as needed
+    };
   }
 
   Widget _buildHeaderCell(String text, double width) {
@@ -295,35 +342,85 @@ class _ProductManagementTableState extends State<ProductManagementTable> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this product?'),
+        title: const Text('Xác nhận xóa'),
+        content: const Text('Bạn có chắc chắn muốn xóa sản phẩm này không?'),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text('Hủy'),
           ),
           ElevatedButton(
             onPressed: () {
-              if (widget.onDelete != null) {
-                widget.onDelete!(productId);
-              }
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
+
+              // Show loading indicator
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              scaffoldMessenger.showSnackBar(
                 const SnackBar(
-                  content: Text('Product deleted successfully'),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: Colors.green,
+                  content: Row(
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Text('Đang xóa sản phẩm...'),
+                    ],
+                  ),
+                  duration: Duration(seconds: 2),
                 ),
               );
+
+              // Simulate API call with Future.delayed
+              Future.delayed(const Duration(seconds: 2), () {
+                // Call the API service to delete the product
+                final productApiService = ProductApiService(ApiClient());
+
+                try {
+                  // This would be your actual API call
+                  // productApiService.deleteProduct(productId);
+
+                  // For now, just call the onDelete callback
+                  if (widget.onDelete != null) {
+                    widget.onDelete!(productId);
+                  }
+
+                  // Show success message
+                  if (context.mounted) {
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Xóa sản phẩm thành công'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  // Show error message
+                  if (context.mounted) {
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                        content: Text('Lỗi khi xóa sản phẩm: $e'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              });
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Delete'),
+            child: const Text('Xóa'),
           ),
         ],
       ),

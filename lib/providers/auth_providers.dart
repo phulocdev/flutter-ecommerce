@@ -1,51 +1,53 @@
 import 'dart:async';
 
-import 'package:flutter_ecommerce/models/user.dart';
+import 'package:flutter_ecommerce/models/dto/login_response_dto.dart';
 import 'package:flutter_ecommerce/services/token_service.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class AuthNotifier extends StateNotifier<User?> {
+class AuthNotifier extends StateNotifier<Account?> {
   // Create a StreamController to broadcast auth state changes
-  final StreamController<User?> _authStateController =
-      StreamController<User?>.broadcast();
+  final StreamController<Account?> _authStateController =
+      StreamController<Account?>.broadcast();
 
   AuthNotifier() : super(null) {
-    _loadUser();
+    _loadAccount();
   }
 
   // Method to expose auth state changes as a stream
-  Stream<User?> authStateChanges() {
+  Stream<Account?> authStateChanges() {
     return _authStateController.stream;
   }
 
-  Future<void> _loadUser() async {
-    final userData = await TokenService().getUser();
-    if (userData != null) {
-      final user = User(
-        email: userData['email'] ?? '',
-        fullName: userData['fullName'] ?? '',
-        role: userData['role'] ?? '',
+  Future<void> _loadAccount() async {
+    final accountData = await TokenService().getAccount();
+    if (accountData != null) {
+      final account = Account(
+        id: accountData['_id'] ?? '',
+        email: accountData['email'] ?? '',
+        fullName: accountData['fullName'] ?? '',
+        role: accountData['role'] ?? '',
+        avatarUrl: accountData['avatarUrl'] ?? '',
       );
-      state = user;
-      _authStateController.add(user); // Emit the loaded user
+      state = account;
+      _authStateController.add(account);
     } else {
       state = null;
-      _authStateController.add(null); // Emit null for logged out state
+      _authStateController.add(null);
     }
   }
 
-  User? get user => state;
+  Account? get user => state;
 
   bool get isAuthenticated => state != null;
 
-  void setUser(User user) {
-    state = user;
-    _authStateController.add(user); // Emit the new user
+  void setAccount(Account account) {
+    state = account;
+    _authStateController.add(account);
   }
 
   Future<void> logout() async {
     await TokenService().deleteTokens();
-    await TokenService().clearUser();
+    await TokenService().clearAccount();
     state = null;
     _authStateController.add(null); // Emit null for logged out state
   }
@@ -57,6 +59,6 @@ class AuthNotifier extends StateNotifier<User?> {
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, User?>((ref) {
+final authProvider = StateNotifierProvider<AuthNotifier, Account?>((ref) {
   return AuthNotifier();
 });

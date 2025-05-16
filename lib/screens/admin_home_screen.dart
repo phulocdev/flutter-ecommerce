@@ -37,7 +37,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     setState(() {
       _selectedIndex = index;
     });
-    context.go(_paths[index]);
+    // context.push(_paths[index]);
   }
 
   @override

@@ -54,23 +54,14 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     try {
       final response = await _authApiService.register(registerDto);
       final data = response.data;
+      final account = data.account;
 
       await _tokenService.saveTokens(data.accessToken, data.refreshToken);
-      await _tokenService.saveUser(
-        email: data.account.email,
-        fullName: data.account.fullName,
-        role: data.account.role,
-      );
+      await _tokenService.saveAccount(account);
 
-      ref.read(authProvider.notifier).setUser(
-            User(
-              email: data.account.email,
-              fullName: data.account.fullName,
-              role: data.account.role,
-            ),
-          );
+      ref.read(authProvider.notifier).setAccount(account);
 
-      if (mounted) context.go(AppRoute.products.path);
+      if (mounted) context.go(AppRoute.productCatalog.path);
     } on ApiException catch (e) {
       if (mounted) {
         if (e.statusCode == 422 && e.errors != null && e.errors!.isNotEmpty) {

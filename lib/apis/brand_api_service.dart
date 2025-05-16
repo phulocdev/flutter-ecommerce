@@ -1,4 +1,4 @@
-import 'package:flutter_ecommerce/models/Brand.dart';
+import 'package:flutter_ecommerce/models/brand.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 
 class BrandApiService {

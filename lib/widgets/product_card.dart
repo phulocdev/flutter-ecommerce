@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/cart_item.dart';
+import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/providers/cart_providers.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_ecommerce/models/product.dart';
 
 class ProductCard extends ConsumerWidget {
   final Product product;
   final VoidCallback? onTap;
+  final bool isHorizontal;
 
   const ProductCard({
     super.key,
     required this.product,
     this.onTap,
+    this.isHorizontal = true,
   });
 
   @override
@@ -19,15 +21,21 @@ class ProductCard extends ConsumerWidget {
     final TextTheme textTheme = Theme.of(context).textTheme;
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-    // Calculate discount percentage
-    // final hasDiscount = product.discountPercentage > 0;
+    // Mock discount for demo purposes
+    final hasDiscount = product.id.hashCode % 3 == 0;
+    final discountPercentage =
+        hasDiscount ? (product.id.hashCode % 30) + 10 : 0;
+    final originalPrice = hasDiscount
+        ? product.basePrice * 100 / (100 - discountPercentage)
+        : product.basePrice;
 
     return Card(
-      elevation: 2,
+      elevation: 0,
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
+        side: BorderSide(color: Colors.grey.withOpacity(0.1)),
       ),
       child: InkWell(
         onTap: onTap,
@@ -42,7 +50,7 @@ class ProductCard extends ConsumerWidget {
                     height: 140,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
+                      color: Colors.grey.shade100,
                     ),
                     child: Image.network(
                       product.imageUrl,
@@ -70,14 +78,21 @@ class ProductCard extends ConsumerWidget {
                     ),
                   ),
                 ),
-                // Has discount
+                // Wishlist button
                 Positioned(
                   top: 8,
                   right: 8,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white,
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: IconButton(
                       icon: Icon(
@@ -91,11 +106,42 @@ class ProductCard extends ConsumerWidget {
                       ),
                       padding: EdgeInsets.zero,
                       onPressed: () {
-                        // Add to favorites
+                        // Add to favorites with animation
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Added to favorites'),
+                            duration: Duration(seconds: 1),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
                       },
                     ),
                   ),
                 ),
+                // Discount badge
+                if (hasDiscount)
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.error,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '-$discountPercentage%',
+                        style: TextStyle(
+                          color: colorScheme.onError,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
             Padding(
@@ -140,32 +186,25 @@ class ProductCard extends ConsumerWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // if has discount
+                          if (hasDiscount)
+                            Text(
+                              '\$${originalPrice.toStringAsFixed(2)}',
+                              style: textTheme.bodySmall?.copyWith(
+                                decoration: TextDecoration.lineThrough,
+                                color: Colors.grey,
+                              ),
+                            ),
                           Text(
                             product.formattedPrice,
                             style: textTheme.titleMedium?.copyWith(
-                              color: colorScheme.primary,
+                              color: hasDiscount
+                                  ? colorScheme.error
+                                  : colorScheme.primary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                      // Material(
-                      //   color: colorScheme.secondary,
-                      //   borderRadius: BorderRadius.circular(8),
-                      //   child: InkWell(
-                      //     onTap: addProductToCart,
-                      //     borderRadius: BorderRadius.circular(8),
-                      //     child: Container(
-                      //       padding: const EdgeInsets.all(4),
-                      //       child: Icon(
-                      //         Icons.add_shopping_cart,
-                      //         color: colorScheme.onSecondary,
-                      //         size: 20,
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
                     ],
                   ),
                 ],

@@ -14,16 +14,16 @@ class ProductsListHorizontal extends StatelessWidget {
 
   void _navigateToProductDetail(BuildContext context, Product product) {
     context.go(
-      '${AppRoute.products.path}/${product.id}', // Chú ý dấu '/' ở giữa
+      '${AppRoute.productCatalog.path}/${product.id}',
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    const double cardWidth = 160.0;
-    const double listHeight = 260.0;
+    const double cardWidth = 180.0;
+    const double listHeight = 280.0;
     const double horizontalPadding = 16.0;
-    const double itemSpacing = 16.0;
+    const double itemSpacing = 12.0;
 
     return SizedBox(
       height: listHeight,
