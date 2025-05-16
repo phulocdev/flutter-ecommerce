@@ -1428,8 +1428,9 @@ class _ProductFormState extends State<ProductForm> {
                               'Nhập giá trị cho thuộc tính ${_attributeNames[attrIndex].toLowerCase()}',
                           border: const OutlineInputBorder(), // Default
                           enabledBorder: const OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1.5),
+                            borderSide: BorderSide(
+                                color: Color.fromARGB(255, 198, 198, 198),
+                                width: 1.5),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderSide: BorderSide(

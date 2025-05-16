@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/apis/auth_api_service.dart';
 import 'package:flutter_ecommerce/models/dto/login_request_dto.dart';
+import 'package:flutter_ecommerce/models/dto/login_response_dto.dart';
 import 'package:flutter_ecommerce/models/user.dart';
 import 'package:flutter_ecommerce/providers/auth_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
@@ -60,22 +61,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final response = await _authApiService.login(loginDto);
       final loginResponse = response;
       final data = loginResponse.data;
+      final account = data.account;
 
       await _tokenService.saveTokens(data.accessToken, data.refreshToken);
-      await _tokenService.saveUser(
-        email: data.account.email,
-        fullName: data.account.fullName,
-        role: data.account.role,
-      );
+      await _tokenService.saveAccount(account);
 
-      ref.read(authProvider.notifier).setUser(
-            User(
-              id: data.account.id,
-              email: data.account.email,
-              fullName: data.account.fullName,
-              role: data.account.role,
-            ),
-          );
+      ref.read(authProvider.notifier).setAccount(account);
 
       if (mounted) context.go(AppRoute.home.path);
     } on ApiException catch (e) {

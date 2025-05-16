@@ -1,8 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-// import 'package:flutter_ecommerce/models/dto/user_query_dto.dart';
+import 'package:flutter_ecommerce/apis/user_api_service.dart';
+import 'package:flutter_ecommerce/models/dto/create_user_dto.dart';
+import 'package:flutter_ecommerce/models/dto/update_user_dto.dart';
 import 'package:flutter_ecommerce/models/user.dart';
+import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/widgets/responsive_builder.dart';
 import 'package:flutter_ecommerce/widgets/user_form_dialog.dart';
 import 'package:intl/intl.dart';
@@ -15,7 +18,7 @@ class UserManagementScreen extends StatefulWidget {
 }
 
 class _UserManagementScreenState extends State<UserManagementScreen> {
-  // final userApiService = UserApiService(ApiClient());
+  final userApiService = UserApiService(ApiClient());
   final ScrollController _scrollController = ScrollController();
   late List<User> _userList = [];
   Timer? _debounce;
@@ -99,7 +102,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       // final userList = await userApiService.getUsers(query: query);
 
       // For demo purposes, we'll use mock data
-      final userList = _getMockUsers();
+      final userList = await userApiService.getUsers();
 
       setState(() {
         _userList = userList;
@@ -142,14 +145,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       // final newUsers = await userApiService.getUsers(query: query);
 
       // For demo purposes, we'll use mock data
-      final newUsers = _getMockUsers();
+      // final newUsers = _getMockUsers();
 
-      setState(() {
-        _userList.addAll(newUsers);
-        _currentPage++;
-        _hasMoreData = newUsers.length >= _pageSize;
-        _isLoadingMore = false;
-      });
+      // setState(() {
+      //   _userList.addAll(newUsers);
+      //   _currentPage++;
+      //   _hasMoreData = newUsers.length >= _pageSize;
+      //   _isLoadingMore = false;
+      // });
     } catch (e) {
       setState(() {
         _isLoadingMore = false;
@@ -176,19 +179,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
-  void _addUser(User user) async {
+  void _addUser(CreateUserDto dto) async {
     try {
-      // Show loading
       _showLoadingDialog('Đang thêm người dùng...');
 
-      // Simulate API call with Future.delay
-      await Future.delayed(const Duration(seconds: 2));
-
-      // In a real app, you would call the API
-      // await userApiService.createUser(user);
+      await userApiService.create(dto);
 
       // Close loading dialog
-      Navigator.pop(context);
+      if (mounted) {
+        Navigator.pop(context);
+      }
 
       // Refresh the user list
       _fetchData(resetCurrentPage: true);
@@ -200,25 +200,18 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     }
   }
 
-  void _updateUser(User user) async {
+  void _updateUser(String id, UpdateUserDto dto) async {
     try {
-      // Show loading
       _showLoadingDialog('Đang cập nhật người dùng...');
 
-      // Simulate API call with Future.delay
-      await Future.delayed(const Duration(seconds: 2));
-
       // In a real app, you would call the API
-      // await userApiService.updateUser(user);
+      await userApiService.update(id, dto);
 
-      // Close loading dialog
       Navigator.pop(context);
 
-      // Refresh the user list
       _fetchData(resetCurrentPage: true);
       _showSuccessSnackBar('Cập nhật người dùng thành công');
     } catch (e) {
-      // Close loading dialog
       Navigator.pop(context);
       _showErrorSnackBar('Lỗi khi cập nhật người dùng: $e');
     }
@@ -280,7 +273,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => UserFormDialog(
-        onSave: _addUser,
+        onCreate: _addUser,
       ),
     );
   }
@@ -325,62 +318,6 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         ),
       ),
     );
-  }
-
-  // Mock data for demo purposes
-  List<User> _getMockUsers() {
-    return [
-      User(
-        id: '1',
-        email: 'admin@example.com',
-        fullName: 'Nguyễn Văn Admin',
-        role: 'Admin',
-        createdAt: DateTime.now().subtract(const Duration(days: 30)),
-        isActive: true,
-        phone: '0123456789',
-        address: 'Hà Nội, Việt Nam',
-      ),
-      User(
-        id: '2',
-        email: 'user1@example.com',
-        fullName: 'Trần Thị Khách Hàng',
-        role: 'Customer',
-        createdAt: DateTime.now().subtract(const Duration(days: 15)),
-        isActive: true,
-        phone: '0987654321',
-        address: 'Hồ Chí Minh, Việt Nam',
-      ),
-      User(
-        id: '3',
-        email: 'user2@example.com',
-        fullName: 'Lê Văn Người Dùng',
-        role: 'Customer',
-        createdAt: DateTime.now().subtract(const Duration(days: 7)),
-        isActive: false,
-        phone: '0369852147',
-        address: 'Đà Nẵng, Việt Nam',
-      ),
-      User(
-        id: '4',
-        email: 'staff@example.com',
-        fullName: 'Phạm Thị Nhân Viên',
-        role: 'Staff',
-        createdAt: DateTime.now().subtract(const Duration(days: 20)),
-        isActive: true,
-        phone: '0912345678',
-        address: 'Hải Phòng, Việt Nam',
-      ),
-      User(
-        id: '5',
-        email: 'user3@example.com',
-        fullName: 'Hoàng Văn Khách',
-        role: 'Customer',
-        createdAt: DateTime.now().subtract(const Duration(days: 3)),
-        isActive: true,
-        phone: '0898765432',
-        address: 'Cần Thơ, Việt Nam',
-      ),
-    ];
   }
 
   @override
@@ -536,7 +473,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      'Vai trò',
+                                      'Email',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
                                         fontSize: 14,
@@ -551,40 +488,18 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                           color: Colors.grey.shade300,
                                         ),
                                       ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 4,
-                                      ),
-                                      child: DropdownButtonHideUnderline(
-                                        child: DropdownButton<String?>(
-                                          isExpanded: true,
-                                          hint: const Text('Chọn vai trò'),
-                                          value: _selectedRole,
-                                          items: const [
-                                            DropdownMenuItem<String?>(
-                                              value: null,
-                                              child: Text('Tất cả vai trò'),
-                                            ),
-                                            DropdownMenuItem<String?>(
-                                              value: 'Admin',
-                                              child: Text('Quản trị viên'),
-                                            ),
-                                            DropdownMenuItem<String?>(
-                                              value: 'Staff',
-                                              child: Text('Nhân viên'),
-                                            ),
-                                            DropdownMenuItem<String?>(
-                                              value: 'Customer',
-                                              child: Text('Khách hàng'),
-                                            ),
-                                          ],
-                                          onChanged: (value) {
-                                            setState(() {
-                                              _selectedRole = value;
-                                            });
-                                            _fetchData(resetCurrentPage: true);
-                                          },
+                                      child: TextField(
+                                        decoration: InputDecoration(
+                                          hintText: 'Tìm kiếm theo email...',
+                                          prefixIcon: const Icon(Icons.email),
+                                          border: InputBorder.none,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                            horizontal: 16,
+                                          ),
                                         ),
+                                        onChanged: _handleEmailInputChange,
                                       ),
                                     ),
                                   ],
@@ -626,163 +541,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              const Text(
-                                'Vai trò',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade50,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 4,
-                                ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String?>(
-                                    isExpanded: true,
-                                    hint: const Text('Chọn vai trò'),
-                                    value: _selectedRole,
-                                    items: const [
-                                      DropdownMenuItem<String?>(
-                                        value: null,
-                                        child: Text('Tất cả vai trò'),
-                                      ),
-                                      DropdownMenuItem<String?>(
-                                        value: 'Admin',
-                                        child: Text('Quản trị viên'),
-                                      ),
-                                      DropdownMenuItem<String?>(
-                                        value: 'Staff',
-                                        child: Text('Nhân viên'),
-                                      ),
-                                      DropdownMenuItem<String?>(
-                                        value: 'Customer',
-                                        child: Text('Khách hàng'),
-                                      ),
-                                    ],
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _selectedRole = value;
-                                      });
-                                      _fetchData(resetCurrentPage: true);
-                                    },
-                                  ),
-                                ),
-                              ),
                             ],
                           ),
 
                         const SizedBox(height: 4),
 
                         // Second row: Email filter and status filter
-                        if (isDesktop)
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Email',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.shade50,
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: Colors.grey.shade300,
-                                        ),
-                                      ),
-                                      child: TextField(
-                                        decoration: InputDecoration(
-                                          hintText: 'Tìm kiếm theo email...',
-                                          prefixIcon: const Icon(Icons.email),
-                                          border: InputBorder.none,
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                            vertical: 12,
-                                            horizontal: 16,
-                                          ),
-                                        ),
-                                        onChanged: _handleEmailInputChange,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Trạng thái',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.shade50,
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: Colors.grey.shade300,
-                                        ),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 4,
-                                      ),
-                                      child: DropdownButtonHideUnderline(
-                                        child: DropdownButton<bool?>(
-                                          isExpanded: true,
-                                          hint: const Text('Chọn trạng thái'),
-                                          value: _isActiveFilter,
-                                          items: const [
-                                            DropdownMenuItem<bool?>(
-                                              value: null,
-                                              child: Text('Tất cả trạng thái'),
-                                            ),
-                                            DropdownMenuItem<bool?>(
-                                              value: true,
-                                              child: Text('Đang hoạt động'),
-                                            ),
-                                            DropdownMenuItem<bool?>(
-                                              value: false,
-                                              child: Text('Đã khóa'),
-                                            ),
-                                          ],
-                                          onChanged: (value) {
-                                            setState(() {
-                                              _isActiveFilter = value;
-                                            });
-                                            _fetchData(resetCurrentPage: true);
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          )
-                        else
+                        const SizedBox(width: 16),
+                        if (!isDesktop)
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -816,54 +582,6 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              const Text(
-                                'Trạng thái',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade50,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 4,
-                                ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<bool?>(
-                                    isExpanded: true,
-                                    hint: const Text('Chọn trạng thái'),
-                                    value: _isActiveFilter,
-                                    items: const [
-                                      DropdownMenuItem<bool?>(
-                                        value: null,
-                                        child: Text('Tất cả trạng thái'),
-                                      ),
-                                      DropdownMenuItem<bool?>(
-                                        value: true,
-                                        child: Text('Đang hoạt động'),
-                                      ),
-                                      DropdownMenuItem<bool?>(
-                                        value: false,
-                                        child: Text('Đã khóa'),
-                                      ),
-                                    ],
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _isActiveFilter = value;
-                                      });
-                                      _fetchData(resetCurrentPage: true);
-                                    },
-                                  ),
-                                ),
-                              ),
                             ],
                           ),
 
@@ -871,11 +589,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
                         // Status filter chips
                         Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
+                          spacing: 12,
+                          runSpacing: 12,
                           children: [
-                            FilterChip(
-                              label: const Text('Tất cả'),
+                            _buildCustomChip(
+                              label: 'Tất cả',
+                              icon: Icons.people,
                               selected: _isActiveFilter == null,
                               onSelected: (selected) {
                                 if (selected) {
@@ -885,14 +604,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                   _fetchData(resetCurrentPage: true);
                                 }
                               },
-                              avatar: const Icon(Icons.people),
-                              backgroundColor: Colors.grey.shade100,
-                              selectedColor:
-                                  colorScheme.primary.withOpacity(0.1),
-                              checkmarkColor: colorScheme.primary,
+                              selectedColor: colorScheme.primary,
                             ),
-                            FilterChip(
-                              label: const Text('Đang hoạt động'),
+                            _buildCustomChip(
+                              label: 'Đang hoạt động',
+                              icon: Icons.check_circle,
                               selected: _isActiveFilter == true,
                               onSelected: (selected) {
                                 setState(() {
@@ -900,13 +616,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                 });
                                 _fetchData(resetCurrentPage: true);
                               },
-                              avatar: const Icon(Icons.check_circle),
-                              backgroundColor: Colors.grey.shade100,
-                              selectedColor: Colors.green.withOpacity(0.1),
-                              checkmarkColor: Colors.green,
+                              selectedColor: Colors.green,
                             ),
-                            FilterChip(
-                              label: const Text('Đã khóa'),
+                            _buildCustomChip(
+                              label: 'Đã khóa',
+                              icon: Icons.block,
                               selected: _isActiveFilter == false,
                               onSelected: (selected) {
                                 setState(() {
@@ -914,13 +628,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                 });
                                 _fetchData(resetCurrentPage: true);
                               },
-                              avatar: const Icon(Icons.block),
-                              backgroundColor: Colors.grey.shade100,
-                              selectedColor: Colors.red.withOpacity(0.1),
-                              checkmarkColor: Colors.red,
+                              selectedColor: Colors.red,
                             ),
-                            FilterChip(
-                              label: const Text('Quản trị viên'),
+                            _buildCustomChip(
+                              label: 'Quản trị viên',
+                              icon: Icons.admin_panel_settings,
                               selected: _selectedRole == 'Admin',
                               onSelected: (selected) {
                                 setState(() {
@@ -928,13 +640,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                 });
                                 _fetchData(resetCurrentPage: true);
                               },
-                              avatar: const Icon(Icons.admin_panel_settings),
-                              backgroundColor: Colors.grey.shade100,
-                              selectedColor: Colors.purple.withOpacity(0.1),
-                              checkmarkColor: Colors.purple,
+                              selectedColor: Colors.purple,
                             ),
-                            FilterChip(
-                              label: const Text('Khách hàng'),
+                            _buildCustomChip(
+                              label: 'Khách hàng',
+                              icon: Icons.person,
                               selected: _selectedRole == 'Customer',
                               onSelected: (selected) {
                                 setState(() {
@@ -942,13 +652,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                 });
                                 _fetchData(resetCurrentPage: true);
                               },
-                              avatar: const Icon(Icons.person),
-                              backgroundColor: Colors.grey.shade100,
-                              selectedColor: Colors.blue.withOpacity(0.1),
-                              checkmarkColor: Colors.blue,
+                              selectedColor: Colors.blue,
                             ),
                           ],
-                        ),
+                        )
                       ],
                     ),
                   ),
@@ -998,7 +705,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                   _buildSortableHeader(
                                       field: 'isActive',
                                       text: 'Trạng thái',
-                                      width: 150),
+                                      width: 180),
                                   Container(
                                     width: 180,
                                     padding: const EdgeInsets.symmetric(
@@ -1049,6 +756,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                         children: [
                                           // Full name
                                           Container(
+                                            alignment: Alignment.center,
                                             width: 350,
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 16),
@@ -1063,6 +771,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                           // Email
                                           Container(
                                             width: 350,
+                                            alignment: Alignment.center,
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 16),
                                             child: Text(
@@ -1076,17 +785,21 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                           // Phone
                                           Container(
                                             width: 200,
+                                            alignment: Alignment.center,
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 16),
                                             child: Text(
-                                              user.phone ?? 'Chưa cập nhật',
+                                              user.phoneNumber.isEmpty
+                                                  ? 'Chưa cập nhật'
+                                                  : user.phoneNumber,
                                               style: TextStyle(
-                                                color: user.phone != null
+                                                color: user.phoneNumber != null
                                                     ? Colors.grey.shade700
                                                     : Colors.grey.shade400,
-                                                fontStyle: user.phone != null
-                                                    ? FontStyle.normal
-                                                    : FontStyle.italic,
+                                                fontStyle:
+                                                    user.phoneNumber != null
+                                                        ? FontStyle.normal
+                                                        : FontStyle.italic,
                                               ),
                                             ),
                                           ),
@@ -1096,25 +809,30 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                             width: 150,
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 16),
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                horizontal: 12,
-                                                vertical: 6,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: _getRoleColor(user.role)
-                                                    .withOpacity(0.1),
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                              ),
-                                              child: Text(
-                                                _getLocalizedRole(user.role),
-                                                style: TextStyle(
+                                            child: Center(
+                                              // Dùng Center để tránh stretching không mong muốn
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 6,
+                                                ),
+                                                decoration: BoxDecoration(
                                                   color:
-                                                      _getRoleColor(user.role),
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 13,
+                                                      _getRoleColor(user.role)
+                                                          .withOpacity(0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                ),
+                                                child: Text(
+                                                  _getLocalizedRole(user.role),
+                                                  style: TextStyle(
+                                                    color: _getRoleColor(
+                                                        user.role),
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 13,
+                                                  ),
+                                                  textAlign: TextAlign.center,
                                                 ),
                                               ),
                                             ),
@@ -1123,6 +841,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                           // Created date
                                           Container(
                                             width: 200,
+                                            alignment: Alignment.center,
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 16),
                                             child: Text(
@@ -1138,34 +857,38 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
                                           // Status
                                           Container(
-                                            width: 150,
+                                            width: 180,
+                                            alignment: Alignment.center,
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 16),
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                horizontal: 12,
-                                                vertical: 6,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: isActive
-                                                    ? Colors.green
-                                                        .withOpacity(0.1)
-                                                    : Colors.red
-                                                        .withOpacity(0.1),
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                              ),
-                                              child: Text(
-                                                isActive
-                                                    ? 'Đang hoạt động'
-                                                    : 'Đã khóa',
-                                                style: TextStyle(
+                                            child: Center(
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 6,
+                                                ),
+                                                decoration: BoxDecoration(
                                                   color: isActive
                                                       ? Colors.green
-                                                      : Colors.red,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 13,
+                                                          .withOpacity(0.1)
+                                                      : Colors.red
+                                                          .withOpacity(0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                ),
+                                                child: Text(
+                                                  isActive
+                                                      ? 'Đang hoạt động'
+                                                      : 'Đã khóa',
+                                                  style: TextStyle(
+                                                    color: isActive
+                                                        ? Colors.green
+                                                        : Colors.red,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 13,
+                                                  ),
+                                                  textAlign: TextAlign.center,
                                                 ),
                                               ),
                                             ),
@@ -1174,6 +897,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                           // Actions
                                           Container(
                                             width: 180,
+                                            alignment: Alignment.center,
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 16),
                                             child: Row(
@@ -1324,6 +1048,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             Expanded(
               child: Text(
                 text,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
@@ -1347,9 +1072,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => UserFormDialog(
-        user: user,
-        onSave: _updateUser,
-      ),
+          user: user,
+          onUpdate: (updateUserDto) {
+            _updateUser(user.id, updateUserDto);
+          }),
     );
   }
 
@@ -1451,6 +1177,43 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCustomChip({
+    required String label,
+    required IconData icon,
+    required bool selected,
+    required Function(bool) onSelected,
+    required Color selectedColor,
+  }) {
+    return FilterChip(
+      label: Text(
+        label,
+        style: TextStyle(
+          fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+          color: selected ? selectedColor : Colors.black87,
+        ),
+      ),
+      avatar: Icon(
+        icon,
+        size: 18,
+        color: selected ? selectedColor : Colors.grey,
+      ),
+      selected: selected,
+      onSelected: onSelected,
+      elevation: selected ? 4 : 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: selected ? selectedColor : Colors.grey.shade300,
+          width: selected ? 2 : 1,
+        ),
+      ),
+      backgroundColor: Colors.white,
+      selectedColor: selectedColor.withOpacity(0.1),
+      checkmarkColor: selectedColor,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
     );
   }
 }
