@@ -18,9 +18,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     const AdminDashboard(),
     const UserManagementScreen(),
     const ProductManagementScreen(), 
-    const Placeholder(), // Order Management
-    const Placeholder(), // Coupon Management
-    const Placeholder(), // Customer Support
+    const Placeholder(), 
+    const Placeholder(), 
+    const Placeholder(), 
   ];
 
   void _onItemTapped(int index) {
