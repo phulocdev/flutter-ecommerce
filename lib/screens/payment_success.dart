@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
-  const PaymentSuccessScreen({Key? key}) : super(key: key);
+  PaymentSuccessScreen({super.key, required this.orderCode});
+  String orderCode;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +62,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '#${DateTime.now().millisecondsSinceEpoch.toString().substring(5, 13)}',
+                        '${orderCode}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

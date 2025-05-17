@@ -1,124 +1,16 @@
 // order_detail_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce/apis/order_api_service.dart';
+import 'package:flutter_ecommerce/models/dto/create_order_response.dart';
+import 'package:flutter_ecommerce/models/dto/order_detail.dart';
+import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:flutter_ecommerce/utils/enum.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 
-// This would be your actual order detail model
-class OrderDetail {
-  final String id;
-  final String orderNumber;
-  final DateTime orderDate;
-  final double totalAmount;
-  final String status;
-  final List<OrderItem> items;
-  final List<OrderStatus> statusHistory;
-  final String shippingAddress;
-  final String paymentMethod;
-  final double shippingFee;
-
-  OrderDetail({
-    required this.id,
-    required this.orderNumber,
-    required this.orderDate,
-    required this.totalAmount,
-    required this.status,
-    required this.items,
-    required this.statusHistory,
-    required this.shippingAddress,
-    required this.paymentMethod,
-    required this.shippingFee,
-  });
-}
-
-class OrderItem {
-  final String id;
-  final String name;
-  final String imageUrl;
-  final double price;
-  final int quantity;
-  final String variant;
-
-  OrderItem({
-    required this.id,
-    required this.name,
-    required this.imageUrl,
-    required this.price,
-    required this.quantity,
-    required this.variant,
-  });
-}
-
-class OrderStatus {
-  final String status;
-  final DateTime timestamp;
-  final String? note;
-
-  OrderStatus({
-    required this.status,
-    required this.timestamp,
-    this.note,
-  });
-}
-
-// This would be your actual provider
-final orderDetailProvider =
-    Provider.family<OrderDetail, String>((ref, orderId) {
-  // Mock data for demonstration
-  return OrderDetail(
-    id: orderId,
-    orderNumber: 'ORD-2023-00$orderId',
-    orderDate: DateTime.now().subtract(const Duration(days: 2)),
-    totalAmount: 1250000,
-    status: 'Đang giao hàng',
-    shippingAddress:
-        '123 Đường Nguyễn Văn Linh, Phường Tân Phong, Quận 7, TP. Hồ Chí Minh',
-    paymentMethod: 'Thanh toán khi nhận hàng (COD)',
-    shippingFee: 30000,
-    items: [
-      OrderItem(
-        id: '1',
-        name: 'Áo thun nam cổ tròn basic',
-        imageUrl: '/placeholder.svg',
-        price: 250000,
-        quantity: 2,
-        variant: 'Màu trắng, Size L',
-      ),
-      OrderItem(
-        id: '2',
-        name: 'Quần jean nam slim fit',
-        imageUrl: '/placeholder.svg',
-        price: 750000,
-        quantity: 1,
-        variant: 'Màu xanh đậm, Size 32',
-      ),
-    ],
-    statusHistory: [
-      OrderStatus(
-        status: 'Đang giao hàng',
-        timestamp: DateTime.now().subtract(const Duration(hours: 5)),
-        note: 'Đơn hàng đang được giao đến bạn',
-      ),
-      OrderStatus(
-        status: 'Đã xác nhận',
-        timestamp: DateTime.now().subtract(const Duration(hours: 12)),
-        note: 'Đơn hàng đã được xác nhận',
-      ),
-      OrderStatus(
-        status: 'Đang xử lý',
-        timestamp: DateTime.now().subtract(const Duration(days: 1)),
-        note: 'Đơn hàng đang được xử lý',
-      ),
-      OrderStatus(
-        status: 'Đã đặt hàng',
-        timestamp: DateTime.now().subtract(const Duration(days: 2)),
-        note: 'Cảm ơn bạn đã đặt hàng',
-      ),
-    ],
-  );
-});
-
-class OrderDetailScreen extends ConsumerWidget {
+class OrderDetailScreen extends StatefulWidget {
   final String orderId;
 
   const OrderDetailScreen({
@@ -127,8 +19,45 @@ class OrderDetailScreen extends ConsumerWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final orderDetail = ref.watch(orderDetailProvider(orderId));
+  State<OrderDetailScreen> createState() => _OrderDetailScreenState();
+}
+
+class _OrderDetailScreenState extends State<OrderDetailScreen> {
+  late List<OrderDetail> _orderDetails;
+  bool _isLoading = true;
+
+  final orderApiService = OrderApiService(ApiClient());
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOrderDetail();
+  }
+
+  Future<void> _fetchOrderDetail() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final orderDetail = await orderApiService.getOrderDetail(widget.orderId);
+
+      setState(() {
+        _orderDetails = orderDetail;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('Error fetching product list: $e');
+    }
+  }
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -158,21 +87,29 @@ class OrderDetailScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildOrderHeader(context, orderDetail),
-            _buildOrderTimeline(context, orderDetail),
-            _buildOrderItems(context, orderDetail),
-            _buildOrderSummary(context, orderDetail),
-            _buildShippingInfo(context, orderDetail),
-            const SizedBox(height: 24),
-            _buildActionButtons(context, orderDetail),
-            const SizedBox(height: 32),
-          ],
-        ),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildOrderHeader(
+                      context, _buildOrderTimeline(context, order)),
+                  _buildOrderTimeline(
+                      context, _buildOrderTimeline(context, order)),
+                  _buildOrderItems(
+                      context, _buildOrderTimeline(context, order)),
+                  _buildOrderSummary(
+                      context, _buildOrderTimeline(context, order)),
+                  _buildShippingInfo(
+                      context, _buildOrderTimeline(context, order)),
+                  const SizedBox(height: 24),
+                  _buildActionButtons(
+                      context, _buildOrderTimeline(context, order)),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
     );
   }
 
@@ -180,32 +117,7 @@ class OrderDetailScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
-
-    // Determine status color
-    Color statusColor;
-    IconData statusIcon;
-
-    switch (order.status) {
-      case 'Đã giao hàng':
-        statusColor = Colors.green;
-        statusIcon = Icons.check_circle;
-        break;
-      case 'Đang giao hàng':
-        statusColor = Colors.blue;
-        statusIcon = Icons.local_shipping;
-        break;
-      case 'Đang xử lý':
-        statusColor = Colors.orange;
-        statusIcon = Icons.pending;
-        break;
-      case 'Đã hủy':
-        statusColor = Colors.red;
-        statusIcon = Icons.cancel;
-        break;
-      default:
-        statusColor = Colors.grey;
-        statusIcon = Icons.help_outline;
-    }
+    OrderStatus orderStatus = parseOrderStatusFromInt(order.status);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -225,7 +137,7 @@ class OrderDetailScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                order.orderNumber,
+                order.code,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -236,22 +148,22 @@ class OrderDetailScreen extends ConsumerWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
+                  color: getStatusBackgroundColor(orderStatus).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      statusIcon,
+                      getStatusIcon(orderStatus),
                       size: 16,
-                      color: statusColor,
+                      color: getStatusColor(orderStatus),
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      order.status,
+                      getOrderStatusText(orderStatus),
                       style: TextStyle(
-                        color: statusColor,
+                        color: getStatusColor(orderStatus),
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
                       ),
@@ -263,7 +175,7 @@ class OrderDetailScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Đặt hàng lúc: ${dateFormatter.format(order.orderDate)}',
+            'Đặt hàng lúc: ${dateFormatter.format(order.createdAt)}',
             style: TextStyle(
               fontSize: 14,
               color: colorScheme.onSurfaceVariant,
@@ -305,45 +217,11 @@ class OrderDetailScreen extends ConsumerWidget {
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: order.statusHistory.length,
+            itemCount: _orderDetails.length,
             itemBuilder: (context, index) {
-              final status = order.statusHistory[index];
+              final status = order.status;
               final isFirst = index == 0;
-              final isLast = index == order.statusHistory.length - 1;
-
-              // Determine status color
-              Color statusColor;
-              IconData statusIcon;
-
-              switch (status.status) {
-                case 'Đã giao hàng':
-                  statusColor = Colors.green;
-                  statusIcon = Icons.check_circle;
-                  break;
-                case 'Đang giao hàng':
-                  statusColor = Colors.blue;
-                  statusIcon = Icons.local_shipping;
-                  break;
-                case 'Đã xác nhận':
-                  statusColor = Colors.blue;
-                  statusIcon = Icons.thumb_up;
-                  break;
-                case 'Đang xử lý':
-                  statusColor = Colors.orange;
-                  statusIcon = Icons.pending;
-                  break;
-                case 'Đã đặt hàng':
-                  statusColor = Colors.purple;
-                  statusIcon = Icons.shopping_cart_checkout;
-                  break;
-                case 'Đã hủy':
-                  statusColor = Colors.red;
-                  statusIcon = Icons.cancel;
-                  break;
-                default:
-                  statusColor = Colors.grey;
-                  statusIcon = Icons.help_outline;
-              }
+              final isLast = index == _orderDetails.length - 1;
 
               return TimelineTile(
                 alignment: TimelineAlign.start,

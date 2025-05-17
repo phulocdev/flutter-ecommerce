@@ -2,6 +2,7 @@ class CreateOrderRequestDto {
   final List<OrderItem> items;
   final String? userId;
   final int totalPrice;
+  final int itemCount;
   final int paymentMethod;
   final ShippingInfo shippingInfo;
 
@@ -9,6 +10,7 @@ class CreateOrderRequestDto {
       {required this.items,
       this.userId,
       required this.totalPrice,
+      required this.itemCount,
       required this.paymentMethod,
       required this.shippingInfo});
 
@@ -17,6 +19,7 @@ class CreateOrderRequestDto {
       'items': items.map((e) => e.toJson()).toList(),
       'userId': userId,
       'totalPrice': totalPrice,
+      'itemCount': itemCount,
       'paymentMethod': paymentMethod,
       'shippingInfo': shippingInfo.toJson()
     };

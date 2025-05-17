@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/apis/auth_api_service.dart';
 import 'package:flutter_ecommerce/providers/auth_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_ecommerce/services/token_service.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
@@ -19,14 +20,14 @@ class ProfileScreen extends ConsumerWidget {
     _authApiService = AuthApiService(_apiClient, _tokenService);
   }
 
-  // Hàm điều hướng đa nền tảng
-  void _navigate(BuildContext context, String path) {
-    if (kIsWeb) {
-      context.go(path);
-    } else {
-      context.push(path);
-    }
-  }
+  // void _navigate(BuildContext context, String path) {
+  //   if (kIsWeb) {
+  //     context.go(path);
+  //   } else {
+  //     context.push(path);
+  //     print('k');
+  //   }
+  // }
 
   Future<void> _showLogoutDialog(BuildContext context, WidgetRef ref) async {
     showDialog(
@@ -99,28 +100,33 @@ class ProfileScreen extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.location_on),
               title: const Text('Quản lý cửa hàng'),
-              onTap: () => _navigate(context, AppRoute.adminHome.path),
+              onTap: () => navigateTo(context, AppRoute.adminHome.path),
             ),
           if (isAuthenticated) ...[
             ListTile(
-              leading: const Icon(Icons.person),
+              leading: const Icon(Icons.history),
               title: const Text('Xem lịch sử mua hàng'),
-              onTap: () => _navigate(context, AppRoute.editProfileScreen.path),
+              onTap: () => {
+                if (kIsWeb)
+                  {context.go(AppRoute.historyOrders.path)}
+                else
+                  {context.push(AppRoute.historyOrders.path)}
+              },
             ),
             ListTile(
               leading: const Icon(Icons.person),
               title: const Text('Chỉnh sửa thông tin cá nhân'),
-              onTap: () => _navigate(context, AppRoute.editProfileScreen.path),
+              onTap: () => navigateTo(context, AppRoute.editProfileScreen.path),
             ),
             ListTile(
               leading: const Icon(Icons.lock),
               title: const Text('Thay đổi mật khẩu'),
-              onTap: () => _navigate(context, AppRoute.changePassword.path),
+              onTap: () => navigateTo(context, AppRoute.changePassword.path),
             ),
             ListTile(
               leading: const Icon(Icons.location_on),
               title: const Text('Quản lý địa chỉ giao hàng'),
-              onTap: () => _navigate(context, AppRoute.manageAddress.path),
+              onTap: () => navigateTo(context, AppRoute.manageAddress.path),
             ),
             ListTile(
               leading: const Icon(Icons.exit_to_app),
@@ -131,12 +137,12 @@ class ProfileScreen extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.login),
               title: const Text('Đăng nhập'),
-              onTap: () => _navigate(context, AppRoute.login.path),
+              onTap: () => navigateTo(context, AppRoute.login.path),
             ),
             ListTile(
               leading: const Icon(Icons.person_add),
               title: const Text('Đăng ký'),
-              onTap: () => _navigate(context, AppRoute.register.path),
+              onTap: () => navigateTo(context, AppRoute.register.path),
             ),
           ],
         ],
