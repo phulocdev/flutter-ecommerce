@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/apis/product_api_service.dart';
-import 'package:flutter_ecommerce/models/dto/date_range_query.dart';
 import 'package:flutter_ecommerce/models/dto/pagination_query.dart';
 import 'package:flutter_ecommerce/models/dto/product_query_dto.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:flutter_ecommerce/widgets/product_catalog/catalog_banner.dart';
 import 'package:flutter_ecommerce/widgets/product_catalog/filter_sidebar.dart';
 import 'package:flutter_ecommerce/widgets/product_catalog/product_grid.dart';
 import 'package:flutter_ecommerce/widgets/product_catalog/product_list.dart';
-import 'package:flutter_ecommerce/widgets/product_catalog/catalog_banner.dart';
 import 'package:flutter_ecommerce/widgets/product_catalog/sort_dropdown.dart';
 import 'package:flutter_ecommerce/widgets/responsive_builder.dart';
 
-const MAX_PRICE_FILTER = 80000000.00;
+const MAX_PRICE_FILTER = 150000000.00;
 
 class ProductCatalogScreen extends StatefulWidget {
   const ProductCatalogScreen({Key? key}) : super(key: key);

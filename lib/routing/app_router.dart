@@ -12,6 +12,8 @@ import 'package:flutter_ecommerce/screens/forgot_password_screen.dart';
 import 'package:flutter_ecommerce/screens/home_screen.dart';
 import 'package:flutter_ecommerce/screens/login_screen.dart';
 import 'package:flutter_ecommerce/screens/manage_address_screen.dart';
+import 'package:flutter_ecommerce/screens/order_detail_screen.dart';
+import 'package:flutter_ecommerce/screens/order_history_screen.dart';
 import 'package:flutter_ecommerce/screens/otp_screen.dart';
 import 'package:flutter_ecommerce/screens/payment_success.dart';
 import 'package:flutter_ecommerce/screens/product_catalog_screen.dart';
@@ -162,6 +164,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const EditProfileScreen(),
       ),
       GoRoute(
+        path: AppRoute.historyOrders.path,
+        name: AppRoute.historyOrders.name,
+        builder: (context, state) => const OrderHistoryScreen(),
+        routes: [
+          GoRoute(
+            path: AppRoute.orderDetail.path,
+            name: AppRoute.orderDetail.name,
+            builder: (context, state) {
+              final orderId = state.pathParameters['id']!;
+              return OrderDetailScreen(orderId: orderId);
+            },
+          ),
+        ],
+      ),
+      GoRoute(
         path: AppRoute.otp.path,
         name: AppRoute.otp.name,
         builder: (context, state) {
@@ -281,6 +298,8 @@ enum AppRoute {
   orderManagement('/order-management'),
   couponManagement('/coupon-management'),
   paymentSuccess('/payment-success'),
+  historyOrders('/history-orders'),
+  orderDetail(':id'),
   ;
 
   const AppRoute(this.path);

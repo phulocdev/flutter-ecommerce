@@ -104,6 +104,11 @@ class ProfileScreen extends ConsumerWidget {
           if (isAuthenticated) ...[
             ListTile(
               leading: const Icon(Icons.person),
+              title: const Text('Xem lịch sử mua hàng'),
+              onTap: () => _navigate(context, AppRoute.editProfileScreen.path),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
               title: const Text('Chỉnh sửa thông tin cá nhân'),
               onTap: () => _navigate(context, AppRoute.editProfileScreen.path),
             ),

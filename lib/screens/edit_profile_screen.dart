@@ -28,7 +28,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _tokenService = TokenService();
   final imageUploadService = ImageUploadApiServiceV2();
 
-  // Avatar handling - can be File (mobile) or Uint8List (web)
   dynamic _avatarImage;
   final ImagePicker _imagePicker = ImagePicker();
 
