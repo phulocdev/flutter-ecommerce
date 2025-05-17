@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_ecommerce/apis/image_upload_service_v2.dart';
 import 'package:flutter_ecommerce/apis/user_api_service.dart';
 import 'package:flutter_ecommerce/models/dto/login_response_dto.dart';
@@ -418,9 +419,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           label: 'Số điện thoại',
           prefixIcon: Icons.phone,
           keyboardType: TextInputType.phone,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(10),
+          ],
           validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Vui lòng nhập số điện thoại';
+            if (value != null &&
+                !RegExp(r'^(84|0[3|5|7|8|9])[0-9]{8}$').hasMatch(value)) {
+              return 'Vui lòng nhập số điện thoại hợp lệ';
             }
             return null;
           },
@@ -499,9 +505,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 label: 'Số điện thoại',
                 prefixIcon: Icons.phone,
                 keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập số điện thoại';
+                  if (value != null &&
+                      !RegExp(r'^(84|0[3|5|7|8|9])[0-9]{8}$').hasMatch(value)) {
+                    return 'Vui lòng nhập số điện thoại hợp lệ';
                   }
                   return null;
                 },

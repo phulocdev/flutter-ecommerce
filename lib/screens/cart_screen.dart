@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/cart_item.dart';
 import 'package:flutter_ecommerce/providers/cart_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:flutter_ecommerce/widgets/cart_list_item.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -235,8 +236,11 @@ class CartScreen extends ConsumerWidget {
           const SizedBox(height: 32),
           FilledButton.icon(
             onPressed: () {
-              // Navigate to products page
-              context.go(AppRoute.productCatalog.path);
+              // Thay đổi từ
+              // context.go(AppRoute.productCatalog.path);
+
+              // Sang cái này nha
+              navigateTo(context, AppRoute.productCatalog.path);
             },
             icon: const Icon(Icons.shopping_bag_outlined),
             label: const Text('Tiếp tục mua sắm'),

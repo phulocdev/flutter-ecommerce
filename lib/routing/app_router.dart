@@ -167,16 +167,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoute.historyOrders.path,
         name: AppRoute.historyOrders.name,
         builder: (context, state) => const OrderHistoryScreen(),
-        routes: [
-          GoRoute(
-            path: AppRoute.orderDetail.path,
-            name: AppRoute.orderDetail.name,
-            builder: (context, state) {
-              final orderId = state.pathParameters['id']!;
-              return OrderDetailScreen(orderId: orderId);
-            },
-          ),
-        ],
+      ),
+      GoRoute(
+        path: AppRoute.orderDetail.path,
+        name: AppRoute.orderDetail.name,
+        builder: (context, state) {
+          final String? orderId =
+              state.extra != null ? state.extra as String : null;
+
+          if (orderId == null) {
+            return const ProductCatalogScreen();
+          }
+
+          return OrderDetailScreen(orderId: orderId);
+        },
       ),
       GoRoute(
         path: AppRoute.otp.path,
@@ -228,9 +232,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const UserManagementScreen(),
       ),
       GoRoute(
-          path: (AppRoute.paymentSuccess.path),
-          name: AppRoute.paymentSuccess.name,
-          builder: (context, state) => const PaymentSuccessScreen())
+        path: (AppRoute.paymentSuccess.path),
+        name: AppRoute.paymentSuccess.name,
+        builder: (context, state) {
+          final String? orderCode =
+              state.extra != null ? state.extra as String : null;
+
+          if (orderCode == null) {
+            return ProductCatalogScreen();
+          }
+
+          return PaymentSuccessScreen(
+            orderCode: orderCode,
+          );
+        },
+      )
     ],
     redirect: (context, state) {
       // Get the current auth state directly in the redirect function
@@ -299,7 +315,7 @@ enum AppRoute {
   couponManagement('/coupon-management'),
   paymentSuccess('/payment-success'),
   historyOrders('/history-orders'),
-  orderDetail(':id'),
+  orderDetail('/order-detail'),
   ;
 
   const AppRoute(this.path);

@@ -1,82 +1,55 @@
 // order_history_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce/apis/order_api_service.dart';
+import 'package:flutter_ecommerce/models/dto/create_order_response.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:flutter_ecommerce/utils/enum.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
-// This would be your actual order model
-class Order {
-  final String id;
-  final String orderNumber;
-  final DateTime orderDate;
-  final double totalAmount;
-  final String status;
-  final int itemCount;
-
-  Order({
-    required this.id,
-    required this.orderNumber,
-    required this.orderDate,
-    required this.totalAmount,
-    required this.status,
-    required this.itemCount,
-  });
-}
-
-// This would be your actual provider
-final ordersProvider = Provider<List<Order>>((ref) {
-  // Mock data for demonstration
-  return [
-    Order(
-      id: '1',
-      orderNumber: 'ORD-2023-001',
-      orderDate: DateTime.now().subtract(const Duration(days: 2)),
-      totalAmount: 1250000,
-      status: 'Đã giao hàng',
-      itemCount: 3,
-    ),
-    Order(
-      id: '2',
-      orderNumber: 'ORD-2023-002',
-      orderDate: DateTime.now().subtract(const Duration(days: 5)),
-      totalAmount: 850000,
-      status: 'Đang giao hàng',
-      itemCount: 2,
-    ),
-    Order(
-      id: '3',
-      orderNumber: 'ORD-2023-003',
-      orderDate: DateTime.now().subtract(const Duration(days: 10)),
-      totalAmount: 1500000,
-      status: 'Đã giao hàng',
-      itemCount: 4,
-    ),
-    Order(
-      id: '4',
-      orderNumber: 'ORD-2023-004',
-      orderDate: DateTime.now().subtract(const Duration(days: 15)),
-      totalAmount: 350000,
-      status: 'Đã hủy',
-      itemCount: 1,
-    ),
-    Order(
-      id: '5',
-      orderNumber: 'ORD-2023-005',
-      orderDate: DateTime.now().subtract(const Duration(days: 20)),
-      totalAmount: 2100000,
-      status: 'Đã giao hàng',
-      itemCount: 5,
-    ),
-  ];
-});
-
-class OrderHistoryScreen extends ConsumerWidget {
+class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final orders = ref.watch(ordersProvider);
+  State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
+}
+
+class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
+  late List<Order> _orderList;
+  bool _isLoading = true;
+
+  final orderApiService = OrderApiService(ApiClient());
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOrdersByCustomer();
+  }
+
+  Future<void> _fetchOrdersByCustomer() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final orderList = await orderApiService.getOrdersByCustomer();
+
+      setState(() {
+        _orderList = orderList;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('Error fetching product list: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -98,9 +71,11 @@ class OrderHistoryScreen extends ConsumerWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: orders.isEmpty
-          ? _buildEmptyState(context)
-          : _buildOrdersList(context, orders),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _orderList.isEmpty
+              ? _buildEmptyState(context)
+              : _buildOrdersList(context, _orderList),
     );
   }
 
@@ -156,7 +131,8 @@ class OrderHistoryScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Colors.red),
+                side:
+                    BorderSide(color: const Color.fromARGB(255, 195, 195, 195)),
               ),
             ),
           ),
@@ -177,44 +153,19 @@ class OrderHistoryScreen extends ConsumerWidget {
       itemCount: orders.length,
       itemBuilder: (context, index) {
         final order = orders[index];
-
-        // Determine status color
-        Color statusColor;
-        IconData statusIcon;
-
-        switch (order.status) {
-          case 'Đã giao hàng':
-            statusColor = Colors.green;
-            statusIcon = Icons.check_circle;
-            break;
-          case 'Đang giao hàng':
-            statusColor = Colors.blue;
-            statusIcon = Icons.local_shipping;
-            break;
-          case 'Đang xử lý':
-            statusColor = Colors.orange;
-            statusIcon = Icons.pending;
-            break;
-          case 'Đã hủy':
-            statusColor = Colors.red;
-            statusIcon = Icons.cancel;
-            break;
-          default:
-            statusColor = Colors.grey;
-            statusIcon = Icons.help_outline;
-        }
+        OrderStatus orderStatus = parseOrderStatusFromInt(order.status);
 
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: colorScheme.outline.withOpacity(0.2)),
+            side: BorderSide(color: const Color.fromARGB(255, 195, 195, 195)),
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: () {
-              context.go('${AppRoute.historyOrders.path}/${order.id}');
+              context.go(AppRoute.orderDetail.path, extra: order.id);
             },
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -241,7 +192,7 @@ class OrderHistoryScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              order.orderNumber,
+                              order.code,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -250,7 +201,7 @@ class OrderHistoryScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              dateFormatter.format(order.orderDate),
+                              dateFormatter.format(order.createdAt),
                               style: TextStyle(
                                 color: colorScheme.onSurfaceVariant,
                                 fontSize: 14,
@@ -263,26 +214,26 @@ class OrderHistoryScreen extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.1),
+                          color: getStatusBackgroundColor(orderStatus)
+                              .withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              statusIcon,
-                              size: 16,
-                              color: statusColor,
+                              getStatusIcon(orderStatus),
+                              color: getStatusColor(orderStatus),
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              order.status,
+                              getOrderStatusText(orderStatus),
                               style: TextStyle(
-                                color: statusColor,
+                                color: getStatusColor(orderStatus),
                                 fontWeight: FontWeight.w500,
                                 fontSize: 14,
                               ),
-                            ),
+                            )
                           ],
                         ),
                       ),
@@ -290,7 +241,9 @@ class OrderHistoryScreen extends ConsumerWidget {
                   ),
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Divider(),
+                    child: Divider(
+                      color: Color.fromARGB(255, 232, 231, 231),
+                    ),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -312,7 +265,7 @@ class OrderHistoryScreen extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            priceFormatter.format(order.totalAmount),
+                            priceFormatter.format(order.totalPrice),
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -335,15 +288,18 @@ class OrderHistoryScreen extends ConsumerWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          side: BorderSide(color: colorScheme.primary),
+                          side: BorderSide(
+                              color: const Color.fromARGB(255, 195, 195, 195)),
                         ),
                         child: Text('Mua lại'),
                       ),
                       const SizedBox(width: 8),
                       FilledButton(
                         onPressed: () {
-                          context
-                              .go('${AppRoute.historyOrders.path}/${order.id}');
+                          context.go(
+                            AppRoute.orderDetail.path,
+                            extra: order.id,
+                          );
                         },
                         style: FilledButton.styleFrom(
                           backgroundColor: colorScheme.primary,

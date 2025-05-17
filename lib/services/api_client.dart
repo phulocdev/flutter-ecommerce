@@ -2,16 +2,19 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+
 import 'token_service.dart';
 
 class ApiClient {
   final TokenService _tokenService = TokenService();
-  final String _baseUrl = dotenv.env['BASE_URL'] ?? 'https://api.example.com';
-  final String _refreshPath =
-      dotenv.env['REFRESH_TOKEN_PATH'] ?? '/auth/refresh';
+  final String _baseUrl = dotenv.env['BASE_URL']!;
+  final String _refreshPath = dotenv.env['REFRESH_TOKEN_PATH']!;
+  // final String _baseUrl = 'https://flutter-commerce-api.vercel.app/api/v1';
+  // final String _refreshPath = '/auth/refresh-token';
   final String _uploadPath = '/media/upload/single';
 
   bool _isRefreshing = false;

@@ -24,6 +24,7 @@ class Order {
   final String code;
   final int status;
   final int totalPrice;
+  final int itemCount;
   final int paymentMethod;
   final DateTime? paymentAt;
   final DateTime? deliveredAt;
@@ -40,6 +41,7 @@ class Order {
     required this.status,
     required this.totalPrice,
     required this.paymentMethod,
+    required this.itemCount,
     this.paymentAt,
     this.deliveredAt,
     this.cancelledAt,
@@ -54,6 +56,7 @@ class Order {
       id: json['_id'] as String,
       user: json['user'] as String,
       code: json['code'] as String,
+      itemCount: json['itemCount'] as int,
       status: json['status'] as int,
       totalPrice: json['totalPrice'] as int,
       paymentMethod: json['paymentMethod'] as int,

@@ -1,12 +1,13 @@
+import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ImageUploadService {
-  static final String baseUrl = dotenv.env['BASE_URL']!;
+  static final String baseUrl =
+      'https://flutter-commerce-api.vercel.app/api/v1';
   static const String uploadEndpoint = '/media/upload/single';
 
   static Future<String?> uploadImage({

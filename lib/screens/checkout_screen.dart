@@ -75,10 +75,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         // KH vang Lai
         if (account == null) {
           final registerDto = RegisterForGuestRequestDto(
-            email: _emailController.text,
-            address: _addressController.text,
-            fullName: _nameController.text,
-          );
+              email: _emailController.text.trim(),
+              address: _addressController.text.trim(),
+              fullName: _nameController.text.trim(),
+              phoneNumber: _phoneNumberController.text.trim());
 
           final registerRes =
               await _authApiService.registerForGuest(registerDto);
@@ -98,6 +98,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   costPrice: item.sku!.costPrice,
                   sellingPrice: item.price))
               .toList(),
+          itemCount: cartItems.length,
           userId: accountId,
           totalPrice: totalPrice,
           paymentMethod: paymentMethod == 'cod' ? 0 : 1,
@@ -109,15 +110,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ),
         );
 
-        await _orderApiService.create(createOrderDto);
-
+        final res = await _orderApiService.create(createOrderDto);
+        final newOrder = res.data;
         ref
             .read(cartProvider.notifier)
             .removeCartItems(cartItems.map((item) => item.id).toList());
 
         if (context.mounted) {
           Navigator.pop(context);
-          context.pushReplacement(AppRoute.paymentSuccess.path);
+          context.pushReplacement(AppRoute.paymentSuccess.path,
+              extra: newOrder.code);
         }
       } catch (e) {
         if (context.mounted) {
