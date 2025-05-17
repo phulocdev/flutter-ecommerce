@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce/apis/auth_api_service.dart';
+import 'package:flutter_ecommerce/models/dto/reset_password_dto.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:flutter_ecommerce/services/token_service.dart';
+import 'package:go_router/go_router.dart';
 
 class OTPScreen extends StatefulWidget {
-  const OTPScreen({super.key});
+  final String email;
+  OTPScreen({super.key, required this.email});
 
   @override
   _OTPScreenState createState() => _OTPScreenState();
@@ -9,15 +16,74 @@ class OTPScreen extends StatefulWidget {
 
 class _OTPScreenState extends State<OTPScreen> {
   final _formKey = GlobalKey<FormState>();
-  String? _otp, _newPassword, _confirmPassword;
+  final _apiClient = ApiClient();
+  final _tokenService = TokenService();
+  late final AuthApiService _authApiService =
+      AuthApiService(_apiClient, _tokenService);
+
+  final _otpController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleResetPassword() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final dto = ResetPasswordDto(
+        email: widget.email,
+        password: _newPasswordController.text.trim(),
+        otpCode: int.tryParse(_otpController.text.trim())!,
+      );
+
+      await _authApiService.resetPassword(dto);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đặt lại mật khẩu thành công')),
+        );
+        context.go(AppRoute.login.path);
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Lỗi: ${e.toString()}';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,
         title: const Text(
-          'Recovery Password',
+          'Khôi phục mật khẩu',
           style: TextStyle(
               color: Colors.white, fontWeight: FontWeight.w500, fontSize: 24),
           textAlign: TextAlign.center,
@@ -26,113 +92,175 @@ class _OTPScreenState extends State<OTPScreen> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: width > 600 ? 500 : double.infinity,
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
-                    'OTP Verification',
+                    'Xác thực OTP',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 16),
+
                   TextFormField(
-                    decoration: InputDecoration(
-                      labelText: 'OTP Code',
-                      prefixIcon: const Icon(Icons.lock),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: const BorderSide(
-                          color: Colors.grey, // Border color when unfocused
-                          width: 1.0,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: const BorderSide(
-                          color: Colors.blue, // Border color when focused
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    onSaved: (value) => _otp = value,
+                    controller: _otpController,
+                    decoration: _inputDecoration(label: 'Mã OTP'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter the OTP';
+                        return 'Vui lòng nhập mã OTP';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
+
+                  // Mật khẩu mới
                   TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'New Password',
-                      prefixIcon: Icon(Icons.lock),
-                      border: OutlineInputBorder(),
+                    controller: _newPasswordController,
+                    obscureText: _obscureNewPassword,
+                    decoration: _inputDecoration(
+                      label: 'Mật khẩu mới',
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureNewPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureNewPassword = !_obscureNewPassword;
+                          });
+                        },
+                      ),
                     ),
-                    obscureText: true,
-                    onSaved: (value) => _newPassword = value,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your new password';
+                        return 'Vui lòng nhập mật khẩu mới';
                       }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                      if (value.length < 8) {
+                        return 'Mật khẩu phải có ít nhất 9 ký tự';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
+
+                  // Xác nhận mật khẩu mới
                   TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'Confirm Password',
-                      prefixIcon: Icon(Icons.lock),
-                      border: OutlineInputBorder(),
+                    controller: _confirmPasswordController,
+                    obscureText: _obscureConfirmPassword,
+                    decoration: _inputDecoration(
+                      label: 'Xác nhận mật khẩu',
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
+                        },
+                      ),
                     ),
-                    obscureText: true,
-                    onSaved: (value) => _confirmPassword = value,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
+                        return 'Vui lòng xác nhận mật khẩu';
                       }
-                      if (_newPassword != value) {
-                        return 'Passwords do not match';
+                      if (value != _newPasswordController.text) {
+                        return 'Mật khẩu xác nhận không khớp';
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
+
+                  if (_errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  const SizedBox(height: 10),
+
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[400],
+                      backgroundColor: Colors.lightBlue,
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        // Handle OTP verification and password reset
-                      }
-                    },
-                    child: const Text(
-                      'Verify and Reset Password',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    onPressed: _isLoading ? null : _handleResetPassword,
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : const Text(
+                            'Xác thực và Đặt lại mật khẩu',
+                            style: TextStyle(color: Colors.white),
+                          ),
                   ),
                 ],
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration({
+    required String label,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: const Icon(Icons.lock_outline, color: Colors.black87),
+      suffixIcon: suffixIcon,
+      labelStyle: const TextStyle(color: Colors.black87),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide: const BorderSide(
+          color: Colors.grey,
+          width: 1.0,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide: BorderSide(
+          color: Colors.blue.shade700,
+          width: 2.0,
+        ),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide: const BorderSide(
+          color: Colors.red,
+          width: 2.0,
+        ),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide: const BorderSide(
+          color: Colors.red,
+          width: 2.0,
         ),
       ),
     );

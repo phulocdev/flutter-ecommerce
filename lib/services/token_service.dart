@@ -32,7 +32,9 @@ class TokenService {
       'email': account.email,
       'fullName': account.fullName,
       'role': account.role,
-      'avatarUrl': account.avatarUrl
+      'avatarUrl': account.avatarUrl,
+      'phoneNumber': account.phoneNumber,
+      'address': account.address,
     };
     await _storage.write(key: _accountKey, value: json.encode(accountMap));
   }

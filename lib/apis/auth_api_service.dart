@@ -1,5 +1,8 @@
+import 'package:flutter_ecommerce/models/dto/change_password_dto.dart';
+import 'package:flutter_ecommerce/models/dto/forgot_password_dto.dart';
 import 'package:flutter_ecommerce/models/dto/register_for_guest_request.dto.dart';
 import 'package:flutter_ecommerce/models/dto/register_request_dto.dart';
+import 'package:flutter_ecommerce/models/dto/reset_password_dto.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/services/token_service.dart';
 
@@ -54,9 +57,11 @@ class AuthApiService {
     }
   }
 
-  Future changePassword(dto) async {
+  Future<LoginResponseDto> changePassword(ChangePasswrodDto dto) async {
     try {
-      await _apiClient.post('/auth/change-password', body: dto.toJson());
+      final response =
+          await _apiClient.patch('/auth/change-password', body: dto.toJson());
+      return LoginResponseDto.fromJson(response);
     } on ApiException catch (e) {
       _handleApiError(e);
       rethrow;
@@ -90,6 +95,28 @@ class AuthApiService {
       print("Yêu cầu không hợp lệ: ${e.message}");
     } else {
       print("Lỗi API: ${e.message}");
+    }
+  }
+
+  Future<void> forgotPassword(ForgotPasswrodDto dto) async {
+    try {
+      final res =
+          await _apiClient.post('/auth/forgot-password', body: dto.toJson());
+      return res;
+    } catch (e) {
+      print("Lỗi: $e");
+      rethrow;
+    }
+  }
+
+  Future<void> resetPassword(ResetPasswordDto dto) async {
+    try {
+      final res =
+          await _apiClient.post('/auth/reset-password', body: dto.toJson());
+      return res;
+    } catch (e) {
+      print("Lỗi: $e");
+      rethrow;
     }
   }
 }

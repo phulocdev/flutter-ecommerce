@@ -1,94 +1,20 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ecommerce/apis/brand_api_service.dart';
 import 'package:flutter_ecommerce/apis/category_api_service.dart';
-import 'package:flutter_ecommerce/apis/image_upload_service.dart';
 import 'package:flutter_ecommerce/apis/image_upload_service_v2.dart';
 import 'package:flutter_ecommerce/models/brand.dart';
 import 'package:flutter_ecommerce/models/category.dart';
 import 'package:flutter_ecommerce/models/dto/create_product_dto.dart';
 import 'package:flutter_ecommerce/models/dto/create_sku_dto.dart';
-import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/screens/product_management_screen.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:flutter_ecommerce/widgets/cross_platform_image.dart';
 import 'package:flutter_ecommerce/widgets/responsive_builder.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-
-// Cross-platform image widget that works on both web and mobile
-class CrossPlatformImage extends StatelessWidget {
-  final dynamic imageSource; // Can be File or Uint8List
-  final double? width;
-  final double? height;
-  final BoxFit fit;
-  final BorderRadius? borderRadius;
-
-  const CrossPlatformImage({
-    Key? key,
-    required this.imageSource,
-    this.width,
-    this.height,
-    this.fit = BoxFit.cover,
-    this.borderRadius,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    Widget imageWidget;
-
-    if (kIsWeb) {
-      // For web, use Image.memory with Uint8List
-      if (imageSource is Uint8List) {
-        imageWidget = Image.memory(
-          imageSource,
-          width: width,
-          height: height,
-          fit: fit,
-        );
-      } else {
-        // Fallback for web if not Uint8List
-        imageWidget = Container(
-          width: width,
-          height: height,
-          color: Colors.grey.shade200,
-          child: Icon(Icons.image_not_supported, color: Colors.grey),
-        );
-      }
-    } else {
-      // For mobile, use Image.file
-      if (imageSource is File) {
-        imageWidget = Image.file(
-          imageSource,
-          width: width,
-          height: height,
-          fit: fit,
-        );
-      } else {
-        // Fallback for mobile if not File
-        imageWidget = Container(
-          width: width,
-          height: height,
-          color: Colors.grey.shade200,
-          child: Icon(Icons.image_not_supported, color: Colors.grey),
-        );
-      }
-    }
-
-    // Apply border radius if provided
-    if (borderRadius != null) {
-      return ClipRRect(
-        borderRadius: borderRadius!,
-        child: imageWidget,
-      );
-    }
-
-    return imageWidget;
-  }
-}
 
 class ProductForm extends StatefulWidget {
   final CreateProductDto? product;
@@ -122,8 +48,8 @@ class _ProductFormState extends State<ProductForm> {
 
   // Image handling - can be File (mobile) or Uint8List (web)
   dynamic _productImage;
-  final Map<int, dynamic> _skuImages = {};
   final ImagePicker _imagePicker = ImagePicker();
+  final Map<int, dynamic> _skuImages = {};
 
   // Map to store controllers for SKUs
   final Map<String, TextEditingController> _skuControllers = {};
