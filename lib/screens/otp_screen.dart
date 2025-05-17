@@ -59,9 +59,7 @@ class _OTPScreenState extends State<OTPScreen> {
       await _authApiService.resetPassword(dto);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đặt lại mật khẩu thành công')),
-        );
+        _showSuccessSnackBar('Đặt lại mật khẩu thành công');
         context.go(AppRoute.login.path);
       }
     } catch (e) {
@@ -262,6 +260,24 @@ class _OTPScreenState extends State<OTPScreen> {
           color: Colors.red,
           width: 2.0,
         ),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
       ),
     );
   }

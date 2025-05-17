@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_ecommerce/apis/auth_api_service.dart';
 import 'package:flutter_ecommerce/apis/order_api_service.dart';
 import 'package:flutter_ecommerce/models/cart_item.dart';
 import 'package:flutter_ecommerce/models/dto/create_order_dto.dart';
 import 'package:flutter_ecommerce/models/dto/register_for_guest_request.dto.dart';
-import 'package:flutter_ecommerce/models/dto/register_request_dto.dart';
+import 'package:flutter_ecommerce/providers/auth_providers.dart';
 import 'package:flutter_ecommerce/providers/cart_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
@@ -23,11 +24,12 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  String name = '';
-  String email = '';
-  String phoneNumber = '';
-  String address = '';
-  String paymentMethod = 'credit_card';
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+
+  String paymentMethod = 'cod';
 
   final _apiClient = ApiClient();
   final _tokenService = TokenService();
@@ -35,28 +37,53 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       AuthApiService(_apiClient, _tokenService);
   late final OrderApiService _orderApiService = OrderApiService(_apiClient);
 
-  void _submitOrder() async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
+  @override
+  void initState() {
+    super.initState();
+    final account = ref.read(authProvider);
+    if (account != null) {
+      _nameController.text = account.fullName;
+      _emailController.text = account.email;
+      _phoneNumberController.text = account.phoneNumber;
+      _addressController.text = account.address;
+    }
+  }
 
-      // Show loading indicator
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneNumberController.dispose();
+    _addressController.dispose();
+    super.dispose();
+  }
+
+  void _submitOrder() async {
+    final account = ref.read(authProvider);
+
+    if (_formKey.currentState!.validate()) {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
       try {
-        final registerDto = RegisterForGuestRequestDto(
-          email: email,
-          address: address,
-          fullName: name,
-        );
+        // KH da dang nhap
+        String? accountId = account?.id;
 
-        final registerRes = await _authApiService.registerForGuest(registerDto);
-        final userId = registerRes.data.id;
+        // KH vang Lai
+        if (account == null) {
+          final registerDto = RegisterForGuestRequestDto(
+            email: _emailController.text,
+            address: _addressController.text,
+            fullName: _nameController.text,
+          );
+
+          final registerRes =
+              await _authApiService.registerForGuest(registerDto);
+          accountId = registerRes.data.id;
+        }
 
         final cartItems =
             ref.read(cartProvider).where((item) => item.isChecked);
@@ -64,56 +91,37 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             0, (sum, item) => sum + (item.quantity * item.price).toInt());
 
         final createOrderDto = CreateOrderRequestDto(
-            items: cartItems
-                .map((item) => OrderItem(
-                    sku: item.sku!.id,
-                    quantity: item.quantity,
-                    costPrice: item.sku!.costPrice,
-                    sellingPrice: item.price))
-                .toList(),
-            userId: userId,
-            totalPrice: totalPrice,
-            paymentMethod: paymentMethod == 'cod' ? 0 : 1,
-            shippingInfo: ShippingInfo(
-                name: name,
-                email: email,
-                phoneNumber: phoneNumber,
-                address: address));
+          items: cartItems
+              .map((item) => OrderItem(
+                  sku: item.sku!.id,
+                  quantity: item.quantity,
+                  costPrice: item.sku!.costPrice,
+                  sellingPrice: item.price))
+              .toList(),
+          userId: accountId,
+          totalPrice: totalPrice,
+          paymentMethod: paymentMethod == 'cod' ? 0 : 1,
+          shippingInfo: ShippingInfo(
+            name: _nameController.text,
+            email: _emailController.text,
+            phoneNumber: _phoneNumberController.text,
+            address: _addressController.text,
+          ),
+        );
 
-        // create new order
-        final createOrderRes = await _orderApiService.create(createOrderDto);
+        await _orderApiService.create(createOrderDto);
 
         ref
             .read(cartProvider.notifier)
             .removeCartItems(cartItems.map((item) => item.id).toList());
 
-        // Close loading dialog
         if (context.mounted) {
           Navigator.pop(context);
+          context.pushReplacement(AppRoute.paymentSuccess.path);
         }
-
-        context.pushReplacement(AppRoute.paymentSuccess.path);
-        // // Show success dialog
-        // if (context.mounted) {
-        //   await showDialog(
-        //     context: context,
-        //     builder: (context) => AlertDialog(
-        //       title: const Text('Đặt hàng thành công'),
-        //       content: const Text(
-        //           'Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng của bạn ngay lập tức.'),
-        //       actions: [
-        //         TextButton(
-        //           onPressed: () => Navigator.pop(context),
-        //           child: const Text('Đóng'),
-        //         ),
-        //       ],
-        //     ),
-        //   );
-        // }
       } catch (e) {
-        if (context.mounted) Navigator.pop(context); // Close loading on error
-
         if (context.mounted) {
+          Navigator.pop(context); // Close loading
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
@@ -190,6 +198,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             children: [
               Divider(height: 1, color: Colors.grey.shade200),
               RadioListTile<String>(
+                onChanged: null,
                 title: Row(
                   children: [
                     Icon(Icons.account_balance,
@@ -200,11 +209,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ),
                 value: 'bank_transfer',
                 groupValue: paymentMethod,
-                onChanged: (value) => setState(() => paymentMethod = value!),
+                // onChanged: (value) => setState(() => paymentMethod = value!),
                 activeColor: Theme.of(context).primaryColor,
               ),
               Divider(height: 1, color: Colors.grey.shade200),
               RadioListTile<String>(
+                selected: true,
                 title: Row(
                   children: [
                     Icon(Icons.money, color: Theme.of(context).primaryColor),
@@ -390,7 +400,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
   }
 
-  @override
   Widget build(BuildContext context) {
     // Sample order items - in a real app, these would come from your cart
     final cartItems = ref.watch(cartProvider);
@@ -432,7 +441,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           validator: (value) => value == null || value.isEmpty
                               ? 'Vui lòng nhập tên'
                               : null,
-                          onSaved: (value) => name = value!,
+                          controller: _nameController,
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
@@ -445,7 +454,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               value == null || !value.contains('@')
                                   ? 'Email không hợp lệ'
                                   : null,
-                          onSaved: (value) => email = value!,
+                          controller: _emailController,
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
@@ -454,11 +463,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             icon: Icons.phone,
                           ),
                           keyboardType: TextInputType.phone,
-                          validator: (value) =>
-                              value == null || value.length < 9
-                                  ? 'Số điện thoại không hợp lệ'
-                                  : null,
-                          onSaved: (value) => phoneNumber = value!,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(10),
+                          ],
+                          validator: (value) {
+                            if (value != null &&
+                                !RegExp(r'^(84|0[3|5|7|8|9])[0-9]{8}$')
+                                    .hasMatch(value)) {
+                              return 'Vui lòng nhập số điện thoại hợp lệ';
+                            }
+                            return null;
+                          },
+                          controller: _phoneNumberController,
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
@@ -470,7 +487,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           validator: (value) => value == null || value.isEmpty
                               ? 'Vui lòng nhập địa chỉ'
                               : null,
-                          onSaved: (value) => address = value!,
+                          controller: _addressController,
                         ),
                       ],
                     ),

@@ -353,9 +353,9 @@ class _ImageGalleryState extends State<ImageGallery> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Hero(
-                    tag: 'product_image_${widget.images[index]}',
+                    tag: 'product_image_${widget.images[_selectedIndex]}',
                     child: CachedNetworkImage(
-                      imageUrl: widget.images[index],
+                      imageUrl: widget.images[_selectedIndex],
                       fit: BoxFit.contain,
                       placeholder: (context, url) => Container(
                         color: Colors.grey.shade200,
