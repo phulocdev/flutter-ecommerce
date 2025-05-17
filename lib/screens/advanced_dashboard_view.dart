@@ -309,7 +309,7 @@ class _AdvancedDashboardViewState extends State<AdvancedDashboardView> {
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: 22,
-                        interval: 1, // Đặt khoảng cách giữa các label
+                        interval: 1, 
                         getTitlesWidget:
                             (double value, TitleMeta meta) {
                           return _getBottomTitle(value);
