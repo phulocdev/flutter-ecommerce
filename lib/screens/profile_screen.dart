@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_ecommerce/services/token_service.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter/foundation.dart'; // cần thiết cho kIsWeb
 
 class ProfileScreen extends ConsumerWidget {
   late final TokenService _tokenService;
@@ -16,6 +17,15 @@ class ProfileScreen extends ConsumerWidget {
     _tokenService = TokenService();
     _apiClient = ApiClient();
     _authApiService = AuthApiService(_apiClient, _tokenService);
+  }
+
+  // Hàm điều hướng đa nền tảng
+  void _navigate(BuildContext context, String path) {
+    if (kIsWeb) {
+      context.go(path);
+    } else {
+      context.push(path);
+    }
   }
 
   Future<void> _showLogoutDialog(BuildContext context, WidgetRef ref) async {
@@ -54,8 +64,8 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authProvider);
-    final isAuthenticated = user != null;
+    final account = ref.watch(authProvider);
+    final isAuthenticated = account != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -71,36 +81,41 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           UserAccountsDrawerHeader(
             accountName: Text(
-              isAuthenticated ? user.fullName : 'Khách vãng lai',
+              isAuthenticated ? account.fullName : 'Khách vãng lai',
             ),
             accountEmail: Text(
-              isAuthenticated ? user.email : 'Vui lòng đăng nhập',
+              isAuthenticated ? account.email : 'Vui lòng đăng nhập',
             ),
             decoration: const BoxDecoration(color: Colors.blue),
-            currentAccountPicture: const CircleAvatar(
-              backgroundImage: AssetImage('assets/images/avt.png'),
+            currentAccountPicture: CircleAvatar(
+              backgroundImage: isAuthenticated &&
+                      account.avatarUrl != null &&
+                      account.avatarUrl!.isNotEmpty
+                  ? NetworkImage(account.avatarUrl!)
+                  : const AssetImage('assets/images/avt.png') as ImageProvider,
             ),
           ),
-          if (isAuthenticated) ...[
+          if (account?.role == "Admin")
             ListTile(
               leading: const Icon(Icons.location_on),
               title: const Text('Quản lý cửa hàng'),
-              onTap: () => context.go(AppRoute.adminHome.path),
+              onTap: () => _navigate(context, AppRoute.adminHome.path),
             ),
+          if (isAuthenticated) ...[
             ListTile(
               leading: const Icon(Icons.person),
               title: const Text('Chỉnh sửa thông tin cá nhân'),
-              onTap: () => context.push(AppRoute.editProfileScreen.path),
+              onTap: () => _navigate(context, AppRoute.editProfileScreen.path),
             ),
             ListTile(
               leading: const Icon(Icons.lock),
               title: const Text('Thay đổi mật khẩu'),
-              onTap: () => context.go(AppRoute.changePassword.path),
+              onTap: () => _navigate(context, AppRoute.changePassword.path),
             ),
             ListTile(
               leading: const Icon(Icons.location_on),
               title: const Text('Quản lý địa chỉ giao hàng'),
-              onTap: () => context.go(AppRoute.manageAddress.path),
+              onTap: () => _navigate(context, AppRoute.manageAddress.path),
             ),
             ListTile(
               leading: const Icon(Icons.exit_to_app),
@@ -111,12 +126,12 @@ class ProfileScreen extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.login),
               title: const Text('Đăng nhập'),
-              onTap: () => context.go(AppRoute.login.path),
+              onTap: () => _navigate(context, AppRoute.login.path),
             ),
             ListTile(
               leading: const Icon(Icons.person_add),
               title: const Text('Đăng ký'),
-              onTap: () => context.go(AppRoute.register.path),
+              onTap: () => _navigate(context, AppRoute.register.path),
             ),
           ],
         ],

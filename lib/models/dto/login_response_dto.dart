@@ -44,6 +44,8 @@ class Account {
   final String email;
   final String fullName;
   final String role;
+  final String address;
+  final String phoneNumber;
 
   Account({
     required String id,
@@ -51,6 +53,8 @@ class Account {
     required this.email,
     required this.fullName,
     required this.role,
+    required this.address,
+    required this.phoneNumber,
   }) : _id = id;
 
   String get id => _id;
@@ -62,6 +66,8 @@ class Account {
       email: json['email'] as String,
       fullName: json['fullName'] as String,
       role: json['role'] as String,
+      address: json['address'] as String,
+      phoneNumber: json['phoneNumber'] as String,
     );
   }
 }

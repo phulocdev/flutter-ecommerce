@@ -6,25 +6,24 @@ import 'package:flutter_ecommerce/screens/admin_home_screen.dart';
 import 'package:flutter_ecommerce/screens/cart_screen.dart';
 import 'package:flutter_ecommerce/screens/change_password_screen.dart';
 import 'package:flutter_ecommerce/screens/checkout_screen.dart';
+import 'package:flutter_ecommerce/screens/dashboard.dart';
 import 'package:flutter_ecommerce/screens/edit_profile_screen.dart';
 import 'package:flutter_ecommerce/screens/forgot_password_screen.dart';
+import 'package:flutter_ecommerce/screens/home_screen.dart';
 import 'package:flutter_ecommerce/screens/login_screen.dart';
 import 'package:flutter_ecommerce/screens/manage_address_screen.dart';
 import 'package:flutter_ecommerce/screens/otp_screen.dart';
 import 'package:flutter_ecommerce/screens/payment_success.dart';
 import 'package:flutter_ecommerce/screens/product_catalog_screen.dart';
 import 'package:flutter_ecommerce/screens/product_detail_screen.dart';
-import 'package:flutter_ecommerce/screens/dashboard.dart';
 import 'package:flutter_ecommerce/screens/product_detail_screen_admin.dart';
 import 'package:flutter_ecommerce/screens/product_management_screen.dart';
-import 'package:flutter_ecommerce/screens/home_screen.dart';
 import 'package:flutter_ecommerce/screens/profile_screen.dart';
 import 'package:flutter_ecommerce/screens/registration_screen.dart';
 import 'package:flutter_ecommerce/screens/user_managenent_screen.dart';
 import 'package:flutter_ecommerce/widgets/scaffold_with_nav_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 // Create a custom refresh listenable to handle auth state changes
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -58,7 +57,7 @@ final _shellNavigatorProfileKey =
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   // Enable the use of the URL's path in the web platform
-  setUrlStrategy(PathUrlStrategy());
+  // setUrlStrategy(PathUrlStrategy());
 
   return GoRouter(
     // Remove initialLocation to allow the app to start from the current URL
@@ -165,7 +164,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoute.otp.path,
         name: AppRoute.otp.name,
-        builder: (context, state) => const OTPScreen(),
+        builder: (context, state) {
+          final String? email =
+              state.extra != null ? state.extra as String : null;
+
+          if (email == null) {
+            return ForgotPasswordScreen();
+          }
+
+          return OTPScreen(email: email);
+        },
       ),
       GoRoute(
         path: AppRoute.manageAddress.path,
@@ -240,8 +248,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         return AppRoute.home.path;
       }
 
-      return AppRoute.userManagement.path;
       return null;
+      return AppRoute.userManagement.path;
     },
     errorBuilder: (context, state) => Scaffold(
       body: Center(

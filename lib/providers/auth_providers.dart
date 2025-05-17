@@ -27,6 +27,8 @@ class AuthNotifier extends StateNotifier<Account?> {
         fullName: accountData['fullName'] ?? '',
         role: accountData['role'] ?? '',
         avatarUrl: accountData['avatarUrl'] ?? '',
+        address: accountData['address'] ?? '',
+        phoneNumber: accountData['phoneNumber'] ?? '',
       );
       state = account;
       _authStateController.add(account);

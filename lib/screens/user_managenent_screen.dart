@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/apis/user_api_service.dart';
 import 'package:flutter_ecommerce/models/dto/create_user_dto.dart';
+import 'package:flutter_ecommerce/models/dto/pagination_query.dart';
 import 'package:flutter_ecommerce/models/dto/update_user_dto.dart';
+import 'package:flutter_ecommerce/models/dto/user_query_dto.dart';
 import 'package:flutter_ecommerce/models/user.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/widgets/responsive_builder.dart';
@@ -83,26 +85,19 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     });
 
     try {
-      // final query = UserQuery(
-      //   pagination: PaginationQuery(
-      //     page: resetCurrentPage != null ? 1 : _currentPage,
-      //     limit: _pageSize,
-      //   ),
-      //   role: _selectedRole,
-      //   sort: _sortOption,
-      //   fullName: _searchQuery.isNotEmpty ? _searchQuery : null,
-      //   email: _emailFilter.isNotEmpty ? _emailFilter : null,
-      //   isActive: _isActiveFilter,
-      // );
+      final query = UserQuery(
+        pagination: PaginationQuery(
+          page: resetCurrentPage != null ? 1 : _currentPage,
+          limit: _pageSize,
+        ),
+        role: _selectedRole,
+        sort: _sortOption,
+        fullName: _searchQuery.isNotEmpty ? _searchQuery : null,
+        email: _emailFilter.isNotEmpty ? _emailFilter : null,
+        isActive: _isActiveFilter,
+      );
 
-      // Simulate API call with Future.delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      // In a real app, you would call the API
-      // final userList = await userApiService.getUsers(query: query);
-
-      // For demo purposes, we'll use mock data
-      final userList = await userApiService.getUsers();
+      final userList = await userApiService.getUsers(query: query);
 
       setState(() {
         _userList = userList;
@@ -129,30 +124,23 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     });
 
     try {
-      // final query = UserQuery(
-      //   pagination: PaginationQuery(page: _currentPage + 1, limit: _pageSize),
-      //   role: _selectedRole,
-      //   sort: _sortOption,
-      //   fullName: _searchQuery.isNotEmpty ? _searchQuery : null,
-      //   email: _emailFilter.isNotEmpty ? _emailFilter : null,
-      //   isActive: _isActiveFilter,
-      // );
+      final query = UserQuery(
+        pagination: PaginationQuery(page: _currentPage + 1, limit: _pageSize),
+        role: _selectedRole,
+        sort: _sortOption,
+        fullName: _searchQuery.isNotEmpty ? _searchQuery : null,
+        email: _emailFilter.isNotEmpty ? _emailFilter : null,
+        isActive: _isActiveFilter,
+      );
 
-      // Simulate API call with Future.delay
-      await Future.delayed(const Duration(seconds: 1));
+      final newUsers = await userApiService.getUsers(query: query);
 
-      // In a real app, you would call the API
-      // final newUsers = await userApiService.getUsers(query: query);
-
-      // For demo purposes, we'll use mock data
-      // final newUsers = _getMockUsers();
-
-      // setState(() {
-      //   _userList.addAll(newUsers);
-      //   _currentPage++;
-      //   _hasMoreData = newUsers.length >= _pageSize;
-      //   _isLoadingMore = false;
-      // });
+      setState(() {
+        _userList.addAll(newUsers);
+        _currentPage++;
+        _hasMoreData = newUsers.length >= _pageSize;
+        _isLoadingMore = false;
+      });
     } catch (e) {
       setState(() {
         _isLoadingMore = false;
@@ -193,10 +181,22 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       // Refresh the user list
       _fetchData(resetCurrentPage: true);
       _showSuccessSnackBar('Thêm người dùng thành công');
+    } on ApiException catch (e) {
+      if (mounted) {
+        if (e.statusCode == 422 && e.errors != null && e.errors!.isNotEmpty) {
+          final errorMessages =
+              e.errors!.map((err) => err['message']).join(', ');
+          _showErrorSnackBar(errorMessages);
+        } else {
+          _showErrorSnackBar(e.message);
+        }
+      }
     } catch (e) {
-      // Close loading dialog
-      Navigator.pop(context);
-      _showErrorSnackBar('Lỗi khi thêm người dùng: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đã xảy ra lỗi không xác định: $e')),
+        );
+      }
     }
   }
 
@@ -211,9 +211,23 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
       _fetchData(resetCurrentPage: true);
       _showSuccessSnackBar('Cập nhật người dùng thành công');
+    } on ApiException catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        if (e.statusCode == 422 && e.errors != null && e.errors!.isNotEmpty) {
+          final errorMessages =
+              e.errors!.map((err) => err['message']).join(', ');
+          _showErrorSnackBar(errorMessages);
+        } else {
+          _showErrorSnackBar('Cập nhật người dùng thất bại: ${e.message}');
+        }
+      }
     } catch (e) {
-      Navigator.pop(context);
-      _showErrorSnackBar('Lỗi khi cập nhật người dùng: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đã xảy ra lỗi không xác định: $e')),
+        );
+      }
     }
   }
 
@@ -222,20 +236,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       // Show loading
       _showLoadingDialog('Đang xóa người dùng...');
 
-      // Simulate API call with Future.delay
-      await Future.delayed(const Duration(seconds: 2));
+      await userApiService.remove(userId);
 
-      // In a real app, you would call the API
-      // await userApiService.deleteUser(userId);
-
-      // Close loading dialog
       Navigator.pop(context);
-
-      // Refresh the user list
       _fetchData(resetCurrentPage: true);
+
       _showSuccessSnackBar('Xóa người dùng thành công');
     } catch (e) {
-      // Close loading dialog
       Navigator.pop(context);
       _showErrorSnackBar('Lỗi khi xóa người dùng: $e');
     }
@@ -248,11 +255,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           ? 'Đang khóa người dùng...'
           : 'Đang mở khóa người dùng...');
 
-      // Simulate API call with Future.delay
-      await Future.delayed(const Duration(seconds: 2));
-
-      // In a real app, you would call the API
-      // await userApiService.updateUserStatus(userId, !currentStatus);
+      await userApiService.update(
+          userId, UpdateUserDto(isActive: !currentStatus));
 
       // Close loading dialog
       Navigator.pop(context);
@@ -691,7 +695,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                       text: 'Email',
                                       width: 350),
                                   _buildSortableHeader(
-                                      field: 'phone',
+                                      field: 'phoneNumber',
                                       text: 'Số điện thoại',
                                       width: 200),
                                   _buildSortableHeader(

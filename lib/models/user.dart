@@ -55,7 +55,7 @@ class User {
       role: json['role'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       isActive: json['isActive'] as bool? ?? true,
-      phoneNumber: json['phone'] as String? ?? '',
+      phoneNumber: json['phoneNumber'] as String? ?? '',
       address: json['address'] as String? ?? '',
       password: json['password'] as String? ?? '',
     );
@@ -68,7 +68,7 @@ class User {
       'role': role,
       'createdAt': createdAt.toIso8601String(),
       'isActive': isActive,
-      'phone': phoneNumber,
+      'phoneNumber': phoneNumber,
       'address': address,
       'password': password,
     };

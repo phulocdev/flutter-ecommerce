@@ -84,4 +84,15 @@ class UserApiService {
       rethrow;
     }
   }
+
+  Future remove(id) async {
+    try {
+      return _apiClient.delete('/accounts/${id}');
+    } on ApiException catch (e) {
+      rethrow;
+    } catch (e) {
+      print("Lỗi không xác định: $e");
+      rethrow;
+    }
+  }
 }

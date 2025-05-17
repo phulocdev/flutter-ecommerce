@@ -78,12 +78,7 @@ class _UserFormDialogState extends State<UserFormDialog>
       if (widget.user != null) {
         final dto = UpdateUserDto(
           fullName: _fullNameController.text,
-          password: _passwordController.text.isEmpty
-              ? null
-              : _passwordController.text,
           role: _selectedRole,
-          phoneNumber:
-              _phoneController.text.isEmpty ? null : _phoneController.text,
           address:
               _addressController.text.isEmpty ? null : _addressController.text,
           isActive: _isActive,
@@ -262,7 +257,7 @@ class _UserFormDialogState extends State<UserFormDialog>
           label: 'Email',
           prefixIcon: Icons.email,
           keyboardType: TextInputType.emailAddress,
-          enabled: widget.user == null, // Only enable for new users
+          // enabled: widget.user == null, // Only enable for new users
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Vui lòng nhập email';
@@ -273,19 +268,26 @@ class _UserFormDialogState extends State<UserFormDialog>
             return null;
           },
         ),
-        const SizedBox(height: 16),
-        _buildPasswordField(),
+        if (widget.user == null) SizedBox(height: 16),
+        if (widget.user == null) _buildPasswordField(),
         const SizedBox(height: 16),
         _buildTextField(
-          controller: _phoneController,
-          label: 'Số điện thoại',
-          prefixIcon: Icons.phone,
-          keyboardType: TextInputType.phone,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(10),
-          ],
-        ),
+            controller: _phoneController,
+            label: 'Số điện thoại',
+            prefixIcon: Icons.phone,
+            // enabled: widget.user == null, // Only enable for new users
+            keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
+            validator: (value) {
+              if (value != null &&
+                  !RegExp(r'^(84|0[3|5|7|8|9])[0-9]{8}$').hasMatch(value)) {
+                return 'Vui lòng nhập số điện thoại hợp lệ';
+              }
+              return null;
+            }),
       ],
     );
   }
