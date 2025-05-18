@@ -489,7 +489,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         0, (sum, item) => sum + (item.quantity * item.price).toInt());
 
     // Calculate shipping cost
-    final shippingCost = 30000;
+    final shippingCost = 26000;
 
     // Apply coupon discount if valid
     final discountAmount =

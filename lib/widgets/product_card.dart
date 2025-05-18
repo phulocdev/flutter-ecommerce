@@ -164,23 +164,23 @@ class ProductCard extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(
-                        Icons.star,
-                        size: 16,
-                        color: Colors.amber,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${(product.id.hashCode % 50 + 30) / 10}', // Mock rating
-                        style: textTheme.bodySmall,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '(${product.id.hashCode % 100 + 10})', // Mock review count
-                        style: textTheme.bodySmall?.copyWith(
-                          color: Colors.grey,
-                        ),
-                      ),
+                      // Icon(
+                      //   Icons.star,
+                      //   size: 16,
+                      //   color: Colors.amber,
+                      // ),
+                      // const SizedBox(width: 4),
+                      // Text(
+                      //   '${(product.id.hashCode % 50 + 30) / 10}', // Mock rating
+                      //   style: textTheme.bodySmall,
+                      // ),
+                      // const SizedBox(width: 4),
+                      // Text(
+                      //   '(${product.id.hashCode % 100 + 10})', // Mock review count
+                      //   style: textTheme.bodySmall?.copyWith(
+                      //     color: Colors.grey,
+                      //   ),
+                      // ),
                     ],
                   ),
                   const SizedBox(height: 8),

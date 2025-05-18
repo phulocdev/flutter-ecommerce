@@ -23,6 +23,7 @@ class ProductCatalogScreen extends StatefulWidget {
 class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
   final ProductApiService _productService = ProductApiService(ApiClient());
   final ScrollController _scrollController = ScrollController();
+  final ScrollController _filterScrollController = ScrollController();
 
   bool _isLoading = false;
   bool _hasMoreData = true;
@@ -58,6 +59,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _filterScrollController.dispose();
     super.dispose();
   }
 
@@ -73,17 +75,12 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
         pagination: PaginationQuery(
             page: resetCurrentPage != null ? 1 : _currentPage,
             limit: _pageSize),
-        // dateRange: DateRangeQuery(
-        //   from: DateTime(2024, 1, 1),
-        //   to: DateTime(2025, 10, 30),
-        // ),
         categoryIds: _selectedCategoryIds,
         brandIds: _selectedBrandIds,
         minPrice: _priceRange.start,
         maxPrice: _priceRange.end,
         sort: _sortOption,
       );
-      //   minRating: _minRating,
 
       final newProducts = await _productService.getProducts(query: query);
 
@@ -111,18 +108,11 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
     try {
       final query = ProductQuery(
           pagination: PaginationQuery(page: _currentPage + 1, limit: _pageSize),
-          // dateRange: DateRangeQuery(
-          //   from: DateTime(2024, 1, 1),
-          //   to: DateTime(2025, 10, 30),
-          // ),
           categoryIds: _selectedCategoryIds,
           brandIds: _selectedBrandIds,
           minPrice: _priceRange.start,
           maxPrice: _priceRange.end,
           sort: _sortOption);
-
-      //    sortBy: _sortOption,
-      // minRating: _minRating,
 
       final newProducts = await _productService.getProducts(query: query);
 
@@ -214,18 +204,25 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
   Widget _buildMobileLayout() {
     return Column(
       children: [
-        // Expandable filter section
+        // Expandable filter section with scrollable content
         ExpansionTile(
           title: const Text('Bộ lọc sản phẩm',
               style: TextStyle(fontWeight: FontWeight.bold)),
           children: [
-            FilterSidebar(
-              selectedCategories: _selectedCategoryIds,
-              priceRange: _priceRange,
-              minRating: _minRating,
-              selectedBrands: _selectedBrandIds,
-              onApplyFilters: _applyFilters,
-              maxPrice: MAX_PRICE_FILTER, // Set your max price here
+            SizedBox(
+              height: MediaQuery.of(context).size.height *
+                  0.4, // Limit height but make it scrollable
+              child: SingleChildScrollView(
+                controller: _filterScrollController,
+                child: FilterSidebar(
+                  selectedCategories: _selectedCategoryIds,
+                  priceRange: _priceRange,
+                  minRating: _minRating,
+                  selectedBrands: _selectedBrandIds,
+                  onApplyFilters: _applyFilters,
+                  maxPrice: MAX_PRICE_FILTER,
+                ),
+              ),
             ),
           ],
         ),
@@ -242,16 +239,19 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Filter sidebar (30% width)
+        // Filter sidebar (30% width) with scrollable content
         SizedBox(
           width: MediaQuery.of(context).size.width * 0.3,
-          child: FilterSidebar(
-            selectedCategories: _selectedCategoryIds,
-            priceRange: _priceRange,
-            minRating: _minRating,
-            selectedBrands: _selectedBrandIds,
-            onApplyFilters: _applyFilters,
-            maxPrice: MAX_PRICE_FILTER, // Set your max price here
+          child: SingleChildScrollView(
+            controller: _filterScrollController,
+            child: FilterSidebar(
+              selectedCategories: _selectedCategoryIds,
+              priceRange: _priceRange,
+              minRating: _minRating,
+              selectedBrands: _selectedBrandIds,
+              onApplyFilters: _applyFilters,
+              maxPrice: MAX_PRICE_FILTER,
+            ),
           ),
         ),
 
@@ -267,16 +267,19 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Filter sidebar (20% width)
+        // Filter sidebar (20% width) with scrollable content
         SizedBox(
           width: MediaQuery.of(context).size.width * 0.2,
-          child: FilterSidebar(
-            selectedCategories: _selectedCategoryIds,
-            priceRange: _priceRange,
-            minRating: _minRating,
-            selectedBrands: _selectedBrandIds,
-            onApplyFilters: _applyFilters,
-            maxPrice: MAX_PRICE_FILTER, // Set your max price here
+          child: SingleChildScrollView(
+            controller: _filterScrollController,
+            child: FilterSidebar(
+              selectedCategories: _selectedCategoryIds,
+              priceRange: _priceRange,
+              minRating: _minRating,
+              selectedBrands: _selectedBrandIds,
+              onApplyFilters: _applyFilters,
+              maxPrice: MAX_PRICE_FILTER,
+            ),
           ),
         ),
 
@@ -300,7 +303,6 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
           child: ResponsiveBuilder(
             mobile: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 6,
               children: [
                 Text(
                   '${_products.length} sản phẩm được tìm thấy',
@@ -345,7 +347,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
           ),
         ),
 
-        // Product grid or list
+        // Product grid or list - using Expanded to take remaining space
         Expanded(
           child: _isGridView
               ? ProductGrid(
