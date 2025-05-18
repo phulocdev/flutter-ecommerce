@@ -10,6 +10,7 @@ class ProductQuery {
   final String? status;
   final double? minPrice;
   final double? maxPrice;
+  final int? hasDiscount;
   final PaginationQuery? pagination;
   final DateRangeQuery? dateRange;
 
@@ -19,6 +20,7 @@ class ProductQuery {
     this.name,
     this.categoryIds,
     this.brandIds,
+    this.hasDiscount,
     this.status,
     this.minPrice,
     this.maxPrice,
@@ -36,6 +38,7 @@ class ProductQuery {
       map['categoryIds'] = categoryIds!.join(',');
     if (brandIds != null && brandIds!.isNotEmpty)
       map['brandIds'] = brandIds!.join(',');
+    if (hasDiscount != null) map['hasDiscount'] = hasDiscount.toString();
     if (status != null && status!.isNotEmpty) map['status'] = status;
     if (minPrice != null) map['minPrice'] = minPrice.toString();
     if (maxPrice != null) map['maxPrice'] = maxPrice.toString();

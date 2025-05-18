@@ -10,7 +10,8 @@ import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  LoginScreen({super.key, this.callbackUrl});
+  String? callbackUrl;
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -66,7 +67,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       ref.read(authProvider.notifier).setAccount(account);
 
-      if (mounted) navigateTo(context, AppRoute.home.path);
+      if (widget.callbackUrl != null) {
+        if (mounted) navigateTo(context, widget.callbackUrl!);
+      } else {
+        if (mounted) {
+          if (data.account.role == 'Admin') {
+            navigateTo(context, AppRoute.adminHome.path);
+          } else {
+            navigateTo(context, AppRoute.home.path);
+          }
+        }
+      }
     } catch (e) {
       if (mounted) {
         if (e is ApiException &&
@@ -271,7 +282,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     TextButton(
                       onPressed: _isLoading
                           ? null
-                          : () => navigateTo(context, AppRoute.forgotPassword.path),
+                          : () =>
+                              navigateTo(context, AppRoute.forgotPassword.path),
                       child: const Text('Quên mật khẩu?'),
                     ),
                     const SizedBox(height: 20),
@@ -282,7 +294,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         GestureDetector(
                           onTap: _isLoading
                               ? null
-                              : () => navigateTo(context, AppRoute.register.path),
+                              : () =>
+                                  navigateTo(context, AppRoute.register.path),
                           child: const Text(
                             'Đăng ký',
                             style: TextStyle(

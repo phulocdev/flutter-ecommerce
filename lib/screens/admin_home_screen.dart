@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:flutter_ecommerce/screens/coupon_management_screen.dart';
 import 'package:flutter_ecommerce/screens/dashboard.dart';
 import 'package:flutter_ecommerce/screens/order_management_screen.dart';
 import 'package:flutter_ecommerce/screens/product_management_screen.dart';
 import 'package:flutter_ecommerce/screens/user_managenent_screen.dart';
 import 'package:flutter_ecommerce/widgets/admin_drawer.dart';
-import 'package:go_router/go_router.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -22,7 +22,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     const UserManagementScreen(),
     const ProductManagementScreen(), // Product Management
     const OrderManagementScreen(), // Order Management
-    const Placeholder(), // Coupon Management
+    const CouponManagementScreen(), // Coupon Management
     const Placeholder(), // Customer Support
   ];
 

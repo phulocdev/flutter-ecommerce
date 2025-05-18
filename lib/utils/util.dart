@@ -39,14 +39,12 @@ String getOrderStatusText(OrderStatus status) {
       return 'Đang xử lý';
     case OrderStatus.PENDING_PAYMENT:
       return 'Chờ thanh toán';
-    case OrderStatus.PAID:
+    case OrderStatus.COMPLETED:
       return 'Đã thanh toán';
     case OrderStatus.PACKED:
       return 'Đã đóng gói';
     case OrderStatus.SHIPPED:
       return 'Đang giao hàng';
-    case OrderStatus.READY_TO_SHIP:
-      return 'Sẵn sàng giao';
     case OrderStatus.COMPLETED:
       return 'Hoàn tất';
     case OrderStatus.CANCELED:
@@ -64,14 +62,12 @@ Color getStatusColor(OrderStatus status) {
       return Colors.orange;
     case OrderStatus.PENDING_PAYMENT:
       return Colors.yellow.shade700;
-    case OrderStatus.PAID:
+    case OrderStatus.COMPLETED:
       return Colors.lightGreen;
     case OrderStatus.PACKED:
       return Colors.teal;
     case OrderStatus.SHIPPED:
       return Colors.blue;
-    case OrderStatus.READY_TO_SHIP:
-      return Colors.cyan;
     case OrderStatus.COMPLETED:
       return Colors.green.shade700;
     case OrderStatus.CANCELED:
@@ -89,14 +85,12 @@ IconData getStatusIcon(OrderStatus status) {
       return Icons.pending;
     case OrderStatus.PENDING_PAYMENT:
       return Icons.access_time; // clock icon for waiting payment
-    case OrderStatus.PAID:
+    case OrderStatus.COMPLETED:
       return Icons.payment;
     case OrderStatus.PACKED:
       return Icons.inventory_2; // package icon
     case OrderStatus.SHIPPED:
       return Icons.local_shipping;
-    case OrderStatus.READY_TO_SHIP:
-      return Icons.outbox;
     case OrderStatus.COMPLETED:
       return Icons.check_circle_outline;
     case OrderStatus.CANCELED:
@@ -114,14 +108,12 @@ Color getStatusBackgroundColor(OrderStatus status) {
       return Colors.orange;
     case OrderStatus.PENDING_PAYMENT:
       return Colors.yellow.shade700; // a warm yellow for pending payment
-    case OrderStatus.PAID:
+    case OrderStatus.COMPLETED:
       return Colors.lightGreen;
     case OrderStatus.PACKED:
       return Colors.teal;
     case OrderStatus.SHIPPED:
       return Colors.blue;
-    case OrderStatus.READY_TO_SHIP:
-      return Colors.cyan;
     case OrderStatus.COMPLETED:
       return Colors.green.shade700;
     case OrderStatus.CANCELED:

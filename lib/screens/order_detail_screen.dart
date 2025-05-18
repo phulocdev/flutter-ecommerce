@@ -228,7 +228,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
     if (widget.order.paymentAt != null) {
       statusHistory.add({
-        'status': OrderStatus.PAID,
+        'status': OrderStatus.COMPLETED,
         'timestamp': widget.order.paymentAt!,
         'note': 'Đơn hàng đã được thanh toán',
       });
@@ -731,7 +731,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             OutlinedButton.icon(
               onPressed: () async {
                 try {
-                  final a = OrderStatus.CANCELED.index;
                   await orderApiService.update(widget.order.id,
                       UpdateOrderDto(status: OrderStatus.CANCELED.index));
                   showSuccessSnackBar(context, 'Hủy đơn hàng thành công');

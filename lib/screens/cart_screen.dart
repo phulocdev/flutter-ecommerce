@@ -4,7 +4,6 @@ import 'package:flutter_ecommerce/providers/cart_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:flutter_ecommerce/widgets/cart_list_item.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -236,10 +235,6 @@ class CartScreen extends ConsumerWidget {
           const SizedBox(height: 32),
           FilledButton.icon(
             onPressed: () {
-              // Thay đổi từ
-              // context.go(AppRoute.productCatalog.path);
-
-              // Sang cái này nha
               navigateTo(context, AppRoute.productCatalog.path);
             },
             icon: const Icon(Icons.shopping_bag_outlined),
@@ -263,9 +258,11 @@ class CartScreen extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
 
     final totalAmount = cart.where((item) => item.isChecked).fold<double>(
-          0.0,
-          (previousValue, item) => previousValue + (item.price * item.quantity),
-        );
+      0.0,
+      (previousValue, item) {
+        return previousValue + (item.price * item.quantity);
+      },
+    );
     final priceFormatter =
         NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
     final formattedTotalAmount = priceFormatter.format(totalAmount);

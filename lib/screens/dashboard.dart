@@ -194,37 +194,37 @@ class _AdminDashboardState extends State<AdminDashboard>
       children: [
         _buildStatCard(
           title: 'Tổng người dùng',
-          value: '1,024',
+          value: '12',
           icon: Icons.people,
           color: Colors.blue,
         ),
         _buildStatCard(
           title: 'Người dùng mới',
-          value: '56',
+          value: '3',
           icon: Icons.person_add,
           color: Colors.cyan,
         ),
         _buildStatCard(
           title: 'Tổng đơn hàng',
-          value: '1,500',
+          value: '24',
           icon: Icons.shopping_cart,
           color: Colors.green,
         ),
         _buildStatCard(
           title: 'Tổng doanh thu',
-          value: '\$120,345',
+          value: '46.700.000đ',
           icon: Icons.attach_money,
           color: Colors.orange,
         ),
         _buildStatCard(
           title: 'Tổng sản phẩm',
-          value: '500',
+          value: '84',
           icon: Icons.inventory_2,
           color: Colors.red,
         ),
         _buildStatCard(
           title: 'Đơn hàng hôm nay',
-          value: '35',
+          value: '12',
           icon: Icons.receipt,
           color: Colors.teal,
         ),
@@ -286,11 +286,11 @@ class _AdminDashboardState extends State<AdminDashboard>
                     showTitles: true,
                     getTitlesWidget: (value, meta) {
                       const productNames = [
-                        'SP A',
-                        'SP B',
-                        'SP C',
-                        'SP D',
-                        'SP E'
+                        'Chuột',
+                        'Laptop',
+                        'Ổ cứng',
+                        'Tai nghe',
+                        'Màn hình'
                       ];
                       return SideTitleWidget(
                         meta: meta,

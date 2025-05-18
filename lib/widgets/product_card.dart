@@ -3,6 +3,7 @@ import 'package:flutter_ecommerce/models/cart_item.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/providers/cart_providers.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 
 class ProductCard extends ConsumerWidget {
   final Product product;
@@ -22,12 +23,15 @@ class ProductCard extends ConsumerWidget {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     // Mock discount for demo purposes
-    final hasDiscount = product.id.hashCode % 3 == 0;
-    final discountPercentage =
-        hasDiscount ? (product.id.hashCode % 30) + 10 : 0;
-    final originalPrice = hasDiscount
-        ? product.basePrice * 100 / (100 - discountPercentage)
+    final hasDiscount =
+        product.discountPercentage != null && product.discountPercentage! > 0;
+    final discountPercentage = hasDiscount ? product.discountPercentage : 0;
+    final discountPrice = hasDiscount
+        ? product.basePrice - ((product.basePrice * discountPercentage!) / 100)
         : product.basePrice;
+    final formatter =
+        NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
+    final discountPriceFormatted = formatter.format(discountPrice);
 
     return Card(
       elevation: 0,
@@ -188,14 +192,14 @@ class ProductCard extends ConsumerWidget {
                         children: [
                           if (hasDiscount)
                             Text(
-                              '\$${originalPrice.toStringAsFixed(2)}',
+                              '${product.formattedPrice}',
                               style: textTheme.bodySmall?.copyWith(
                                 decoration: TextDecoration.lineThrough,
                                 color: Colors.grey,
                               ),
                             ),
                           Text(
-                            product.formattedPrice,
+                            discountPriceFormatted,
                             style: textTheme.titleMedium?.copyWith(
                               color: hasDiscount
                                   ? colorScheme.error

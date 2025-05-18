@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/cart_item.dart';
 import 'package:flutter_ecommerce/providers/cart_providers.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 
 class CartListItemWidget extends ConsumerWidget {
   final CartItem cartItem;
@@ -30,6 +31,8 @@ class CartListItemWidget extends ConsumerWidget {
         ),
       );
     }
+
+    final numberFormat = NumberFormat.decimalPattern('vi_VN');
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -98,7 +101,7 @@ class CartListItemWidget extends ConsumerWidget {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            cartItem.sku!.formattedPrice,
+                            '${numberFormat.format(cartItem.price)}đ',
                             style: TextStyle(
                               fontSize: 15,
                               color: Theme.of(context).colorScheme.primary,

@@ -8,6 +8,7 @@ import 'package:flutter_ecommerce/models/category.dart';
 import 'package:flutter_ecommerce/models/dto/create_product_dto.dart';
 import 'package:flutter_ecommerce/models/dto/pagination_query.dart';
 import 'package:flutter_ecommerce/models/dto/product_query_dto.dart';
+import 'package:flutter_ecommerce/models/dto/update_product_dto.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/widgets/product_form.dart';
@@ -18,12 +19,12 @@ import 'package:intl/intl.dart';
 final List<Map<String, dynamic>> _columnDefinitions = [
   {'field': 'code', 'text': 'Mã sản phẩm', 'flex': 2},
   {'field': 'name', 'text': 'Sản phẩm', 'flex': 3},
-  {'field': 'description', 'text': 'Mô tả', 'flex': 3},
+  {'field': 'description', 'text': 'Mô tả', 'flex': 2},
   {'field': 'basePrice', 'text': 'Giá', 'flex': 2},
   {'field': 'promotion', 'text': 'Khuyến mãi', 'flex': 2},
-  {'field': 'status', 'text': 'Trạng thái', 'flex': 1},
-  {'field': 'createdAt', 'text': 'Ngày tạo', 'flex': 1},
-  {'field': 'updatedAt', 'text': 'Ngày cập nhật', 'flex': 2},
+  {'field': 'status', 'text': 'Trạng thái', 'flex': 2},
+  {'field': 'createdAt', 'text': 'Ngày tạo', 'flex': 2},
+  // {'field': 'updatedAt', 'text': 'Ngày cập nhật', 'flex': 1},
   {'field': 'actions', 'text': 'Hành động', 'flex': 2},
 ];
 
@@ -51,7 +52,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   String _productCode = '';
   String? _selectedCategoryId;
   String? statusFilter;
-  bool? _hasPromotion;
+  int? _hasPromotion;
   int _currentPage = 1;
   final int _pageSize = 10;
   String _sortOption = 'createdAt.desc';
@@ -115,7 +116,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
         sort: _sortOption,
         name: _searchQuery.isNotEmpty ? _searchQuery : null,
         code: _productCode.isNotEmpty ? _productCode : null,
-        // hasPromotion: _hasPromotion,
+        hasDiscount: _hasPromotion,
       );
 
       final productList = await productApiService.getProducts(query: query);
@@ -154,7 +155,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
         sort: _sortOption,
         name: _searchQuery.isNotEmpty ? _searchQuery : null,
         code: _productCode.isNotEmpty ? _productCode : null,
-        // hasPromotion: _hasPromotion,
+        hasDiscount: _hasPromotion,
       );
 
       final newProducts = await productApiService.getProducts(query: query);
@@ -380,7 +381,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
             child: const Text('Hủy'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               // Validate inputs
               final discountText = discountController.text.trim();
               if (discountText.isEmpty) {
@@ -415,20 +416,17 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
               // Show loading
               _showLoadingDialog('Đang thêm khuyến mãi...');
 
-              // Call API to add promotion
-              Future.delayed(const Duration(seconds: 2), () {
-                // In a real app, you would call the API to add promotion
-                // productApiService.addPromotion(product.id, discount, startDate, endDate);
+              await productApiService.update(product.id,
+                  UpdateProductDto(discountPercentage: discount.toDouble()));
 
-                // Close loading dialog
-                Navigator.pop(context);
+              // Close loading dialog
+              Navigator.pop(context);
 
-                // Show success message
-                _showSuccessSnackBar('Thêm khuyến mãi thành công');
+              // Show success message
+              _showSuccessSnackBar('Thêm khuyến mãi thành công');
 
-                // Refresh product list
-                _fetchData(resetCurrentPage: true);
-              });
+              // Refresh product list
+              _fetchData(resetCurrentPage: true);
             },
             child: const Text('Lưu'),
           ),
@@ -809,7 +807,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 16),
                                     child: DropdownButtonHideUnderline(
-                                      child: DropdownButton<bool?>(
+                                      child: DropdownButton<int?>(
                                         isExpanded: true,
                                         hint: Text(
                                           'Trạng thái khuyến mãi',
@@ -824,7 +822,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                                             color: Colors.black87,
                                             fontSize: 14),
                                         items: [
-                                          DropdownMenuItem<bool?>(
+                                          DropdownMenuItem<int?>(
                                             value: null,
                                             child: Text(
                                               'Tất cả sản phẩm',
@@ -833,8 +831,8 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                                                   fontWeight: FontWeight.w500),
                                             ),
                                           ),
-                                          DropdownMenuItem<bool?>(
-                                            value: true,
+                                          DropdownMenuItem<int?>(
+                                            value: 1,
                                             child: Row(
                                               children: [
                                                 Icon(Icons.local_offer,
@@ -845,8 +843,8 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                                               ],
                                             ),
                                           ),
-                                          DropdownMenuItem<bool?>(
-                                            value: false,
+                                          DropdownMenuItem<int?>(
+                                            value: 0,
                                             child: Row(
                                               children: [
                                                 Icon(Icons.money_off,
@@ -1233,27 +1231,27 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                                             ),
                                           ),
 
-                                          // Updated date
-                                          Expanded(
-                                            flex: _columnDefinitions[7]['flex'],
-                                            child: Container(
-                                              alignment: Alignment.center,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 16),
-                                              child: Text(
-                                                DateFormat('dd/MM/yyyy')
-                                                    .format(product.updatedAt),
-                                                style: TextStyle(
-                                                  color: Colors.grey.shade700,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
+                                          // // Updated date
+                                          // Expanded(
+                                          //   flex: _columnDefinitions[7]['flex'],
+                                          //   child: Container(
+                                          //     alignment: Alignment.center,
+                                          //     padding:
+                                          //         const EdgeInsets.symmetric(
+                                          //             horizontal: 16),
+                                          //     child: Text(
+                                          //       DateFormat('dd/MM/yyyy')
+                                          //           .format(product.updatedAt),
+                                          //       style: TextStyle(
+                                          //         color: Colors.grey.shade700,
+                                          //       ),
+                                          //     ),
+                                          //   ),
+                                          // ),
 
                                           // Actions
                                           Expanded(
-                                            flex: _columnDefinitions[8]['flex'],
+                                            flex: _columnDefinitions[7]['flex'],
                                             child: Container(
                                               alignment: Alignment.center,
                                               padding:

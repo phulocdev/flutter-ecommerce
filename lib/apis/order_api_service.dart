@@ -77,6 +77,30 @@ class OrderApiService {
     }
   }
 
+  Future<Order> getOrderInfo(String id) async {
+    try {
+      final response = await _apiClient.get('/orders/a/$id');
+
+      if (response is Map<String, dynamic> && response.containsKey('data')) {
+        final productData = response['data'];
+
+        if (productData is Map<String, dynamic>) {
+          return Order.fromJson(productData);
+        } else {
+          throw Exception('Invalid API response: data should be map.');
+        }
+      } else if (response is List<dynamic>) {
+        throw Exception(
+            'Invalid API response: Expected a map but received a list.');
+      } else {
+        throw Exception('Invalid API response: Unexpected response format.');
+      }
+    } catch (e) {
+      print('Error fetching product with ID $id: $e');
+      rethrow;
+    }
+  }
+
   Future<List<OrderDetail>> getOrderDetail(String id) async {
     try {
       final uri = Uri(path: '/orders/$id');
