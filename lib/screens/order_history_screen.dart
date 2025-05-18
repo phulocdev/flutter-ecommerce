@@ -169,7 +169,6 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             borderRadius: BorderRadius.circular(16),
             onTap: () {
               navigateTo(context, AppRoute.orderDetail.path, extra: order);
-              // I want replace context.go with navigateTo but i cannot binding extra to navigateTo function
               // context.go(AppRoute.orderDetail.path, extra: order);
             },
             child: Padding(

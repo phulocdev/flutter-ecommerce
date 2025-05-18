@@ -13,8 +13,10 @@ import 'package:flutter_ecommerce/screens/forgot_password_screen.dart';
 import 'package:flutter_ecommerce/screens/home_screen.dart';
 import 'package:flutter_ecommerce/screens/login_screen.dart';
 import 'package:flutter_ecommerce/screens/manage_address_screen.dart';
+import 'package:flutter_ecommerce/screens/order_detail_admin_screen.dart';
 import 'package:flutter_ecommerce/screens/order_detail_screen.dart';
 import 'package:flutter_ecommerce/screens/order_history_screen.dart';
+import 'package:flutter_ecommerce/screens/order_management_screen.dart';
 import 'package:flutter_ecommerce/screens/otp_screen.dart';
 import 'package:flutter_ecommerce/screens/payment_success.dart';
 import 'package:flutter_ecommerce/screens/product_catalog_screen.dart';
@@ -228,6 +230,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(
+        path: AppRoute.orderManagement.path,
+        name: AppRoute.orderManagement.name,
+        builder: (context, state) => const OrderManagementScreen(),
+        routes: [
+          GoRoute(
+            path: AppRoute.orderDetailAdmin.path,
+            name: AppRoute.orderDetailAdmin.name,
+            builder: (context, state) {
+              final orderId = state.pathParameters['id']!;
+              return OrderDetailAdminScreen(orderId: orderId);
+            },
+          ),
+        ],
+      ),
+      GoRoute(
         path: AppRoute.userManagement.path,
         name: AppRoute.userManagement.name,
         builder: (context, state) => const UserManagementScreen(),
@@ -283,7 +300,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       }
 
       return null;
-      return AppRoute.userManagement.path;
+      return AppRoute.orderManagement.path;
     },
     errorBuilder: (context, state) => Scaffold(
       body: Center(
@@ -313,6 +330,7 @@ enum AppRoute {
   productManagement('/product-management'),
   productDetailAdmin(':id'),
   orderManagement('/order-management'),
+  orderDetailAdmin(':id'),
   couponManagement('/coupon-management'),
   paymentSuccess('/payment-success'),
   historyOrders('/history-orders'),

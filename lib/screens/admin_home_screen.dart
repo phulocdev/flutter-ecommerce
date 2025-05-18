@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/screens/dashboard.dart';
+import 'package:flutter_ecommerce/screens/order_management_screen.dart';
 import 'package:flutter_ecommerce/screens/product_management_screen.dart';
 import 'package:flutter_ecommerce/screens/user_managenent_screen.dart';
 import 'package:flutter_ecommerce/widgets/admin_drawer.dart';
@@ -20,7 +21,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     const AdminDashboard(),
     const UserManagementScreen(),
     const ProductManagementScreen(), // Product Management
-    const Placeholder(), // Order Management
+    const OrderManagementScreen(), // Order Management
     const Placeholder(), // Coupon Management
     const Placeholder(), // Customer Support
   ];
