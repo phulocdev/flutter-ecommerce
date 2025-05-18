@@ -1,7 +1,9 @@
 import 'package:flutter_ecommerce/models/dto/create_order_dto.dart';
 import 'package:flutter_ecommerce/models/dto/create_order_response.dart';
 import 'package:flutter_ecommerce/models/dto/order_detail.dart';
+import 'package:flutter_ecommerce/models/dto/update_order_dto.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:flutter_ecommerce/utils/enum.dart';
 
 class OrderApiService {
   final ApiClient _apiClient;
@@ -66,6 +68,19 @@ class OrderApiService {
       }
     } catch (e) {
       print('Error fetching orders: $e');
+      rethrow;
+    }
+  }
+
+  Future update(String id, UpdateOrderDto dto) async {
+    try {
+      final response =
+          await _apiClient.patch('/orders/$id', body: dto.toJson());
+      return response;
+    } on ApiException catch (e) {
+      rethrow;
+    } catch (e) {
+      print("Lỗi không xác định: $e");
       rethrow;
     }
   }
