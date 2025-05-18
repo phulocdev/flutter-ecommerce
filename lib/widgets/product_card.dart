@@ -21,7 +21,6 @@ class ProductCard extends ConsumerWidget {
     final TextTheme textTheme = Theme.of(context).textTheme;
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-    // Mock discount for demo purposes
     final hasDiscount = product.id.hashCode % 3 == 0;
     final discountPercentage =
         hasDiscount ? (product.id.hashCode % 30) + 10 : 0;
