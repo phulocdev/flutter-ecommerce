@@ -6,6 +6,7 @@ import 'package:flutter_ecommerce/providers/auth_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/services/token_service.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -61,7 +62,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
 
       ref.read(authProvider.notifier).setAccount(account);
 
-      if (mounted) context.go(AppRoute.home.path);
+      if (mounted) navigateTo(context, AppRoute.home.path);
     } on ApiException catch (e) {
       if (mounted) {
         if (e.statusCode == 422 && e.errors != null && e.errors!.isNotEmpty) {
@@ -261,7 +262,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         const Text('Bạn đã có tài khoản?'),
         TextButton(
           onPressed: () {
-            context.go(AppRoute.login.path);
+            navigateTo(context, AppRoute.login.path);
           },
           child: const Text('Đăng nhập'),
         ),

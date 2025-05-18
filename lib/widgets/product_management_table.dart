@@ -3,6 +3,7 @@ import 'package:flutter_ecommerce/apis/product_api_service.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:flutter_ecommerce/widgets/product_form.dart';
 import 'package:go_router/go_router.dart';
 
@@ -78,9 +79,10 @@ class _ProductManagementTableState extends State<ProductManagementTable> {
                       return InkWell(
                         onTap: () {
                           // Navigate to product detail page
-                          context.go(
-                            '${AppRoute.productManagement.path}/${product.id}',
-                          );
+                          // context.go(
+                          //   '${AppRoute.productManagement.path}/${product.id}',
+                          // );
+                          navigateTo(context, '${AppRoute.productManagement.path}/${product.id}');
                         },
                         onHover: (isHovered) {
                           setState(() {

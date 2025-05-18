@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:flutter_ecommerce/widgets/responsive_builder.dart';
 import 'package:go_router/go_router.dart';
 
@@ -24,9 +25,10 @@ class ProductCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
-          context.go(
-            '${AppRoute.productCatalog.path}/${product.id}',
-          );
+          // context.go(
+          //   '${AppRoute.productCatalog.path}/${product.id}',
+          // );
+          navigateTo(context, '${AppRoute.productCatalog.path}/${product.id}');
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

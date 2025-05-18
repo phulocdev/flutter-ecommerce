@@ -8,6 +8,7 @@ import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/utils/enum.dart';
 import 'package:flutter_ecommerce/utils/util.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 
@@ -72,7 +73,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colorScheme.primary),
-          onPressed: () => Navigator.of(context).pop(),
+          // onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(

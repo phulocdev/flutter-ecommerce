@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:go_router/go_router.dart';
 
 class ProductListItem extends StatelessWidget {
@@ -24,9 +25,10 @@ class ProductListItem extends StatelessWidget {
       child: InkWell(
         onTap: () {
           // Navigate to product details
-          context.go(
-            '${AppRoute.productCatalog.path}/${product.id}',
-          );
+          // context.go(
+          //   '${AppRoute.productCatalog.path}/${product.id}',
+          // );
+          navigateTo(context, '${AppRoute.productCatalog.path}/${product.id}');
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

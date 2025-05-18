@@ -51,7 +51,7 @@ class ProfileScreen extends ConsumerWidget {
                   await _authApiService.logoutWithApi(refreshToken ?? '');
                   Navigator.of(context).pop();
                   ref.read(authProvider.notifier).logout();
-                  context.go(AppRoute.login.path);
+                  navigateTo(context, AppRoute.login.path);
                 } catch (e) {
                   print('Lỗi khi đăng xuất: $e');
                 }
@@ -107,11 +107,13 @@ class ProfileScreen extends ConsumerWidget {
               leading: const Icon(Icons.history),
               title: const Text('Xem lịch sử mua hàng'),
               onTap: () => {
-                if (kIsWeb)
-                  {context.go(AppRoute.historyOrders.path)}
-                else
-                  {context.push(AppRoute.historyOrders.path)}
+                // if (kIsWeb)
+                //   {context.go(AppRoute.historyOrders.path)}
+                // else
+                //   {context.push(AppRoute.historyOrders.path)}
+                context.push(AppRoute.historyOrders.path)
               },
+
             ),
             ListTile(
               leading: const Icon(Icons.person),

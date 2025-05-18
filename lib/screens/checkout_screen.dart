@@ -10,6 +10,7 @@ import 'package:flutter_ecommerce/providers/cart_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/services/token_service.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -118,8 +119,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
         if (context.mounted) {
           Navigator.pop(context);
-          context.pushReplacement(AppRoute.paymentSuccess.path,
-              extra: newOrder.code);
+          // context.pushReplacement(AppRoute.paymentSuccess.path,
+          //     extra: newOrder.code);
+          navigateTo(context, AppRoute.paymentSuccess.path,extra: newOrder.code);
         }
       } catch (e) {
         if (context.mounted) {
