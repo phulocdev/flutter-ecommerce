@@ -69,7 +69,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colorScheme.primary),
-          onPressed: () => Navigator.of(context).pop(),
+          // onPressed: () => Navigator.of(context.pop(),
+          onPressed: () => context.pop(),
         ),
       ),
       body: _isLoading
@@ -168,9 +169,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: () {
-              navigateTo(context, AppRoute.orderDetail.path, extra: order);
+              // navigateTo(context, AppRoute.orderDetail.path, extra: order);
               // I want replace context.go with navigateTo but i cannot binding extra to navigateTo function
-              // context.go(AppRoute.orderDetail.path, extra: order);
+              context.push(AppRoute.orderDetail.path, extra: order);
             },
             child: Padding(
               padding: const EdgeInsets.all(16),

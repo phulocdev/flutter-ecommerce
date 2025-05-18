@@ -4,6 +4,7 @@ import 'package:flutter_ecommerce/models/dto/reset_password_dto.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/services/token_service.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:go_router/go_router.dart';
 
 class OTPScreen extends StatefulWidget {
@@ -60,7 +61,7 @@ class _OTPScreenState extends State<OTPScreen> {
 
       if (mounted) {
         _showSuccessSnackBar('Đặt lại mật khẩu thành công');
-        context.go(AppRoute.login.path);
+        navigateTo(context, AppRoute.login.path);
       }
     } catch (e) {
       setState(() {

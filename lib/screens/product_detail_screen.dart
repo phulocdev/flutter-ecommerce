@@ -8,6 +8,7 @@ import 'package:flutter_ecommerce/models/sku.dart';
 import 'package:flutter_ecommerce/providers/cart_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:flutter_ecommerce/widgets/image_gallery.dart';
 import 'package:flutter_ecommerce/widgets/product_info_cart.dart';
 import 'package:flutter_ecommerce/widgets/responsive_builder.dart';
@@ -145,13 +146,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             label: 'Xem giỏ hàng',
             textColor: Colors.white,
             onPressed: () {
-              context.goNamed(AppRoute.cart.name);
+              // context.goNamed(AppRoute.cart.name);
+              navigateTo(context, AppRoute.cart.name);
             },
           ),
         ),
       );
     } else {
-      context.go(AppRoute.cart.path);
+      navigateTo(context, AppRoute.cart.path);
     }
   }
 

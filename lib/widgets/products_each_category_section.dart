@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:flutter_ecommerce/widgets/products_list_horizontal.dart';
 import 'package:go_router/go_router.dart';
 
@@ -47,7 +48,8 @@ class ProductsEachCategorySection extends StatelessWidget {
                 if (showSeeAll && products.length > 5)
                   TextButton.icon(
                     onPressed: () {
-                      context.push(AppRoute.productCatalog.path);
+                      // context.push(AppRoute.productCatalog.path);
+                      navigateTo(context, AppRoute.productCatalog.path);
                     },
                     icon: Text(
                       'Xem tất cả',

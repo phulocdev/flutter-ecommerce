@@ -4,6 +4,7 @@ import 'package:flutter_ecommerce/models/dto/forgot_password_dto.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/services/token_service.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:go_router/go_router.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -147,10 +148,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   await _authApiService.forgotPassword(dto);
 
                                   if (mounted) {
-                                    context.go(
-                                      AppRoute.otp.path,
-                                      extra: dto.email,
-                                    );
+                                    // context.go(
+                                    //   AppRoute.otp.path,
+                                    //   extra: dto.email,
+                                    // );                       
+                                    navigateTo(context, AppRoute.otp.path, extra: dto.email);       
                                   }
                                 } catch (e) {
                                   if (mounted) {

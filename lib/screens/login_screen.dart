@@ -6,6 +6,7 @@ import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/services/token_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -33,7 +34,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final user = ref.read(authProvider);
     if (user != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.go(AppRoute.home.path);
+        navigateTo(context, AppRoute.home.path);
       });
     }
   }
@@ -65,7 +66,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       ref.read(authProvider.notifier).setAccount(account);
 
-      if (mounted) context.go(AppRoute.home.path);
+      if (mounted) navigateTo(context, AppRoute.home.path);
     } catch (e) {
       if (mounted) {
         if (e is ApiException &&
@@ -270,7 +271,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     TextButton(
                       onPressed: _isLoading
                           ? null
-                          : () => context.push(AppRoute.forgotPassword.path),
+                          : () => navigateTo(context, AppRoute.forgotPassword.path),
                       child: const Text('Quên mật khẩu?'),
                     ),
                     const SizedBox(height: 20),
@@ -281,7 +282,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         GestureDetector(
                           onTap: _isLoading
                               ? null
-                              : () => context.push(AppRoute.register.path),
+                              : () => navigateTo(context, AppRoute.register.path),
                           child: const Text(
                             'Đăng ký',
                             style: TextStyle(

@@ -367,7 +367,7 @@ class CartScreen extends ConsumerWidget {
                 onPressed: totalAmount <= 0
                     ? null // Bị vô hiệu hóa nếu totalAmount <= 0
                     : () {
-                        context.go(AppRoute.checkout.path);
+                        navigateTo(context, AppRoute.checkout.path);
                       },
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.blue,
