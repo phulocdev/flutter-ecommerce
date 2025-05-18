@@ -323,7 +323,7 @@ class CartScreen extends ConsumerWidget {
                   ),
                 ),
                 Text(
-                  'Miễn phí',
+                  '26.000đ',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
