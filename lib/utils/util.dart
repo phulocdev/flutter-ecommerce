@@ -3,11 +3,24 @@ import 'package:flutter/foundation.dart'; // cần thiết cho kIsWeb
 import 'package:flutter_ecommerce/utils/enum.dart';
 import 'package:go_router/go_router.dart';
 
-void navigateTo(BuildContext context, String path, {Object? extra}) {
+void navigateTo(
+  BuildContext context,
+  String path, {
+  Object? extra,
+  Map<String, String>? pathParameters,
+}) {
+  String finalPath = path;
+
+  if (pathParameters != null) {
+    pathParameters.forEach((key, value) {
+      finalPath = finalPath.replaceAll(':$key', value);
+    });
+  }
+
   if (kIsWeb) {
-    context.go(path, extra: extra);
+    context.go(finalPath, extra: extra);
   } else {
-    context.push(path, extra: extra);
+    context.push(finalPath, extra: extra);
   }
 }
 

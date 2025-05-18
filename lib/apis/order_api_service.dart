@@ -1,6 +1,7 @@
 import 'package:flutter_ecommerce/models/dto/create_order_dto.dart';
 import 'package:flutter_ecommerce/models/dto/create_order_response.dart';
 import 'package:flutter_ecommerce/models/dto/order_detail.dart';
+import 'package:flutter_ecommerce/models/dto/order_query_dto.dart';
 import 'package:flutter_ecommerce/models/dto/update_order_dto.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/utils/enum.dart';
@@ -9,6 +10,35 @@ class OrderApiService {
   final ApiClient _apiClient;
 
   OrderApiService(this._apiClient);
+
+  Future<List<Order>> getOrders({OrderQuery? query}) async {
+    try {
+      final queryParams = query?.toQueryMap() ?? {};
+      final uri = Uri(
+        path: '/orders',
+        queryParameters: queryParams,
+      );
+
+      final response = await _apiClient.get(uri.toString());
+
+      if (response is Map<String, dynamic> && response.containsKey('data')) {
+        final List<dynamic> orderList = response['data'];
+
+        if (orderList is List<dynamic>) {
+          return orderList
+              .map((orderJson) => Order.fromJson(orderJson))
+              .toList();
+        } else {
+          throw Exception('Invalid API response: data should be a list.');
+        }
+      } else {
+        throw Exception('Invalid API response: Unexpected response format.');
+      }
+    } catch (e) {
+      print('Error fetching products: $e');
+      rethrow;
+    }
+  }
 
   Future<CreateOrderResponseDto> create(CreateOrderRequestDto dto) async {
     try {
