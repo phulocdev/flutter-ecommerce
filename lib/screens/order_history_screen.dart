@@ -302,8 +302,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       const SizedBox(width: 8),
                       FilledButton(
                         onPressed: () {
-                          navigateTo(context, AppRoute.orderDetail.path,
-                              extra: order);
+                          navigateTo(
+                            context,
+                            AppRoute.orderDetail.path,
+                            extra: order,
+                          );
                         },
                         style: FilledButton.styleFrom(
                           backgroundColor: colorScheme.primary,

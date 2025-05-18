@@ -9,6 +9,8 @@ class Product {
   final String name;
   final String description;
   final String imageUrl;
+  final int? discountPercentage;
+  final int? soldQuantity;
   final Category? category;
   final Brand? brand;
   final String status;
@@ -28,6 +30,8 @@ class Product {
     required this.description,
     required this.imageUrl,
     this.category,
+    this.soldQuantity,
+    this.discountPercentage,
     this.brand,
     required this.status,
     required this.minStockLevel,
@@ -54,6 +58,11 @@ class Product {
       final code = json['code'] as String;
       final name = json['name'] as String;
       final description = json['description'] as String;
+      final soldQuantity =
+          json['soldQuantity'] != null ? json['soldQuantity'] as int : 0;
+      final discountPercentage = json['discountPercentage'] != null
+          ? json['discountPercentage'] as int
+          : 0;
       final imageUrl = json['imageUrl'] as String;
       final category = json['category'] is Map<String, dynamic>
           ? Category.fromJson(json['category'])
@@ -78,6 +87,8 @@ class Product {
         name: name,
         description: description,
         imageUrl: imageUrl,
+        soldQuantity: soldQuantity,
+        discountPercentage: discountPercentage,
         category: category,
         brand: brand,
         status: status,
@@ -107,6 +118,8 @@ class Product {
         'category': category?.toJson(),
         'brand': brand?.toJson(),
         'status': status,
+        'soldQuantity': soldQuantity,
+        'discountPercentage': discountPercentage,
         'basePrice': basePrice,
         'minStockLevel': minStockLevel,
         'maxStockLevel': maxStockLevel,

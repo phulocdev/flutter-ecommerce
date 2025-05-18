@@ -7,6 +7,7 @@ import 'package:flutter_ecommerce/screens/admin_home_screen.dart';
 import 'package:flutter_ecommerce/screens/cart_screen.dart';
 import 'package:flutter_ecommerce/screens/change_password_screen.dart';
 import 'package:flutter_ecommerce/screens/checkout_screen.dart';
+import 'package:flutter_ecommerce/screens/coupon_management_screen.dart';
 import 'package:flutter_ecommerce/screens/dashboard.dart';
 import 'package:flutter_ecommerce/screens/edit_profile_screen.dart';
 import 'package:flutter_ecommerce/screens/forgot_password_screen.dart';
@@ -139,7 +140,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoute.login.path,
         name: AppRoute.login.name,
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) {
+          final String? callbackUrl =
+              state.extra != null ? state.extra as String : null;
+
+          return LoginScreen(
+            callbackUrl: callbackUrl,
+          );
+        },
       ),
       GoRoute(
         path: AppRoute.register.path,
@@ -250,6 +258,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const UserManagementScreen(),
       ),
       GoRoute(
+        path: AppRoute.couponManagement.path,
+        name: AppRoute.couponManagement.name,
+        builder: (context, state) => const CouponManagementScreen(),
+      ),
+      GoRoute(
         path: (AppRoute.paymentSuccess.path),
         name: AppRoute.paymentSuccess.name,
         builder: (context, state) {
@@ -283,6 +296,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         AppRoute.userManagement.path,
         AppRoute.adminHome.path,
         AppRoute.dashboard.path,
+        AppRoute.orderManagement.path,
+        AppRoute.couponManagement.path
       ];
 
       final isAdminPath =
@@ -300,7 +315,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       }
 
       return null;
-      return AppRoute.orderManagement.path;
+      return AppRoute.couponManagement.path;
     },
     errorBuilder: (context, state) => Scaffold(
       body: Center(

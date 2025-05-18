@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce/apis/comment_api_service.dart';
 import 'package:flutter_ecommerce/apis/product_api_service.dart';
-import 'package:flutter_ecommerce/apis/review_api_service.dart';
 import 'package:flutter_ecommerce/models/cart_item.dart';
+import 'package:flutter_ecommerce/models/comment.dart';
+import 'package:flutter_ecommerce/models/dto/create_comment_dto.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/models/sku.dart';
+import 'package:flutter_ecommerce/providers/auth_providers.dart';
 import 'package:flutter_ecommerce/providers/cart_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
@@ -12,10 +15,9 @@ import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:flutter_ecommerce/widgets/image_gallery.dart';
 import 'package:flutter_ecommerce/widgets/product_info_cart.dart';
 import 'package:flutter_ecommerce/widgets/responsive_builder.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_ecommerce/widgets/sticky_container.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_ecommerce/models/review.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   const ProductDetailScreen({super.key, required this.productId});
@@ -35,23 +37,24 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   final List<String> _mockGalleryImages = [];
   int _currentImageOrder = 0;
 
-  // Thêm biến mới cho phần mô tả có thể mở rộng
+  final productApiService = ProductApiService(ApiClient());
+  final commentApiService = CommentApiService(ApiClient());
+
+  // Description expansion state
   bool _isDescriptionExpanded = false;
 
-  // Thêm biến cho phần đánh giá
-  final ReviewService _reviewService = ReviewService();
+  // Review form state
   final TextEditingController _commentController = TextEditingController();
-  double _userRating = 0;
-  bool _isAnonymous = true;
+  double? _userRating;
   bool _isSubmitting = false;
+
+  List<Comment> _comments = [];
 
   @override
   void initState() {
     super.initState();
     _fetchProductDetails();
-
-    // Thêm dữ liệu đánh giá mẫu
-    _addMockReviews();
+    _loadMockReviews();
   }
 
   @override
@@ -60,10 +63,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     super.dispose();
   }
 
-  // Thêm phương thức để tạo dữ liệu đánh giá mẫu
-  void _addMockReviews() {
-    Future.delayed(const Duration(milliseconds: 500), () {
-      _reviewService.addMockReviews(widget.productId);
+  // Load mock reviews
+  void _loadMockReviews() async {
+    // Add mock reviews with a slight delay to simulate network
+
+    final comments = await commentApiService.getComments(widget.productId);
+    setState(() {
+      _comments = comments;
     });
   }
 
@@ -74,7 +80,6 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     });
 
     try {
-      final productApiService = ProductApiService(ApiClient());
       final product = await productApiService.getProductById(widget.productId);
 
       // Tạo danh sách hình ảnh từ sản phẩm và các biến thể
@@ -123,11 +128,17 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       return;
     }
 
+    final discountPrice = (_product!.discountPercentage != null &&
+            _selectedSku?.sellingPrice != null)
+        ? _selectedSku!.sellingPrice -
+            ((_selectedSku!.sellingPrice * _product!.discountPercentage!) / 100)
+        : null;
+
     ref.read(cartProvider.notifier).addCartItem(
           CartItem(
             id: DateTime.now().toString(),
             quantity: _quantity,
-            price: _selectedSku!.sellingPrice,
+            price: discountPrice ?? _selectedSku!.sellingPrice,
             product: _product!,
             isChecked: isBuyNow,
             sku: _selectedSku,
@@ -146,7 +157,6 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             label: 'Xem giỏ hàng',
             textColor: Colors.white,
             onPressed: () {
-              // context.goNamed(AppRoute.cart.name);
               navigateTo(context, AppRoute.cart.name);
             },
           ),
@@ -157,18 +167,17 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     }
   }
 
-  // Thêm phương thức để gửi đánh giá
+  // Submit review method
   Future<void> _submitReview() async {
+    final account = ref.read(authProvider);
     if (_commentController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập nội dung đánh giá')),
-      );
+      showErrorSnackBar(context, 'Vui lòng nhập nội dung đánh giá');
       return;
     }
 
-    // Kiểm tra nếu người dùng đang cố gắng đánh giá mà không đăng nhập
-    final isLoggedIn = false;
-    if (_userRating > 0 && !isLoggedIn) {
+    // Check if user is trying to rate without being logged in
+    final isLoggedIn = account != null;
+    if (_userRating != null && !isLoggedIn) {
       _showLoginDialog();
       return;
     }
@@ -178,30 +187,30 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     });
 
     try {
-      await _reviewService.addReview(
-        productId: widget.productId,
-        comment: _commentController.text.trim(),
-        rating: _userRating,
-        isAnonymous: _isAnonymous,
-      );
+      final dto = CreateCommentDto(
+          productId: widget.productId,
+          accountId: account?.id,
+          content: _commentController.text.trim(),
+          email: account?.email,
+          name: account?.fullName,
+          stars: _userRating);
+      final res = await commentApiService.create(dto);
+      final newComment = res.data;
 
-      // Xóa form
-      _commentController.clear();
+      // Refresh reviews list
       setState(() {
+        _comments.add(newComment);
+        _commentController.clear();
         _userRating = 0;
         _isSubmitting = false;
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã gửi đánh giá thành công')),
-        );
+        showSuccessSnackBar(context, 'Đã gửi đánh giá thành công');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: ${e.toString()}')),
-        );
+        showErrorSnackBar(context, 'Lỗi: ${e.toString()}');
       }
       setState(() {
         _isSubmitting = false;
@@ -209,7 +218,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     }
   }
 
-  // Thêm phương thức hiển thị hộp thoại đăng nhập
+  // Show login dialog
   void _showLoginDialog() {
     showDialog(
       context: context,
@@ -225,10 +234,17 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              // Điều hướng đến trang đăng nhập hoặc hiển thị hộp thoại đăng nhập
-              // Đối với demo, chúng ta sẽ chỉ mô phỏng đăng nhập
-              _simulateLogin();
+              Navigator.of(context).pop(); // đóng dialog
+              Future.delayed(const Duration(milliseconds: 100), () {
+                if (mounted) {
+                  navigateTo(
+                    context,
+                    AppRoute.login.path,
+                    extra:
+                        '${AppRoute.productCatalog.path}/${widget.productId}',
+                  );
+                }
+              });
             },
             child: const Text('Đăng nhập'),
           ),
@@ -237,9 +253,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  // Thêm phương thức mô phỏng đăng nhập
+  // Simulate login
   void _simulateLogin() async {
-    // Hiển thị hộp thoại đang tải
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -254,15 +269,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       ),
     );
 
-    // Mô phỏng đăng nhập
-    // await _authService.login('user@example.com', 'password');
+    // Simulate login delay
+    await Future.delayed(const Duration(seconds: 1));
 
-    // Đóng hộp thoại và cập nhật UI
     if (mounted) {
       Navigator.of(context).pop();
-      setState(() {
-        _isAnonymous = false;
-      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đăng nhập thành công')),
       );
@@ -413,31 +424,46 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   }
 
   // Desktop layout - side by side with image on left, info on right
+  // Desktop layout - side by side with sticky image on left, scrollable info on right
   Widget _buildDesktopLayout() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1200),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left side - Image gallery
-                Expanded(
-                  flex: 5,
-                  child: SizedBox(
-                    height: 600,
-                    child: ImageGallery(
-                      images: _mockGalleryImages,
-                      currentImageOrder: _currentImageOrder,
-                    ),
-                  ),
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left side - Sticky Image gallery
+              Expanded(
+                flex: 5,
+                child: Container(
+                  // This alignment helps position the sticky content properly
+                  alignment: Alignment.topCenter,
+                  child: MediaQuery.of(context).size.width >= 1024
+                      ? StickyContainer(
+                          child: SizedBox(
+                            height: 600,
+                            child: ImageGallery(
+                              images: _mockGalleryImages,
+                              currentImageOrder: _currentImageOrder,
+                            ),
+                          ),
+                        )
+                      : SizedBox(
+                          height: 600,
+                          child: ImageGallery(
+                            images: _mockGalleryImages,
+                            currentImageOrder: _currentImageOrder,
+                          ),
+                        ),
                 ),
-                const SizedBox(width: 32),
-                // Right side - Product info
-                Expanded(
-                  flex: 5,
+              ),
+              const SizedBox(width: 32),
+              // Right side - Scrollable Product info
+              Expanded(
+                flex: 5,
+                child: SingleChildScrollView(
                   child: ProductInfoCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,14 +478,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         const SizedBox(height: 32),
                         _buildDesktopActionButtons(),
                         const SizedBox(height: 32),
-                        // Thêm phần đánh giá sản phẩm
                         _buildReviewSection(),
                       ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -469,6 +494,16 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   Widget _buildProductInfo() {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final numberFormat = NumberFormat.decimalPattern(); // uses current locale
+
+    final ratingCount = _comments.where((c) => c.stars != null).length;
+    final discountPrice = (_product!.discountPercentage != null &&
+            _selectedSku?.sellingPrice != null)
+        ? _selectedSku!.sellingPrice -
+            ((_selectedSku!.sellingPrice * _product!.discountPercentage!) / 100)
+        : null;
+    final formatter =
+        NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
+    final discountPriceFormatted = formatter.format(discountPrice);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,19 +520,18 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             Icon(Icons.star, color: Colors.amber, size: 20),
             const SizedBox(width: 4),
             Text(
-              numberFormat.format(999),
+              numberFormat.format(ratingCount),
               style: const TextStyle(fontWeight: FontWeight.w500),
             ),
             const SizedBox(width: 12),
             Text(
-              '| Lượt xem: (${numberFormat.format(_product!.views)}) | Lượt mua: (${numberFormat.format(_product!.views)}) ',
+              '| Lượt xem: (${numberFormat.format(_product!.views)}) | Đã bán: (${numberFormat.format(_product!.soldQuantity)}) ',
               style: TextStyle(color: Colors.grey.shade600),
             ),
             const SizedBox(width: 12),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                // color: colorScheme.primaryContainer,
                 color: _selectedSku?.stockOnHand != null &&
                         _selectedSku!.stockOnHand > 0
                     ? Colors.green
@@ -523,7 +557,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              _selectedSku?.formattedPrice ?? '',
+              discountPriceFormatted,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: colorScheme.primary,
                     fontWeight: FontWeight.bold,
@@ -531,7 +565,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             ),
             const SizedBox(width: 12),
             // Mock original price for discount display
-            if (_selectedSku != null && true)
+            if (_selectedSku != null &&
+                _product?.discountPercentage != null &&
+                _product!.discountPercentage! > 0)
               Text(
                 _selectedSku!.formattedPrice,
                 style: TextStyle(
@@ -542,7 +578,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               ),
             const SizedBox(width: 8),
             // Mock discount percentage
-            if (_selectedSku != null && true)
+            if (_selectedSku != null &&
+                _product?.discountPercentage != null &&
+                _product!.discountPercentage! > 0)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
@@ -550,7 +588,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  '-20%',
+                  '-${_product?.discountPercentage}%',
                   style: TextStyle(
                     color: Colors.red.shade700,
                     fontWeight: FontWeight.w500,
@@ -785,10 +823,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  // Thêm phương thức xây dựng phần đánh giá sản phẩm
+  // Build review section
   Widget _buildReviewSection() {
-    final numberFormat = NumberFormat.decimalPattern('vi_VN'); // or 'de_DE'
-    final totalRating = numberFormat.format(99999);
+    final numberFormat = NumberFormat.decimalPattern('vi_VN');
+    final totalRating = numberFormat.format(_comments.length);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -807,9 +846,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  // Thêm phương thức xây dựng form đánh giá
+  // Build review form
   Widget _buildReviewForm() {
-    final isLoggedIn = false;
+    final account = ref.read(authProvider);
+    final isLoggedIn = account != null;
 
     return Card(
       elevation: 2,
@@ -869,12 +909,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   Row(
                     children: [
                       Checkbox(
-                        value: _isAnonymous,
-                        onChanged: (value) {
-                          setState(() {
-                            _isAnonymous = value ?? true;
-                          });
-                        },
+                        value: true,
+                        onChanged: (value) {},
                       ),
                       const Text('Đăng với tư cách ẩn danh'),
                       const SizedBox(width: 16),
@@ -910,9 +946,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  // Thêm phương thức xây dựng đánh giá sao
+  // Build star rating
   Widget _buildStarRating() {
-    final isLoggedIn = false;
+    final account = ref.read(authProvider);
+
+    final isLoggedIn = account != null;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (index) {
@@ -921,12 +959,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             setState(() {
               _userRating = index + 1;
             });
-            if (_userRating > 0 && !isLoggedIn) {
+            if (_userRating != null && _userRating! > 0 && !isLoggedIn) {
               _showLoginDialog();
             }
           },
           child: Icon(
-            index < _userRating ? Icons.star : Icons.star_border,
+            _userRating != null && index < _userRating!
+                ? Icons.star
+                : Icons.star_border,
             color: Colors.amber,
             size: 28,
           ),
@@ -935,50 +975,31 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  // Thêm phương thức xây dựng danh sách đánh giá
+  // Build reviews list
   Widget _buildReviewsList() {
-    return StreamBuilder<List<Review>>(
-      stream: _reviewService.getReviewsStreamForProduct(widget.productId),
-      initialData: _reviewService.getReviewsForProduct(widget.productId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    if (_comments.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text('Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá!'),
+        ),
+      );
+    }
 
-        if (snapshot.hasError) {
-          return Center(
-            child: Text('Lỗi: ${snapshot.error}'),
-          );
-        }
-
-        final reviews = snapshot.data ?? [];
-
-        if (reviews.isEmpty) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child:
-                  Text('Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá!'),
-            ),
-          );
-        }
-
-        return ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: reviews.length,
-          separatorBuilder: (context, index) => const Divider(),
-          itemBuilder: (context, index) {
-            final review = reviews[index];
-            return _buildReviewItem(review);
-          },
-        );
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _comments.length,
+      separatorBuilder: (context, index) => const Divider(),
+      itemBuilder: (context, index) {
+        final review = _comments[index];
+        return _buildReviewItem(review);
       },
     );
   }
 
-  // Thêm phương thức xây dựng mục đánh giá
-  Widget _buildReviewItem(Review review) {
+  // Build review item
+  Widget _buildReviewItem(Comment comment) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Column(
@@ -989,7 +1010,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               CircleAvatar(
                 backgroundColor: Colors.grey.shade200,
                 child: Text(
-                  review.userName?.substring(0, 1).toUpperCase() ?? 'A',
+                  (comment.name != null && comment.name.trim().isNotEmpty)
+                      ? comment.name.trim().substring(0, 1).toUpperCase()
+                      : 'A',
                   style: TextStyle(
                     color: Colors.grey.shade800,
                     fontWeight: FontWeight.bold,
@@ -1002,13 +1025,15 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      review.userName ?? 'Ẩn danh',
+                      (comment.name != null && comment.name.trim().isNotEmpty)
+                          ? comment.name
+                          : 'Ẩn danh',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      '${review.createdAt.day}/${review.createdAt.month}/${review.createdAt.year}',
+                      '${comment.createdAt.day}/${comment.createdAt.month}/${comment.createdAt.year}',
                       style: TextStyle(
                         color: Colors.grey.shade600,
                         fontSize: 12,
@@ -1017,11 +1042,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   ],
                 ),
               ),
-              if (review.rating > 0)
+              if (comment.stars != null && comment.stars! > 0)
                 Row(
                   children: List.generate(5, (index) {
                     return Icon(
-                      index < review.rating ? Icons.star : Icons.star_border,
+                      index < comment.stars! ? Icons.star : Icons.star_border,
                       color: Colors.amber,
                       size: 16,
                     );
@@ -1030,7 +1055,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Text(review.comment),
+          Text(comment.content),
         ],
       ),
     );

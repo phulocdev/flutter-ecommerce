@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/apis/order_api_service.dart';
 import 'package:flutter_ecommerce/models/dto/create_order_response.dart';
 import 'package:flutter_ecommerce/models/dto/order_detail.dart';
+import 'package:flutter_ecommerce/models/dto/update_order_dto.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:intl/intl.dart';
 
@@ -36,15 +37,14 @@ class _OrderDetailAdminScreenState extends State<OrderDetailAdminScreen> {
     });
 
     try {
-      // final orderData = await orderApiService.getOrderById(widget.orderId);
-      // final orderDetails =
-      //     await orderApiService.getOrderDetails(widget.orderId);
+      final orderData = await orderApiService.getOrderInfo(widget.orderId);
+      final orderDetails = await orderApiService.getOrderDetail(widget.orderId);
 
-      // setState(() {
-      //   _order = orderData;
-      //   _orderDetails = orderDetails;
-      //   _isLoading = false;
-      // });
+      setState(() {
+        _order = orderData;
+        _orderDetails = orderDetails;
+        _isLoading = false;
+      });
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -75,7 +75,8 @@ class _OrderDetailAdminScreenState extends State<OrderDetailAdminScreen> {
     try {
       _showLoadingDialog('Đang cập nhật trạng thái đơn hàng...');
 
-      // await orderApiService.updateStatus(widget.orderId, newStatus);
+      await orderApiService.update(
+          widget.orderId, UpdateOrderDto(status: newStatus));
 
       Navigator.pop(context);
       _fetchOrderDetails();

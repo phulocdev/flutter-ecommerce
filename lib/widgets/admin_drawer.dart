@@ -1,17 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce/apis/auth_api_service.dart';
+import 'package:flutter_ecommerce/providers/auth_providers.dart';
+import 'package:flutter_ecommerce/providers/cart_providers.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
+import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:flutter_ecommerce/services/token_service.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class AdminDrawer extends StatelessWidget {
+class AdminDrawer extends ConsumerWidget {
   final int? selectedIndex;
   final Function(int) onItemTapped;
 
-  const AdminDrawer({
-    super.key,
-    required this.selectedIndex,
-    required this.onItemTapped,
-  });
+  late final TokenService _tokenService;
+  late final ApiClient _apiClient;
+  late final AuthApiService _authApiService;
+
+  AdminDrawer({super.key, required this.onItemTapped, this.selectedIndex}) {
+    _tokenService = TokenService();
+    _apiClient = ApiClient();
+    _authApiService = AuthApiService(_apiClient, _tokenService);
+  }
+
+  Future<void> _showLogoutDialog(BuildContext context, WidgetRef ref) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Xác nhận đăng xuất'),
+          content: const Text('Bạn có chắc chắn muốn đăng xuất không?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Hủy'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text('Đăng xuất'),
+              onPressed: () async {
+                final refreshToken = await _tokenService.getRefreshToken();
+
+                try {
+                  await _authApiService.logoutWithApi(refreshToken ?? '');
+                  Navigator.of(context).pop();
+                  ref.read(authProvider.notifier).logout();
+                  ref.read(cartProvider.notifier).clearCart();
+                  navigateTo(context, AppRoute.login.path);
+                } catch (e) {
+                  print('Lỗi khi đăng xuất: $e');
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -30,7 +77,7 @@ class AdminDrawer extends StatelessWidget {
                 ),
                 SizedBox(height: 10),
                 Text(
-                  'Admin Panel',
+                  'Admin Flutter TDTU',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -50,40 +97,37 @@ class AdminDrawer extends StatelessWidget {
             context,
             index: 1,
             icon: Icons.people,
-            title: 'User Management',
+            title: 'Quản lý người dùng',
           ),
           _buildListTile(
             context,
             index: 2,
             icon: Icons.shopping_bag,
-            title: 'Product Management',
+            title: 'Quản lý sản phẩm',
           ),
           _buildListTile(
             context,
             index: 3,
             icon: Icons.receipt,
-            title: 'Order Management',
+            title: 'Quản lý đơn hàng',
           ),
           _buildListTile(
             context,
             index: 4,
             icon: Icons.discount,
-            title: 'Coupon Management',
+            title: 'Quản lý phiếu giảm giá',
           ),
           _buildListTile(
             context,
             index: 5,
             icon: Icons.support_agent,
-            title: 'Customer Support',
+            title: 'Hỗ trợ khách hàng',
           ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
-            onTap: () {
-              // Add logout functionality
-              Navigator.pop(context);
-            },
+            title: const Text('Đăng xuất'),
+            onTap: () => _showLogoutDialog(context, ref),
           ),
         ],
       ),

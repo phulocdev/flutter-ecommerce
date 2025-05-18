@@ -1,5 +1,6 @@
 import 'package:flutter_ecommerce/models/dto/create_product_dto.dart';
 import 'package:flutter_ecommerce/models/dto/product_query_dto.dart';
+import 'package:flutter_ecommerce/models/dto/update_product_dto.dart';
 import 'package:flutter_ecommerce/models/product.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 
@@ -64,6 +65,19 @@ class ProductApiService {
   Future create(CreateProductDto dto) async {
     try {
       final response = await _apiClient.post('/products', body: dto.toJson());
+      return response;
+    } on ApiException catch (e) {
+      rethrow;
+    } catch (e) {
+      print("Lỗi không xác định: $e");
+      rethrow;
+    }
+  }
+
+  Future update(String id, UpdateProductDto dto) async {
+    try {
+      final response =
+          await _apiClient.patch('/products/$id', body: dto.toJson());
       return response;
     } on ApiException catch (e) {
       rethrow;

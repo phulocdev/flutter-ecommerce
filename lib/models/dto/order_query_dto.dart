@@ -5,7 +5,7 @@ class OrderQuery {
   final String? sort;
   final String? code;
   final String? userId;
-  final int? status;
+  final String? status;
   final String? paymentMethod;
   final double? minTotalPrice;
   final double? maxTotalPrice;
@@ -42,7 +42,9 @@ class OrderQuery {
     if (sort != null && sort!.isNotEmpty) map['sort'] = sort;
     if (code != null && code!.isNotEmpty) map['code'] = code;
     if (userId != null && userId!.isNotEmpty) map['userId'] = userId;
-    if (status != null) map['status'] = status;
+    if (status != null && status!.isNotEmpty) {
+      map['status'] = status;
+    }
     if (paymentMethod != null && paymentMethod!.isNotEmpty)
       map['paymentMethod'] = paymentMethod;
     if (minTotalPrice != null) map['minTotalPrice'] = minTotalPrice.toString();

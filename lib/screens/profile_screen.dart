@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce/apis/auth_api_service.dart';
 import 'package:flutter_ecommerce/providers/auth_providers.dart';
+import 'package:flutter_ecommerce/providers/cart_providers.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:go_router/go_router.dart';
@@ -51,6 +52,7 @@ class ProfileScreen extends ConsumerWidget {
                   await _authApiService.logoutWithApi(refreshToken ?? '');
                   Navigator.of(context).pop();
                   ref.read(authProvider.notifier).logout();
+                  ref.read(cartProvider.notifier).clearCart();
                   navigateTo(context, AppRoute.login.path);
                 } catch (e) {
                   print('Lỗi khi đăng xuất: $e');
@@ -113,7 +115,6 @@ class ProfileScreen extends ConsumerWidget {
                 //   {context.push(AppRoute.historyOrders.path)}
                 context.push(AppRoute.historyOrders.path)
               },
-
             ),
             ListTile(
               leading: const Icon(Icons.person),

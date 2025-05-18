@@ -6,6 +6,7 @@ import 'package:flutter_ecommerce/models/dto/create_order_response.dart';
 import 'package:flutter_ecommerce/models/dto/date_range_query.dart';
 import 'package:flutter_ecommerce/models/dto/order_query_dto.dart';
 import 'package:flutter_ecommerce/models/dto/pagination_query.dart';
+import 'package:flutter_ecommerce/models/dto/update_order_dto.dart';
 import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
 import 'package:flutter_ecommerce/utils/util.dart';
@@ -106,7 +107,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
           limit: _pageSize,
         ),
         // dateRange: DateRangeQuery(from: _startDate, to: _endDate) ,
-        status: _statusFilter,
+        status: _statusFilter?.toString(),
         sort: _sortOption,
         code: _searchQuery.isNotEmpty ? _searchQuery : null,
       );
@@ -144,7 +145,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
     try {
       final query = OrderQuery(
         pagination: PaginationQuery(page: _currentPage + 1, limit: _pageSize),
-        status: _statusFilter,
+        status: _statusFilter.toString(),
         sort: _sortOption,
         code: _searchQuery.isNotEmpty ? _searchQuery : null,
         dateRange: DateRangeQuery(from: _startDate, to: _endDate),
@@ -188,7 +189,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
     try {
       _showLoadingDialog('Đang cập nhật trạng thái đơn hàng...');
 
-      // await orderApiService.updateStatus(orderId, newStatus);
+      await orderApiService.update(orderId, UpdateOrderDto(status: newStatus));
 
       Navigator.pop(context);
 
@@ -1157,38 +1158,14 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                     contentPadding: EdgeInsets.symmetric(horizontal: 16),
                   ),
                   items: [
-                    DropdownMenuItem(
-                      value: 0,
-                      child: Text('Chờ xác nhận'),
-                    ),
-                    DropdownMenuItem(
-                      value: 1,
-                      child: Text('Đã xác nhận'),
-                    ),
-                    DropdownMenuItem(
-                      value: 2,
-                      child: Text('Đang chuẩn bị'),
-                    ),
-                    DropdownMenuItem(
-                      value: 3,
-                      child: Text('Đang giao hàng'),
-                    ),
-                    DropdownMenuItem(
-                      value: 4,
-                      child: Text('Đã giao hàng'),
-                    ),
-                    DropdownMenuItem(
-                      value: 5,
-                      child: Text('Hoàn thành'),
-                    ),
-                    DropdownMenuItem(
-                      value: 6,
-                      child: Text('Đang hoàn trả'),
-                    ),
-                    DropdownMenuItem(
-                      value: 7,
-                      child: Text('Đã hủy'),
-                    ),
+                    DropdownMenuItem(value: 0, child: Text('Chờ xác nhận')),
+                    DropdownMenuItem(value: 1, child: Text('Đã xác nhận')),
+                    DropdownMenuItem(value: 2, child: Text('Đang chuẩn bị')),
+                    DropdownMenuItem(value: 3, child: Text('Đang giao hàng')),
+                    DropdownMenuItem(value: 4, child: Text('Đã giao hàng')),
+                    DropdownMenuItem(value: 5, child: Text('Hoàn thành')),
+                    DropdownMenuItem(value: 6, child: Text('Đang hoàn trả')),
+                    DropdownMenuItem(value: 7, child: Text('Đã hủy')),
                   ],
                   onChanged: (value) {
                     if (value != null) {
