@@ -14,6 +14,19 @@ import 'package:flutter_ecommerce/widgets/product_form.dart';
 import 'package:flutter_ecommerce/widgets/responsive_builder.dart';
 import 'package:intl/intl.dart';
 
+// For product_management_screen.dart
+final List<Map<String, dynamic>> _columnDefinitions = [
+  {'field': 'code', 'text': 'Mã sản phẩm', 'flex': 2},
+  {'field': 'name', 'text': 'Sản phẩm', 'flex': 3},
+  {'field': 'description', 'text': 'Mô tả', 'flex': 3},
+  {'field': 'basePrice', 'text': 'Giá', 'flex': 2},
+  {'field': 'promotion', 'text': 'Khuyến mãi', 'flex': 2},
+  {'field': 'status', 'text': 'Trạng thái', 'flex': 1},
+  {'field': 'createdAt', 'text': 'Ngày tạo', 'flex': 1},
+  {'field': 'updatedAt', 'text': 'Ngày cập nhật', 'flex': 2},
+  {'field': 'actions', 'text': 'Hành động', 'flex': 2},
+];
+
 class ProductManagementScreen extends StatefulWidget {
   const ProductManagementScreen({super.key});
 
@@ -86,7 +99,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
     _fetchData(resetCurrentPage: true);
   }
 
-  Future<void> _fetchData({bool? resetCurrentPage = false}) async {
+  Future<void> _fetchData({bool? resetCurrentPage}) async {
     setState(() {
       _isLoading = true;
     });
@@ -476,7 +489,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
         children: [
           // Main content
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -547,7 +560,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                         ],
                       ),
                     ),
-                    padding: const EdgeInsets.all(10.0),
+                    padding: const EdgeInsets.all(6.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -922,34 +935,28 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                               ),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               child: Row(
-                                children: [
-                                  _buildSortableHeader(
-                                      'code', 'Mã sản phẩm', 150),
-                                  _buildSortableHeader('name', 'Sản phẩm', 300),
-                                  _buildSortableHeader(
-                                      'description', 'Mô tả', 300),
-                                  _buildSortableHeader('basePrice', 'Giá', 150),
-                                  _buildSortableHeader(
-                                      'promotion', 'Khuyến mãi', 150),
-                                  _buildSortableHeader(
-                                      'status', 'Trạng thái', 120),
-                                  _buildSortableHeader(
-                                      'createdAt', 'Ngày tạo', 120),
-                                  _buildSortableHeader(
-                                      'updatedAt', 'Ngày cập nhật', 150),
-                                  Container(
-                                    width: 180,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    child: const Text(
-                                      'Hành động',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
+                                children: _columnDefinitions.map((column) {
+                                  if (column['field'] == 'actions') {
+                                    return Container(
+                                      width: 180, // Fixed width for actions
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16),
+                                      child: const Text(
+                                        'Hành động',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                ],
+                                    );
+                                  } else {
+                                    return _buildSortableHeader(
+                                      field: column['field'],
+                                      text: column['text'],
+                                      flex: column['flex'],
+                                    );
+                                  }
+                                }).toList(),
                               ),
                             ),
 
@@ -987,297 +994,342 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                                         ),
                                       ),
                                       child: Row(
-                                        children: [
+                                        children: // Product Management Table Cells
+                                            [
                                           // Product code
-                                          Container(
-                                            width: 150,
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16),
-                                            child: Text(
-                                              product.code,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w500,
+                                          Expanded(
+                                            flex: _columnDefinitions[0]['flex'],
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                              child: Text(
+                                                product.code,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
                                             ),
                                           ),
 
                                           // Product name with image
-                                          Container(
-                                            width: 300,
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16),
-                                            child: Row(
-                                              children: [
-                                                Container(
-                                                  width: 50,
-                                                  height: 50,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            6),
-                                                    border: Border.all(
-                                                      color:
-                                                          Colors.grey.shade200,
+                                          Expanded(
+                                            flex: _columnDefinitions[1]['flex'],
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                              child: Row(
+                                                children: [
+                                                  Container(
+                                                    width: 50,
+                                                    height: 50,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              6),
+                                                      border: Border.all(
+                                                        color: Colors
+                                                            .grey.shade200,
+                                                      ),
+                                                    ),
+                                                    child: ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              6),
+                                                      child: product.imageUrl
+                                                              .isNotEmpty
+                                                          ? Image.network(
+                                                              product.imageUrl,
+                                                              fit: BoxFit.cover,
+                                                              errorBuilder: (context,
+                                                                      error,
+                                                                      stackTrace) =>
+                                                                  const Icon(Icons
+                                                                      .image_not_supported_outlined),
+                                                            )
+                                                          : const Icon(Icons
+                                                              .image_outlined),
                                                     ),
                                                   ),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            6),
-                                                    child: product
-                                                            .imageUrl.isNotEmpty
-                                                        ? Image.network(
-                                                            product.imageUrl,
-                                                            fit: BoxFit.cover,
-                                                            errorBuilder: (context,
-                                                                    error,
-                                                                    stackTrace) =>
-                                                                const Icon(Icons
-                                                                    .image_not_supported_outlined),
-                                                          )
-                                                        : const Icon(Icons
-                                                            .image_outlined),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 12),
-                                                Flexible(
-                                                  child: Text(
-                                                    product.name,
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w500,
+                                                  const SizedBox(width: 12),
+                                                  Flexible(
+                                                    child: Text(
+                                                      product.name,
+                                                      maxLines: 2,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
                                           ),
 
                                           // Description
-                                          Container(
-                                            width: 300,
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16),
-                                            child: Text(
-                                              product.description,
-                                              maxLines: 3,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color: Colors.grey.shade700,
-                                                fontSize: 13,
-                                                height: 1.5,
+                                          Expanded(
+                                            flex: _columnDefinitions[2]['flex'],
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                              child: Text(
+                                                product.description,
+                                                maxLines: 3,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color: Colors.grey.shade700,
+                                                  fontSize: 13,
+                                                  height: 1.5,
+                                                ),
                                               ),
                                             ),
                                           ),
 
                                           // Price
-                                          Container(
-                                            width: 150,
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16),
-                                            child: Text(
-                                              product.formattedPrice,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.black87,
+                                          Expanded(
+                                            flex: _columnDefinitions[3]['flex'],
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                              child: Text(
+                                                product.formattedPrice,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.black87,
+                                                ),
                                               ),
                                             ),
                                           ),
 
                                           // Promotion
-                                          Container(
-                                            width: 150,
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16),
-                                            child: hasPromotion
-                                                ? Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                          horizontal: 8,
-                                                          vertical: 4,
+                                          Expanded(
+                                            flex: _columnDefinitions[4]['flex'],
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                              child: hasPromotion
+                                                  ? Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 4,
+                                                          ),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors
+                                                                .red.shade50,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        4),
+                                                            border: Border.all(
+                                                                color: Colors
+                                                                    .red
+                                                                    .shade200),
+                                                          ),
+                                                          child: Text(
+                                                            'Giảm $discountPercent%',
+                                                            style: TextStyle(
+                                                              color: Colors
+                                                                  .red.shade700,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 12,
+                                                            ),
+                                                          ),
                                                         ),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: Colors
-                                                              .red.shade50,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(4),
-                                                          border: Border.all(
-                                                              color: Colors.red
-                                                                  .shade200),
-                                                        ),
-                                                        child: Text(
-                                                          'Giảm $discountPercent%',
+                                                        const SizedBox(
+                                                            height: 4),
+                                                        Text(
+                                                          'Còn 7 ngày', // Replace with actual days remaining
                                                           style: TextStyle(
                                                             color: Colors
-                                                                .red.shade700,
-                                                            fontWeight:
-                                                                FontWeight.bold,
+                                                                .grey.shade600,
                                                             fontSize: 12,
                                                           ),
                                                         ),
+                                                      ],
+                                                    )
+                                                  : const Text(
+                                                      'Không có',
+                                                      style: TextStyle(
+                                                        color: Colors.grey,
                                                       ),
-                                                      const SizedBox(height: 4),
-                                                      Text(
-                                                        'Còn 7 ngày', // Replace with actual days remaining
-                                                        style: TextStyle(
-                                                          color: Colors
-                                                              .grey.shade600,
-                                                          fontSize: 12,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  )
-                                                : const Text(
-                                                    'Không có',
-                                                    style: TextStyle(
-                                                      color: Colors.grey,
                                                     ),
-                                                  ),
+                                            ),
                                           ),
 
                                           // Status
-                                          Container(
-                                            width: 120,
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16),
+                                          Expanded(
+                                            flex: _columnDefinitions[5]['flex'],
                                             child: Container(
+                                              alignment: Alignment.center,
                                               padding:
                                                   const EdgeInsets.symmetric(
-                                                horizontal: 12,
-                                                vertical: 6,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: _getStatusColor(
-                                                        product.status)
-                                                    .withOpacity(0.1),
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                              ),
-                                              child: Text(
-                                                product.status,
-                                                style: TextStyle(
+                                                      horizontal: 16),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 6,
+                                                ),
+                                                decoration: BoxDecoration(
                                                   color: _getStatusColor(
-                                                      product.status),
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 13,
+                                                          product.status)
+                                                      .withOpacity(0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                ),
+                                                child: Text(
+                                                  product.status,
+                                                  style: TextStyle(
+                                                    color: _getStatusColor(
+                                                        product.status),
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 13,
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           ),
 
                                           // Created date
-                                          Container(
-                                            width: 120,
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16),
-                                            child: Text(
-                                              DateFormat('dd/MM/yyyy')
-                                                  .format(product.createdAt),
-                                              style: TextStyle(
-                                                color: Colors.grey.shade700,
+                                          Expanded(
+                                            flex: _columnDefinitions[6]['flex'],
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                              child: Text(
+                                                DateFormat('dd/MM/yyyy')
+                                                    .format(product.createdAt),
+                                                style: TextStyle(
+                                                  color: Colors.grey.shade700,
+                                                ),
                                               ),
                                             ),
                                           ),
 
                                           // Updated date
-                                          Container(
-                                            width: 120,
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16),
-                                            child: Text(
-                                              DateFormat('dd/MM/yyyy')
-                                                  .format(product.updatedAt),
-                                              style: TextStyle(
-                                                color: Colors.grey.shade700,
+                                          Expanded(
+                                            flex: _columnDefinitions[7]['flex'],
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                              child: Text(
+                                                DateFormat('dd/MM/yyyy')
+                                                    .format(product.updatedAt),
+                                                style: TextStyle(
+                                                  color: Colors.grey.shade700,
+                                                ),
                                               ),
                                             ),
                                           ),
 
                                           // Actions
-                                          Container(
-                                            width: 180,
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                // Edit button
-                                                IconButton(
-                                                  icon: const Icon(Icons.edit,
-                                                      color: Colors.blue),
-                                                  tooltip: 'Chỉnh sửa sản phẩm',
-                                                  onPressed: () {
-                                                    // Navigate to product form with product data
-                                                    Navigator.of(context).push(
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            Scaffold(
-                                                          appBar: AppBar(
-                                                            title: const Text(
-                                                                'Chỉnh sửa sản phẩm'),
-                                                          ),
-                                                          body:
-                                                              SingleChildScrollView(
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(
-                                                                      16.0),
-                                                              child:
-                                                                  ProductForm(
-                                                                product:
-                                                                    _convertToCreateProductDto(
-                                                                        product),
-                                                                onSave:
-                                                                    (updatedProduct) {
-                                                                  // Handle product update
-                                                                  _fetchData(
-                                                                      resetCurrentPage:
-                                                                          true);
-                                                                },
+                                          Expanded(
+                                            flex: _columnDefinitions[8]['flex'],
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  // Edit button
+                                                  IconButton(
+                                                    icon: const Icon(Icons.edit,
+                                                        color: Colors.blue),
+                                                    tooltip:
+                                                        'Chỉnh sửa sản phẩm',
+                                                    onPressed: () {
+                                                      // Navigate to product form with product data
+                                                      Navigator.of(context)
+                                                          .push(
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              Scaffold(
+                                                            appBar: AppBar(
+                                                              title: const Text(
+                                                                  'Chỉnh sửa sản phẩm'),
+                                                            ),
+                                                            body:
+                                                                SingleChildScrollView(
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        16.0),
+                                                                child:
+                                                                    ProductForm(
+                                                                  product:
+                                                                      _convertToCreateProductDto(
+                                                                          product),
+                                                                  onSave:
+                                                                      (updatedProduct) {
+                                                                    // Handle product update
+                                                                    _fetchData(
+                                                                        resetCurrentPage:
+                                                                            true);
+                                                                  },
+                                                                ),
                                                               ),
                                                             ),
                                                           ),
                                                         ),
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
+                                                      );
+                                                    },
+                                                  ),
 
-                                                // Add promotion button
-                                                IconButton(
-                                                  icon: const Icon(
-                                                      Icons.local_offer,
-                                                      color: Colors.orange),
-                                                  tooltip: 'Thêm khuyến mãi',
-                                                  onPressed: () =>
-                                                      _addPromotion(product),
-                                                ),
+                                                  // Add promotion button
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                        Icons.local_offer,
+                                                        color: Colors.orange),
+                                                    tooltip: 'Thêm khuyến mãi',
+                                                    onPressed: () =>
+                                                        _addPromotion(product),
+                                                  ),
 
-                                                // Delete button
-                                                IconButton(
-                                                  icon: const Icon(Icons.delete,
-                                                      color: Colors.red),
-                                                  tooltip: 'Xóa sản phẩm',
-                                                  onPressed: () =>
-                                                      _showDeleteConfirmation(
-                                                          context, product.id),
-                                                ),
-                                              ],
+                                                  // Delete button
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                        Icons.delete,
+                                                        color: Colors.red),
+                                                    tooltip: 'Xóa sản phẩm',
+                                                    onPressed: () =>
+                                                        _showDeleteConfirmation(
+                                                            context,
+                                                            product.id),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -1355,34 +1407,53 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
     };
   }
 
-  Widget _buildSortableHeader(String field, String text, double width) {
+  Widget _buildTableCell({
+    required int flex,
+    required Widget child,
+  }) {
+    // Calculate minimum width based on flex
+    final double minWidth = 100.0 * flex;
+
+    return Container(
+      constraints: BoxConstraints(minWidth: minWidth),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      alignment: Alignment.center,
+      child: child,
+    );
+  }
+
+  Widget _buildSortableHeader(
+      {required String field, required String text, required int flex}) {
     final bool isActive = _sortField == field;
     final bool isAscending = _sortDirection == 'asc';
 
-    return InkWell(
-      onTap: () => _updateSortOption(field),
-      child: Container(
-        width: width,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: isActive ? Colors.blue.shade700 : Colors.black,
+    return Expanded(
+      flex: flex,
+      child: InkWell(
+        onTap: () => _updateSortOption(field),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: isActive ? Colors.blue.shade700 : Colors.black,
+                  ),
                 ),
               ),
-            ),
-            if (isActive)
-              Icon(
-                isAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                size: 16,
-                color: Colors.blue.shade700,
-              ),
-          ],
+              if (isActive)
+                Icon(
+                  isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: Colors.blue.shade700,
+                ),
+            ],
+          ),
         ),
       ),
     );
