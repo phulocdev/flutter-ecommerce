@@ -1,91 +1,29 @@
-import 'package:flutter_ecommerce/models/dto/create_order_response.dart';
-
 class OrderDetail {
   final String id;
-  final String user;
-  final String code;
-  final int status;
-  final int totalPrice;
-  final int itemCount;
-  final int paymentMethod;
-  final DateTime? paymentAt;
-  final DateTime? deliveredAt;
-  final DateTime? cancelledAt;
-  final ShippingInfo shippingInfo;
-  final String? updateBy;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final List<OrderItem> items;
-
-  OrderDetail({
-    required this.id,
-    required this.user,
-    required this.code,
-    required this.status,
-    required this.totalPrice,
-    required this.itemCount,
-    required this.paymentMethod,
-    this.paymentAt,
-    this.deliveredAt,
-    this.cancelledAt,
-    required this.shippingInfo,
-    this.updateBy,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.items,
-  });
-
-  factory OrderDetail.fromJson(Map<String, dynamic> json) {
-    return OrderDetail(
-      id: json['_id'] as String,
-      user: json['user'] as String,
-      code: json['code'] as String,
-      status: json['status'] as int,
-      totalPrice: json['totalPrice'] as int,
-      itemCount: json['itemCount'] as int,
-      paymentMethod: json['paymentMethod'] as int,
-      paymentAt:
-          json['paymentAt'] != null ? DateTime.parse(json['paymentAt']) : null,
-      deliveredAt: json['deliveredAt'] != null
-          ? DateTime.parse(json['deliveredAt'])
-          : null,
-      cancelledAt: json['cancelledAt'] != null
-          ? DateTime.parse(json['cancelledAt'])
-          : null,
-      shippingInfo: ShippingInfo.fromJson(json['shippingInfo']),
-      updateBy: json['updateBy'] as String?,
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      items: (json['items'] as List<dynamic>)
-          .map((item) => OrderItem.fromJson(item))
-          .toList(),
-    );
-  }
-}
-
-class OrderItem {
-  final String id;
   final int quantity;
+  final String order;
   final int sellingPrice;
   final int costPrice;
   final DateTime createdAt;
   final DateTime updatedAt;
   final Sku sku;
 
-  OrderItem({
+  OrderDetail({
     required this.id,
     required this.quantity,
     required this.sellingPrice,
+    required this.order,
     required this.costPrice,
     required this.createdAt,
     required this.updatedAt,
     required this.sku,
   });
 
-  factory OrderItem.fromJson(Map<String, dynamic> json) {
-    return OrderItem(
+  factory OrderDetail.fromJson(Map<String, dynamic> json) {
+    return OrderDetail(
       id: json['_id'] as String,
       quantity: json['quantity'] as int,
+      order: json['order'] as String,
       sellingPrice: json['sellingPrice'] as int,
       costPrice: json['costPrice'] as int,
       createdAt: DateTime.parse(json['createdAt']),

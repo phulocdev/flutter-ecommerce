@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce/models/dto/create_order_response.dart';
 import 'package:flutter_ecommerce/providers/auth_providers.dart';
 import 'package:flutter_ecommerce/screens/admin_home_screen.dart';
 import 'package:flutter_ecommerce/screens/cart_screen.dart';
@@ -172,14 +173,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoute.orderDetail.path,
         name: AppRoute.orderDetail.name,
         builder: (context, state) {
-          final String? orderId =
-              state.extra != null ? state.extra as String : null;
+          final Order? order =
+              state.extra != null ? state.extra as Order : null;
 
-          if (orderId == null) {
+          if (order == null) {
             return const ProductCatalogScreen();
           }
 
-          return OrderDetailScreen(orderId: orderId);
+          return OrderDetailScreen(order: order);
         },
       ),
       GoRoute(

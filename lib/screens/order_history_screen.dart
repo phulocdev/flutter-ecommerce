@@ -8,6 +8,7 @@ import 'package:flutter_ecommerce/utils/enum.dart';
 import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart'; // cần thiết cho kIsWeb
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({Key? key}) : super(key: key);
@@ -120,8 +121,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           const SizedBox(height: 32),
           FilledButton.icon(
             onPressed: () {
-              // Navigate to products page
-              context.go(AppRoute.home.path);
+              navigateTo(
+                context,
+                AppRoute.productCatalog.path,
+              );
             },
             icon: const Icon(Icons.shopping_bag_outlined),
             label: const Text('Mua sắm ngay'),
@@ -165,7 +168,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: () {
-              context.go(AppRoute.orderDetail.path, extra: order.id);
+              navigateTo(context, AppRoute.orderDetail.path, extra: order);
+              // I want replace context.go with navigateTo but i cannot binding extra to navigateTo function
+              // context.go(AppRoute.orderDetail.path, extra: order);
             },
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -296,10 +301,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       const SizedBox(width: 8),
                       FilledButton(
                         onPressed: () {
-                          context.go(
-                            AppRoute.orderDetail.path,
-                            extra: order.id,
-                          );
+                          navigateTo(context, AppRoute.orderDetail.path,
+                              extra: order);
                         },
                         style: FilledButton.styleFrom(
                           backgroundColor: colorScheme.primary,

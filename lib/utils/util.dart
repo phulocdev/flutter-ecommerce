@@ -3,11 +3,11 @@ import 'package:flutter/foundation.dart'; // cần thiết cho kIsWeb
 import 'package:flutter_ecommerce/utils/enum.dart';
 import 'package:go_router/go_router.dart';
 
-void navigateTo(BuildContext context, String path) {
+void navigateTo(BuildContext context, String path, {Object? extra}) {
   if (kIsWeb) {
-    context.go(path);
+    context.go(path, extra: extra);
   } else {
-    context.push(path);
+    context.push(path, extra: extra);
   }
 }
 
@@ -120,4 +120,22 @@ Color getStatusBackgroundColor(OrderStatus status) {
     default:
       return Colors.grey;
   }
+}
+
+void showErrorSnackBar(BuildContext context, String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    ),
+  );
+}
+
+void showSuccessSnackBar(BuildContext context, String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.green,
+    ),
+  );
 }

@@ -488,7 +488,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              '| Lượt xem: (${numberFormat.format(1999)}) |',
+              '| Lượt xem: (${numberFormat.format(_product!.views)}) | Lượt mua: (${numberFormat.format(_product!.views)}) ',
               style: TextStyle(color: Colors.grey.shade600),
             ),
             const SizedBox(width: 12),
