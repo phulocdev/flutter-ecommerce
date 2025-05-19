@@ -82,7 +82,8 @@ class _ProductManagementTableState extends State<ProductManagementTable> {
                           // context.go(
                           //   '${AppRoute.productManagement.path}/${product.id}',
                           // );
-                          navigateTo(context, '${AppRoute.productManagement.path}/${product.id}');
+                          navigateTo(context,
+                              '${AppRoute.productManagement.path}/${product.id}');
                         },
                         onHover: (isHovered) {
                           setState(() {
@@ -233,34 +234,39 @@ class _ProductManagementTableState extends State<ProductManagementTable> {
                                           color: Colors.blue),
                                       tooltip: 'Chỉnh sửa sản phẩm',
                                       onPressed: () {
-                                        // Navigate to product form with product data
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) => Scaffold(
-                                              appBar: AppBar(
-                                                title: const Text(
-                                                    'Chỉnh sửa sản phẩm'),
-                                              ),
-                                              body: SingleChildScrollView(
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(
-                                                      16.0),
-                                                  child: ProductForm(
-                                                    product:
-                                                        _convertToCreateProductDto(
-                                                            product),
-                                                    onSave: (updatedProduct) {
-                                                      if (widget.onEdit !=
-                                                          null) {
-                                                        widget.onEdit!(product);
-                                                      }
-                                                    },
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
+                                        navigateTo(
+                                          context,
+                                          AppRoute.productDetailAdmin.path,
+                                          extra: product,
                                         );
+                                        // // Navigate to product form with product data
+                                        // Navigator.of(context).push(
+                                        //   MaterialPageRoute(
+                                        //     builder: (context) => Scaffold(
+                                        //       appBar: AppBar(
+                                        //         title: const Text(
+                                        //             'Chỉnh sửa sản phẩm'),
+                                        //       ),
+                                        //       body: SingleChildScrollView(
+                                        //         child: Padding(
+                                        //           padding: const EdgeInsets.all(
+                                        //               16.0),
+                                        //           child: ProductForm(
+                                        //             product:
+                                        //                 _convertToCreateProductDto(
+                                        //                     product),
+                                        //             onSave: (updatedProduct) {
+                                        //               if (widget.onEdit !=
+                                        //                   null) {
+                                        //                 widget.onEdit!(product);
+                                        //               }
+                                        //             },
+                                        //           ),
+                                        //         ),
+                                        //       ),
+                                        //     ),
+                                        //   ),
+                                        // );
                                       },
                                     ),
                                     IconButton(

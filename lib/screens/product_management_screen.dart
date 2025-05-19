@@ -6,6 +6,7 @@ import 'package:flutter_ecommerce/apis/category_api_service.dart';
 import 'package:flutter_ecommerce/apis/product_api_service.dart';
 import 'package:flutter_ecommerce/models/category.dart';
 import 'package:flutter_ecommerce/models/dto/create_product_dto.dart';
+import 'package:flutter_ecommerce/models/dto/create_sku_dto.dart';
 import 'package:flutter_ecommerce/models/dto/pagination_query.dart';
 import 'package:flutter_ecommerce/models/dto/product_query_dto.dart';
 import 'package:flutter_ecommerce/models/dto/update_product_dto.dart';
@@ -51,6 +52,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   String _searchQuery = '';
   String _productCode = '';
   String? _selectedCategoryId;
+  String? _productStatus;
   String? statusFilter;
   int? _hasPromotion;
   int _currentPage = 1;
@@ -111,6 +113,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
           page: resetCurrentPage != null ? 1 : _currentPage,
           limit: _pageSize,
         ),
+        status: _productStatus,
         categoryIds:
             _selectedCategoryId != null ? [_selectedCategoryId!] : null,
         sort: _sortOption,
@@ -192,9 +195,9 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
     );
   }
 
-  void _addProduct(CreateProductDto product) async {
+  void _addProduct(CreateProductDto dto) async {
     try {
-      await productApiService.create(product);
+      await productApiService.create(dto);
       _fetchData(resetCurrentPage: true);
       _showSuccessSnackBar('Thêm sản phẩm thành công');
     } catch (e) {
@@ -226,7 +229,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: ProductForm(
-                onSave: _addProduct,
+                onCreate: _addProduct,
               ),
             ),
           ),
@@ -237,12 +240,6 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
 
   void _addPromotion(Product product) {
     final discountController = TextEditingController();
-    final startDateController = TextEditingController();
-    final endDateController = TextEditingController();
-
-    DateTime? startDate;
-    DateTime? endDate;
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -279,66 +276,66 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
               const SizedBox(height: 16),
 
               // Start date field
-              TextField(
-                controller: startDateController,
-                decoration: InputDecoration(
-                  labelText: 'Ngày bắt đầu',
-                  hintText: 'Chọn ngày bắt đầu',
-                  enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey, width: 1.5),
-                  ),
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.calendar_today),
-                    onPressed: () async {
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-                      if (date != null) {
-                        startDate = date;
-                        startDateController.text =
-                            DateFormat('dd/MM/yyyy').format(date);
-                      }
-                    },
-                  ),
-                ),
-                readOnly: true,
-              ),
-              const SizedBox(height: 16),
+              // TextField(
+              //   controller: startDateController,
+              //   decoration: InputDecoration(
+              //     labelText: 'Ngày bắt đầu',
+              //     hintText: 'Chọn ngày bắt đầu',
+              //     enabledBorder: const OutlineInputBorder(
+              //       borderSide: BorderSide(color: Colors.grey, width: 1.5),
+              //     ),
+              //     border: const OutlineInputBorder(),
+              //     suffixIcon: IconButton(
+              //       icon: const Icon(Icons.calendar_today),
+              //       onPressed: () async {
+              //         final date = await showDatePicker(
+              //           context: context,
+              //           initialDate: DateTime.now(),
+              //           firstDate: DateTime.now(),
+              //           lastDate: DateTime.now().add(const Duration(days: 365)),
+              //         );
+              //         if (date != null) {
+              //           startDate = date;
+              //           startDateController.text =
+              //               DateFormat('dd/MM/yyyy').format(date);
+              //         }
+              //       },
+              //     ),
+              //   ),
+              //   readOnly: true,
+              // ),
+              // const SizedBox(height: 16),
 
-              // End date field
-              TextField(
-                controller: endDateController,
-                decoration: InputDecoration(
-                  labelText: 'Ngày kết thúc',
-                  hintText: 'Chọn ngày kết thúc',
-                  enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey, width: 1.5),
-                  ),
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.calendar_today),
-                    onPressed: () async {
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate: startDate ??
-                            DateTime.now().add(const Duration(days: 7)),
-                        firstDate: startDate ?? DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-                      if (date != null) {
-                        endDate = date;
-                        endDateController.text =
-                            DateFormat('dd/MM/yyyy').format(date);
-                      }
-                    },
-                  ),
-                ),
-                readOnly: true,
-              ),
+              // // End date field
+              // TextField(
+              //   controller: endDateController,
+              //   decoration: InputDecoration(
+              //     labelText: 'Ngày kết thúc',
+              //     hintText: 'Chọn ngày kết thúc',
+              //     enabledBorder: const OutlineInputBorder(
+              //       borderSide: BorderSide(color: Colors.grey, width: 1.5),
+              //     ),
+              //     border: const OutlineInputBorder(),
+              //     suffixIcon: IconButton(
+              //       icon: const Icon(Icons.calendar_today),
+              //       onPressed: () async {
+              //         final date = await showDatePicker(
+              //           context: context,
+              //           initialDate: startDate ??
+              //               DateTime.now().add(const Duration(days: 7)),
+              //           firstDate: startDate ?? DateTime.now(),
+              //           lastDate: DateTime.now().add(const Duration(days: 365)),
+              //         );
+              //         if (date != null) {
+              //           endDate = date;
+              //           endDateController.text =
+              //               DateFormat('dd/MM/yyyy').format(date);
+              //         }
+              //       },
+              //     ),
+              //   ),
+              //   readOnly: true,
+              // ),
 
               const SizedBox(height: 16),
               // Preview discounted price
@@ -400,27 +397,18 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                 return;
               }
 
-              if (startDate == null) {
-                _showErrorSnackBar('Vui lòng chọn ngày bắt đầu');
-                return;
-              }
-
-              if (endDate == null) {
-                _showErrorSnackBar('Vui lòng chọn ngày kết thúc');
-                return;
-              }
-
-              // Close dialog
-              Navigator.pop(context);
+              // Navigator.pop(context);
 
               // Show loading
-              _showLoadingDialog('Đang thêm khuyến mãi...');
+              // _showLoadingDialog('Đang thêm khuyến mãi...');
 
               await productApiService.update(product.id,
                   UpdateProductDto(discountPercentage: discount.toDouble()));
 
               // Close loading dialog
-              Navigator.pop(context);
+              if (mounted) {
+                Navigator.pop(context);
+              }
 
               // Show success message
               _showSuccessSnackBar('Thêm khuyến mãi thành công');
@@ -895,16 +883,52 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                               child: Row(
                                 children: [
                                   _buildFilterChip(
-                                      'Tất cả', true, Icons.all_inclusive),
+                                    'Tất cả',
+                                    _productStatus == null,
+                                    Icons.all_inclusive,
+                                    type: 'All',
+                                    onSelect: (value) {
+                                      setState(() {
+                                        _productStatus = value;
+                                      });
+                                    },
+                                  ),
                                   const SizedBox(width: 8),
                                   _buildFilterChip(
-                                      'Đã đăng', false, Icons.inventory),
+                                    'Đã đăng',
+                                    _productStatus == 'Published',
+                                    Icons.inventory,
+                                    type: 'Published',
+                                    onSelect: (value) {
+                                      setState(() {
+                                        _productStatus = value;
+                                      });
+                                    },
+                                  ),
                                   const SizedBox(width: 8),
                                   _buildFilterChip(
-                                      'Bản nháp', false, Icons.warning_amber),
+                                    'Bản nháp',
+                                    _productStatus == 'Draft',
+                                    Icons.warning_amber,
+                                    type: 'Draft',
+                                    onSelect: (value) {
+                                      setState(() {
+                                        _productStatus = value;
+                                      });
+                                    },
+                                  ),
                                   const SizedBox(width: 8),
-                                  _buildFilterChip('Đã ẩn', false,
-                                      Icons.remove_shopping_cart),
+                                  _buildFilterChip(
+                                    'Đã ẩn',
+                                    _productStatus == 'Archived',
+                                    Icons.remove_shopping_cart,
+                                    type: 'Archived',
+                                    onSelect: (value) {
+                                      setState(() {
+                                        _productStatus = value;
+                                      });
+                                    },
+                                  ),
                                 ],
                               ),
                             ),
@@ -975,10 +999,16 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                                   itemCount: _productList.length,
                                   itemBuilder: (context, index) {
                                     final product = _productList[index];
-                                    final hasPromotion =
-                                        false; // Replace with actual promotion check
-                                    final discountPercent =
-                                        0; // Replace with actual discount percent
+                                    final hasPromotion = _productList[index]
+                                                ?.discountPercentage !=
+                                            null &&
+                                        _productList[index]
+                                                .discountPercentage! >
+                                            0;
+                                    final discountPercent = hasPromotion
+                                        ? _productList[index]
+                                            .discountPercentage!
+                                        : 0;
 
                                     return Container(
                                       height: 100,
@@ -1158,16 +1188,6 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                                                             ),
                                                           ),
                                                         ),
-                                                        const SizedBox(
-                                                            height: 4),
-                                                        Text(
-                                                          'Còn 7 ngày', // Replace with actual days remaining
-                                                          style: TextStyle(
-                                                            color: Colors
-                                                                .grey.shade600,
-                                                            fontSize: 12,
-                                                          ),
-                                                        ),
                                                       ],
                                                     )
                                                   : const Text(
@@ -1195,8 +1215,8 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                                                 ),
                                                 decoration: BoxDecoration(
                                                   color: _getStatusColor(
-                                                          product.status)
-                                                      .withOpacity(0.1),
+                                                    product.status,
+                                                  ).withOpacity(0.1),
                                                   borderRadius:
                                                       BorderRadius.circular(16),
                                                 ),
@@ -1266,7 +1286,42 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                                                         color: Colors.blue),
                                                     tooltip:
                                                         'Chỉnh sửa sản phẩm',
-                                                    onPressed: () {
+                                                    onPressed: () async {
+                                                      final Product
+                                                          targetProduct =
+                                                          await productApiService
+                                                              .getProductById(
+                                                                  _productList[
+                                                                          index]
+                                                                      .id);
+                                                      final skus = targetProduct
+                                                              .skus
+                                                              ?.map((sku) => CreateSkuDto(
+                                                                  costPrice: sku
+                                                                      .costPrice,
+                                                                  sellingPrice: sku
+                                                                      .sellingPrice,
+                                                                  stockOnHand: sku
+                                                                      .stockOnHand,
+                                                                  imageUrl: sku
+                                                                      .imageUrl,
+                                                                  attributeValues: (sku
+                                                                              .attributes ??
+                                                                          [])
+                                                                      .map((att) =>
+                                                                          att.value)
+                                                                      .toList()))
+                                                              .toList() ??
+                                                          [];
+
+                                                      final attributeNames =
+                                                          (targetProduct
+                                                                      .attributeOptions ??
+                                                                  [])
+                                                              .map((att) =>
+                                                                  att.name)
+                                                              .toList();
+
                                                       // Navigate to product form with product data
                                                       Navigator.of(context)
                                                           .push(
@@ -1286,12 +1341,41 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                                                                         16.0),
                                                                 child:
                                                                     ProductForm(
-                                                                  product:
-                                                                      _convertToCreateProductDto(
-                                                                          product),
-                                                                  onSave:
-                                                                      (updatedProduct) {
-                                                                    // Handle product update
+                                                                  product: CreateProductDto(
+                                                                      attributeNames:
+                                                                          attributeNames,
+                                                                      name: targetProduct
+                                                                          .name,
+                                                                      description:
+                                                                          targetProduct
+                                                                              .description,
+                                                                      category:
+                                                                          targetProduct.category?.id ??
+                                                                              '',
+                                                                      brand: targetProduct
+                                                                              .brand
+                                                                              ?.id ??
+                                                                          '',
+                                                                      basePrice:
+                                                                          targetProduct
+                                                                              .basePrice,
+                                                                      minStockLevel:
+                                                                          targetProduct
+                                                                              .minStockLevel,
+                                                                      maxStockLevel:
+                                                                          targetProduct
+                                                                              .maxStockLevel,
+                                                                      imageUrl:
+                                                                          targetProduct
+                                                                              .imageUrl,
+                                                                      skus:
+                                                                          skus),
+                                                                  onUpdate:
+                                                                      (dto) async {
+                                                                    await productApiService.update(
+                                                                        targetProduct
+                                                                            .id,
+                                                                        dto);
                                                                     _fetchData(
                                                                         resetCurrentPage:
                                                                             true);
@@ -1472,32 +1556,21 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
             child: const Text('Hủy'),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
+            onPressed: () async {
+              Navigator.pop(context); // Đóng dialog xác nhận
 
-              // Show loading indicator
-              _showLoadingDialog('Đang xóa sản phẩm...');
+              try {
+                await productApiService.remove(productId);
 
-              // Simulate API call with Future.delayed
-              Future.delayed(const Duration(seconds: 2), () {
-                // Call the API service to delete the product
-                try {
-                  // This would be your actual API call
-                  // productApiService.deleteProduct(productId);
+                if (!mounted) return;
 
-                  // Close loading dialog
-                  Navigator.pop(context);
-
-                  // Delete the product
-                  _deleteProduct(productId);
-                } catch (e) {
-                  // Close loading dialog
-                  Navigator.pop(context);
-
-                  // Show error message
+                _fetchData(resetCurrentPage: true);
+                _showSuccessSnackBar('Xóa sản phẩm thành công');
+              } catch (e) {
+                if (mounted) {
                   _showErrorSnackBar('Lỗi khi xóa sản phẩm: $e');
                 }
-              });
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
@@ -1524,7 +1597,13 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   }
 
   // Add this helper method to your class
-  Widget _buildFilterChip(String label, bool selected, IconData icon) {
+  Widget _buildFilterChip(
+    String label,
+    bool selected,
+    IconData icon, {
+    required String type, // Sử dụng kiểu String thông thường
+    required Function(dynamic) onSelect,
+  }) {
     return FilterChip(
       label: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1540,8 +1619,16 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
       ),
       selected: selected,
       onSelected: (value) {
-        // Handle filter selection
-        print(value);
+        if (type == 'All') {
+          onSelect(null);
+        } else if (type == 'Published') {
+          onSelect('Published');
+        } else if (type == 'Draft') {
+          onSelect('Draft');
+        } else {
+          onSelect('Archived');
+        }
+        _fetchData(resetCurrentPage: true);
       },
       backgroundColor: Colors.grey.shade100,
       selectedColor: Colors.lightBlue,

@@ -144,3 +144,13 @@ void showSuccessSnackBar(BuildContext context, String message) {
     ),
   );
 }
+
+String getVietnameseProductStatus(int status) {
+  if (status == 0) {
+    return 'Đã công khai';
+  }
+  if (status == 1) {
+    return 'Bản nháp';
+  }
+  return 'Đã lưu trữ';
+}

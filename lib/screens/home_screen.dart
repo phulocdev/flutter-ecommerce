@@ -65,24 +65,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     try {
       final featureProductsQuery = ProductQuery(
-        pagination: PaginationQuery(page: 1, limit: 15),
-        sort: 'views.desc',
-      );
+          pagination: PaginationQuery(page: 1, limit: 15),
+          sort: 'views.desc',
+          status: 'Published');
 
       final newProductsQuery = ProductQuery(
-        pagination: PaginationQuery(page: 1, limit: 15),
-        sort: 'createdAt.desc',
-      );
+          pagination: PaginationQuery(page: 1, limit: 15),
+          sort: 'createdAt.desc',
+          status: 'Published');
 
       final bestSellerProductsQuery = ProductQuery(
-        pagination: PaginationQuery(page: 1, limit: 15),
-        sort: 'soldQuantity.desc',
-      );
+          pagination: PaginationQuery(page: 1, limit: 15),
+          sort: 'soldQuantity.desc',
+          status: 'Published');
 
       final promotionProductsQuery = ProductQuery(
-        pagination: PaginationQuery(page: 1, limit: 15),
-        hasDiscount: 1,
-      );
+          pagination: PaginationQuery(page: 1, limit: 15),
+          hasDiscount: 1,
+          status: 'Published');
 
       final featureProducts =
           await productApiService.getProducts(query: featureProductsQuery);
@@ -126,9 +126,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     try {
       final searchQuery = ProductQuery(
-        pagination: PaginationQuery(page: 1, limit: 10),
-        name: query,
-      );
+          pagination: PaginationQuery(page: 1, limit: 10),
+          name: query,
+          status: 'Published');
 
       final results = await productApiService.getProducts(query: searchQuery);
 

@@ -490,10 +490,15 @@ class _UserFormDialogState extends State<UserFormDialog>
           // Fix for error text
           errorMaxLines: 2,
         ),
-        validator: (value) =>
-            widget.user == null && (value == null || value.isEmpty)
-                ? 'Vui lòng nhập mật khẩu'
-                : null,
+        validator: (value) {
+          if (widget.user == null && (value == null || value.isEmpty)) {
+            return 'Vui lòng nhập mật khẩu';
+          }
+          if (value != null && value.length < 8) {
+            return 'Mật khẩu phải có ít nhất 8 ký tự';
+          }
+          return null;
+        },
       ),
     );
   }

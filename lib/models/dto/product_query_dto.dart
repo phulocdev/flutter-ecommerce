@@ -34,12 +34,14 @@ class ProductQuery {
     if (sort != null && sort!.isNotEmpty) map['sort'] = sort;
     if (code != null && code!.isNotEmpty) map['code'] = code;
     if (name != null && name!.isNotEmpty) map['name'] = name;
-    if (categoryIds != null && categoryIds!.isNotEmpty)
+    if (categoryIds != null && categoryIds!.isNotEmpty) {
       map['categoryIds'] = categoryIds!.join(',');
-    if (brandIds != null && brandIds!.isNotEmpty)
+    }
+    if (brandIds != null && brandIds!.isNotEmpty) {
       map['brandIds'] = brandIds!.join(',');
+    }
     if (hasDiscount != null) map['hasDiscount'] = hasDiscount.toString();
-    if (status != null && status!.isNotEmpty) map['status'] = status;
+    if (status != null && status!.isNotEmpty) map['status'] = status.toString();
     if (minPrice != null) map['minPrice'] = minPrice.toString();
     if (maxPrice != null) map['maxPrice'] = maxPrice.toString();
 

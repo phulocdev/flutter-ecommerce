@@ -79,6 +79,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
         brandIds: _selectedBrandIds,
         minPrice: _priceRange.start,
         maxPrice: _priceRange.end,
+        status: 'Published',
         sort: _sortOption,
       );
 
@@ -112,6 +113,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
           brandIds: _selectedBrandIds,
           minPrice: _priceRange.start,
           maxPrice: _priceRange.end,
+          status: 'Published',
           sort: _sortOption);
 
       final newProducts = await _productService.getProducts(query: query);

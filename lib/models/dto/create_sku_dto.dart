@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 
 class CreateSkuDto {
-  final int stockQuantity;
+  // final int stockQuantity;
   final double costPrice;
   final double sellingPrice;
   final int stockOnHand;
@@ -9,7 +9,7 @@ class CreateSkuDto {
   final String? imageUrl;
 
   CreateSkuDto({
-    required this.stockQuantity,
+    // required this.stockQuantity,
     required this.costPrice,
     required this.sellingPrice,
     required this.stockOnHand,
@@ -18,7 +18,7 @@ class CreateSkuDto {
   });
 
   CreateSkuDto copyWith({
-    int? stockQuantity,
+    // int? stockQuantity,
     double? costPrice,
     double? sellingPrice,
     int? stockOnHand,
@@ -26,7 +26,7 @@ class CreateSkuDto {
     String? imageUrl,
   }) {
     return CreateSkuDto(
-      stockQuantity: stockQuantity ?? this.stockQuantity,
+      // stockQuantity: stockQuantity ?? this.stockQuantity,
       costPrice: costPrice ?? this.costPrice,
       sellingPrice: sellingPrice ?? this.sellingPrice,
       stockOnHand: stockOnHand ?? this.stockOnHand,
@@ -43,7 +43,7 @@ class CreateSkuDto {
 
   Map<String, dynamic> toJson() {
     return {
-      'stockQuantity': stockQuantity,
+      // 'stockQuantity': stockQuantity,
       'costPrice': costPrice,
       'sellingPrice': sellingPrice,
       'stockOnHand': stockOnHand,

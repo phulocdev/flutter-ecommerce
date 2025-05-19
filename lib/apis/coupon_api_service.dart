@@ -55,9 +55,10 @@ class CouponApiService {
     return response;
   }
 
-  // Future<void> remove(String id) async {
-  //   await _apiClient.delete('/coupons/$id');
-  // }
+  Future<void> remove(String id) async {
+    final res = await _apiClient.delete('/coupons/$id');
+    return res;
+  }
 
   Future<ValidateCouponResponse> validateCoupon(
       String code, int totalAmount) async {
