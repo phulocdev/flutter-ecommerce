@@ -1,53 +1,57 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_ecommerce/apis/user_api_service.dart';
-import 'package:flutter_ecommerce/models/dto/create_user_dto.dart';
+import 'package:flutter_ecommerce/apis/order_api_service.dart';
+import 'package:flutter_ecommerce/models/dto/create_order_response.dart';
+import 'package:flutter_ecommerce/models/dto/date_range_query.dart';
+import 'package:flutter_ecommerce/models/dto/order_query_dto.dart';
 import 'package:flutter_ecommerce/models/dto/pagination_query.dart';
-import 'package:flutter_ecommerce/models/dto/update_user_dto.dart';
-import 'package:flutter_ecommerce/models/dto/user_query_dto.dart';
-import 'package:flutter_ecommerce/models/user.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:flutter_ecommerce/widgets/responsive_builder.dart';
-import 'package:flutter_ecommerce/widgets/user_form_dialog.dart';
 import 'package:intl/intl.dart';
 
-// For user_management_screen.dart
+// First, define the relative sizes for each column
 final List<Map<String, dynamic>> _columnDefinitions = [
-  {'field': 'fullName', 'text': 'Họ và tên', 'flex': 3},
-  {'field': 'email', 'text': 'Email', 'flex': 3},
-  {'field': 'phoneNumber', 'text': 'Số điện thoại', 'flex': 2},
-  {'field': 'role', 'text': 'Vai trò', 'flex': 1},
+  {'field': 'code', 'text': 'Mã đơn hàng', 'flex': 2},
+  {'field': 'shippingInfo.name', 'text': 'Khách hàng', 'flex': 3},
+  {'field': 'totalPrice', 'text': 'Tổng tiền', 'flex': 2},
+  {'field': 'itemCount', 'text': 'Số lượng SP', 'flex': 1},
+  {'field': 'paymentMethod', 'text': 'Thanh toán', 'flex': 2},
+  {'field': 'status', 'text': 'Trạng thái', 'flex': 2},
   {'field': 'createdAt', 'text': 'Ngày tạo', 'flex': 2},
-  {'field': 'isActive', 'text': 'Trạng thái', 'flex': 2},
   {'field': 'actions', 'text': 'Hành động', 'flex': 2},
 ];
 
-class UserManagementScreen extends StatefulWidget {
-  const UserManagementScreen({super.key});
+class OrderManagementScreen extends StatefulWidget {
+  const OrderManagementScreen({super.key});
 
   @override
-  State<UserManagementScreen> createState() => _UserManagementScreenState();
+  State<OrderManagementScreen> createState() => _OrderManagementScreenState();
 }
 
-class _UserManagementScreenState extends State<UserManagementScreen> {
-  final userApiService = UserApiService(ApiClient());
+class _OrderManagementScreenState extends State<OrderManagementScreen> {
+  final orderApiService = OrderApiService(ApiClient());
   final ScrollController _scrollController = ScrollController();
-  late List<User> _userList = [];
+  late List<Order> _orderList = [];
   Timer? _debounce;
 
   bool _isLoading = false;
   bool _isLoadingMore = false;
   bool _hasMoreData = true;
   String _searchQuery = '';
-  String _emailFilter = '';
-  String? _selectedRole;
-  bool? _isActiveFilter;
+  int? _statusFilter;
+  String _timeRange = 'all';
+  DateTime? _startDate;
+  DateTime? _endDate;
   int _currentPage = 1;
-  final int _pageSize = 10;
+  final int _pageSize = 20;
   String _sortOption = 'createdAt.desc';
   String _sortField = 'createdAt';
   String _sortDirection = 'desc';
+
+  final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
 
   @override
   void initState() {
@@ -71,7 +75,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         !_isLoading &&
         !_isLoadingMore &&
         _hasMoreData) {
-      _loadMoreUsers();
+      _loadMoreOrders();
     }
   }
 
@@ -81,9 +85,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         // Toggle direction if same field
         _sortDirection = _sortDirection == 'asc' ? 'desc' : 'asc';
       } else {
-        // New field, default to ascending
+        // New field, default to descending
         _sortField = field;
-        _sortDirection = 'asc';
+        _sortDirection = 'desc';
       }
       _sortOption = '$_sortField.$_sortDirection';
     });
@@ -96,24 +100,23 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     });
 
     try {
-      final query = UserQuery(
+      final query = OrderQuery(
         pagination: PaginationQuery(
           page: resetCurrentPage != null ? 1 : _currentPage,
           limit: _pageSize,
         ),
-        role: _selectedRole,
+        // dateRange: DateRangeQuery(from: _startDate, to: _endDate) ,
+        status: _statusFilter,
         sort: _sortOption,
-        fullName: _searchQuery.isNotEmpty ? _searchQuery : null,
-        email: _emailFilter.isNotEmpty ? _emailFilter : null,
-        isActive: _isActiveFilter,
+        code: _searchQuery.isNotEmpty ? _searchQuery : null,
       );
 
-      final userList = await userApiService.getUsers(query: query);
+      final orderList = await orderApiService.getOrders(query: query);
 
       setState(() {
-        _userList = userList;
+        _orderList = orderList;
         _isLoading = false;
-        _hasMoreData = userList.length >= _pageSize;
+        _hasMoreData = orderList.length >= _pageSize;
         if (resetCurrentPage == true) {
           _currentPage = 1;
         }
@@ -124,10 +127,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       });
       print('Đã có lỗi xảy ra: $e');
       _showErrorSnackBar('Đã có lỗi xảy ra khi tải dữ liệu');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  Future<void> _loadMoreUsers() async {
+  Future<void> _loadMoreOrders() async {
     if (_isLoading || _isLoadingMore) return;
 
     setState(() {
@@ -135,28 +142,27 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     });
 
     try {
-      final query = UserQuery(
+      final query = OrderQuery(
         pagination: PaginationQuery(page: _currentPage + 1, limit: _pageSize),
-        role: _selectedRole,
+        status: _statusFilter,
         sort: _sortOption,
-        fullName: _searchQuery.isNotEmpty ? _searchQuery : null,
-        email: _emailFilter.isNotEmpty ? _emailFilter : null,
-        isActive: _isActiveFilter,
+        code: _searchQuery.isNotEmpty ? _searchQuery : null,
+        dateRange: DateRangeQuery(from: _startDate, to: _endDate),
       );
 
-      final newUsers = await userApiService.getUsers(query: query);
+      final newOrders = await orderApiService.getOrders(query: query);
 
       setState(() {
-        _userList.addAll(newUsers);
+        _orderList.addAll(newOrders);
         _currentPage++;
-        _hasMoreData = newUsers.length >= _pageSize;
+        _hasMoreData = newOrders.length >= _pageSize;
         _isLoadingMore = false;
       });
     } catch (e) {
       setState(() {
         _isLoadingMore = false;
       });
-      _showErrorSnackBar('Lỗi khi tải thêm người dùng');
+      _showErrorSnackBar('Lỗi khi tải thêm đơn hàng');
     }
   }
 
@@ -178,119 +184,20 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
-  void _addUser(CreateUserDto dto) async {
+  void _updateOrderStatus(String orderId, int newStatus) async {
     try {
-      _showLoadingDialog('Đang thêm người dùng...');
+      _showLoadingDialog('Đang cập nhật trạng thái đơn hàng...');
 
-      await userApiService.create(dto);
-
-      // Close loading dialog
-      if (mounted) {
-        Navigator.pop(context);
-      }
-
-      // Refresh the user list
-      _fetchData(resetCurrentPage: true);
-      _showSuccessSnackBar('Thêm người dùng thành công');
-    } on ApiException catch (e) {
-      if (mounted) {
-        if (e.statusCode == 422 && e.errors != null && e.errors!.isNotEmpty) {
-          final errorMessages =
-              e.errors!.map((err) => err['message']).join(', ');
-          _showErrorSnackBar(errorMessages);
-        } else {
-          _showErrorSnackBar(e.message);
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Đã xảy ra lỗi không xác định: $e')),
-        );
-      }
-    }
-  }
-
-  void _updateUser(String id, UpdateUserDto dto) async {
-    try {
-      _showLoadingDialog('Đang cập nhật người dùng...');
-
-      // In a real app, you would call the API
-      await userApiService.update(id, dto);
+      // await orderApiService.updateStatus(orderId, newStatus);
 
       Navigator.pop(context);
 
       _fetchData(resetCurrentPage: true);
-      _showSuccessSnackBar('Cập nhật người dùng thành công');
-    } on ApiException catch (e) {
-      if (mounted) {
-        Navigator.pop(context);
-        if (e.statusCode == 422 && e.errors != null && e.errors!.isNotEmpty) {
-          final errorMessages =
-              e.errors!.map((err) => err['message']).join(', ');
-          _showErrorSnackBar(errorMessages);
-        } else {
-          _showErrorSnackBar('Cập nhật người dùng thất bại: ${e.message}');
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Đã xảy ra lỗi không xác định: $e')),
-        );
-      }
-    }
-  }
-
-  void _deleteUser(String userId) async {
-    try {
-      // Show loading
-      _showLoadingDialog('Đang xóa người dùng...');
-
-      await userApiService.remove(userId);
-
-      Navigator.pop(context);
-      _fetchData(resetCurrentPage: true);
-
-      _showSuccessSnackBar('Xóa người dùng thành công');
+      _showSuccessSnackBar('Cập nhật trạng thái đơn hàng thành công');
     } catch (e) {
       Navigator.pop(context);
-      _showErrorSnackBar('Lỗi khi xóa người dùng: $e');
+      _showErrorSnackBar('Lỗi khi cập nhật trạng thái đơn hàng: $e');
     }
-  }
-
-  void _toggleUserStatus(String userId, bool currentStatus) async {
-    try {
-      // Show loading
-      _showLoadingDialog(currentStatus
-          ? 'Đang khóa người dùng...'
-          : 'Đang mở khóa người dùng...');
-
-      await userApiService.update(
-          userId, UpdateUserDto(isActive: !currentStatus));
-
-      // Close loading dialog
-      Navigator.pop(context);
-
-      // Refresh the user list
-      _fetchData(resetCurrentPage: true);
-      _showSuccessSnackBar(currentStatus
-          ? 'Khóa người dùng thành công'
-          : 'Mở khóa người dùng thành công');
-    } catch (e) {
-      // Close loading dialog
-      Navigator.pop(context);
-      _showErrorSnackBar('Lỗi khi thay đổi trạng thái người dùng: $e');
-    }
-  }
-
-  void _showAddUserDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => UserFormDialog(
-        onCreate: _addUser,
-      ),
-    );
   }
 
   void _handleSearchInputChange(String value) {
@@ -306,17 +213,89 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     });
   }
 
-  void _handleEmailInputChange(String value) {
-    if (_debounce?.isActive ?? false) {
-      _debounce?.cancel();
-    }
+  void _setTimeRange(String range) {
+    setState(() {
+      _timeRange = range;
 
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      setState(() {
-        _emailFilter = value;
-        _fetchData(resetCurrentPage: true);
-      });
+      final now = DateTime.now();
+
+      switch (range) {
+        case 'today':
+          _startDate = DateTime(now.year, now.month, now.day);
+          _endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+          break;
+        case 'yesterday':
+          final yesterday = now.subtract(const Duration(days: 1));
+          _startDate = DateTime(yesterday.year, yesterday.month, yesterday.day);
+          _endDate = DateTime(
+              yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
+          break;
+        case 'thisWeek':
+          // Find the first day of the week (Monday)
+          final firstDayOfWeek = now.subtract(Duration(days: now.weekday - 1));
+          _startDate = DateTime(
+              firstDayOfWeek.year, firstDayOfWeek.month, firstDayOfWeek.day);
+          _endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+          break;
+        case 'thisMonth':
+          _startDate = DateTime(now.year, now.month, 1);
+          _endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+          break;
+        case 'custom':
+          // Keep existing dates or set to null
+          _startDate = _startDate ?? now.subtract(const Duration(days: 30));
+          _endDate = _endDate ?? now;
+          _showDateRangePicker();
+          break;
+        default:
+          _startDate = null;
+          _endDate = null;
+      }
     });
+
+    if (range != 'custom') {
+      _fetchData(resetCurrentPage: true);
+    }
+  }
+
+  void _showDateRangePicker() async {
+    final initialDateRange = DateTimeRange(
+      start: _startDate ?? DateTime.now().subtract(const Duration(days: 30)),
+      end: _endDate ?? DateTime.now(),
+    );
+
+    final pickedDateRange = await showDateRangePicker(
+      context: context,
+      initialDateRange: initialDateRange,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Theme.of(context).colorScheme.primary,
+              onPrimary: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDateRange != null) {
+      setState(() {
+        _startDate = pickedDateRange.start;
+        _endDate = DateTime(
+          pickedDateRange.end.year,
+          pickedDateRange.end.month,
+          pickedDateRange.end.day,
+          23,
+          59,
+          59,
+        );
+      });
+      _fetchData(resetCurrentPage: true);
+    }
   }
 
   void _showLoadingDialog(String message) {
@@ -333,6 +312,65 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         ),
       ),
     );
+  }
+
+  String _getOrderStatusText(int status) {
+    switch (status) {
+      case 0:
+        return 'Chờ xác nhận';
+      case 1:
+        return 'Đã xác nhận';
+      case 2:
+        return 'Đang chuẩn bị';
+      case 3:
+        return 'Đang giao hàng';
+      case 4:
+        return 'Đã giao hàng';
+      case 5:
+        return 'Hoàn thành';
+      case 6:
+        return 'Đang hoàn trả';
+      case 7:
+        return 'Đã hủy';
+      default:
+        return 'Không xác định';
+    }
+  }
+
+  Color _getOrderStatusColor(int status) {
+    switch (status) {
+      case 0:
+        return Colors.blue;
+      case 1:
+        return Colors.indigo;
+      case 2:
+        return Colors.purple;
+      case 3:
+        return Colors.orange;
+      case 4:
+        return Colors.teal;
+      case 5:
+        return Colors.green;
+      case 6:
+        return Colors.amber;
+      case 7:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getPaymentMethodText(int method) {
+    switch (method) {
+      case 0:
+        return 'Tiền mặt';
+      case 1:
+        return 'Chuyển khoản';
+      case 2:
+        return 'Thẻ tín dụng';
+      default:
+        return 'Không xác định';
+    }
   }
 
   @override
@@ -357,7 +395,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Quản lý người dùng',
+                          'Quản lý đơn hàng',
                           style: Theme.of(context)
                               .textTheme
                               .headlineSmall
@@ -367,27 +405,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Quản lý thông tin người dùng của hệ thống',
+                          'Quản lý thông tin đơn hàng của hệ thống',
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: Colors.grey.shade600,
                                   ),
                         ),
                       ],
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: _showAddUserDialog,
-                      icon: const Icon(
-                        Icons.add,
-                        color: Colors.white,
-                      ),
-                      label: const Text('Thêm người dùng'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
-                      ),
                     ),
                   ],
                 ),
@@ -430,9 +454,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                               onPressed: () {
                                 setState(() {
                                   _searchQuery = '';
-                                  _emailFilter = '';
-                                  _selectedRole = null;
-                                  _isActiveFilter = null;
+                                  _statusFilter = null;
+                                  _timeRange = 'all';
+                                  _startDate = null;
+                                  _endDate = null;
                                 });
                                 _fetchData(resetCurrentPage: true);
                               },
@@ -441,7 +466,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         ),
                         const SizedBox(height: 8),
 
-                        // First row: Name search and role filter
+                        // First row: Order code search
                         if (isDesktop)
                           Row(
                             children: [
@@ -450,7 +475,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      'Tên người dùng',
+                                      'Mã đơn hàng',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
                                         fontSize: 14,
@@ -467,7 +492,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                       ),
                                       child: TextField(
                                         decoration: InputDecoration(
-                                          hintText: 'Tìm kiếm theo tên...',
+                                          hintText:
+                                              'Tìm kiếm theo mã đơn hàng...',
                                           prefixIcon: const Icon(Icons.search),
                                           border: InputBorder.none,
                                           contentPadding:
@@ -488,7 +514,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      'Email',
+                                      'Thời gian',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
                                         fontSize: 14,
@@ -503,18 +529,48 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                           color: Colors.grey.shade300,
                                         ),
                                       ),
-                                      child: TextField(
-                                        decoration: InputDecoration(
-                                          hintText: 'Tìm kiếm theo email...',
-                                          prefixIcon: const Icon(Icons.email),
+                                      child: DropdownButtonFormField<String>(
+                                        value: _timeRange,
+                                        decoration: const InputDecoration(
+                                          prefixIcon:
+                                              Icon(Icons.calendar_today),
                                           border: InputBorder.none,
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                            vertical: 12,
+                                          contentPadding: EdgeInsets.symmetric(
                                             horizontal: 16,
+                                            vertical: 12,
                                           ),
                                         ),
-                                        onChanged: _handleEmailInputChange,
+                                        items: [
+                                          DropdownMenuItem(
+                                            value: 'all',
+                                            child: Text('Tất cả thời gian'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'today',
+                                            child: Text('Hôm nay'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'yesterday',
+                                            child: Text('Hôm qua'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'thisWeek',
+                                            child: Text('Tuần này'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'thisMonth',
+                                            child: Text('Tháng này'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'custom',
+                                            child: Text('Tùy chỉnh...'),
+                                          ),
+                                        ],
+                                        onChanged: (value) {
+                                          if (value != null) {
+                                            _setTimeRange(value);
+                                          }
+                                        },
                                       ),
                                     ),
                                   ],
@@ -527,7 +583,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Tên người dùng',
+                                'Mã đơn hàng',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
                                   fontSize: 14,
@@ -544,7 +600,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                 ),
                                 child: TextField(
                                   decoration: InputDecoration(
-                                    hintText: 'Tìm kiếm theo tên...',
+                                    hintText: 'Tìm kiếm theo mã đơn hàng...',
                                     prefixIcon: const Icon(Icons.search),
                                     border: InputBorder.none,
                                     contentPadding: const EdgeInsets.symmetric(
@@ -555,26 +611,15 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                   onChanged: _handleSearchInputChange,
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                            ],
-                          ),
-
-                        const SizedBox(height: 4),
-
-                        // Second row: Email filter and status filter
-                        const SizedBox(width: 16),
-                        if (!isDesktop)
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+                              const SizedBox(height: 16),
                               const Text(
-                                'Email',
+                                'Thời gian',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
                                   fontSize: 14,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 4),
                               Container(
                                 decoration: BoxDecoration(
                                   color: Colors.grey.shade50,
@@ -583,20 +628,49 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                     color: Colors.grey.shade300,
                                   ),
                                 ),
-                                child: TextField(
-                                  decoration: InputDecoration(
-                                    hintText: 'Tìm kiếm theo email...',
-                                    prefixIcon: const Icon(Icons.email),
+                                child: DropdownButtonFormField<String>(
+                                  value: _timeRange,
+                                  decoration: const InputDecoration(
+                                    prefixIcon: Icon(Icons.calendar_today),
                                     border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 12,
+                                    contentPadding: EdgeInsets.symmetric(
                                       horizontal: 16,
+                                      vertical: 12,
                                     ),
                                   ),
-                                  onChanged: _handleEmailInputChange,
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: 'all',
+                                      child: Text('Tất cả thời gian'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'today',
+                                      child: Text('Hôm nay'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'yesterday',
+                                      child: Text('Hôm qua'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'thisWeek',
+                                      child: Text('Tuần này'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'thisMonth',
+                                      child: Text('Tháng này'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'custom',
+                                      child: Text('Tùy chỉnh...'),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      _setTimeRange(value);
+                                    }
+                                  },
                                 ),
                               ),
-                              const SizedBox(height: 16),
                             ],
                           ),
 
@@ -609,12 +683,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                           children: [
                             _buildCustomChip(
                               label: 'Tất cả',
-                              icon: Icons.people,
-                              selected: _isActiveFilter == null,
+                              icon: Icons.shopping_bag,
+                              selected: _statusFilter == null,
                               onSelected: (selected) {
                                 if (selected) {
                                   setState(() {
-                                    _isActiveFilter = null;
+                                    _statusFilter = null;
                                   });
                                   _fetchData(resetCurrentPage: true);
                                 }
@@ -622,52 +696,100 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                               selectedColor: colorScheme.primary,
                             ),
                             _buildCustomChip(
-                              label: 'Đang hoạt động',
+                              label: 'Chờ xác nhận',
+                              icon: Icons.pending_actions,
+                              selected: _statusFilter == 0,
+                              onSelected: (selected) {
+                                setState(() {
+                                  _statusFilter = selected ? 0 : null;
+                                });
+                                _fetchData(resetCurrentPage: true);
+                              },
+                              selectedColor: Colors.blue,
+                            ),
+                            _buildCustomChip(
+                              label: 'Đã xác nhận',
                               icon: Icons.check_circle,
-                              selected: _isActiveFilter == true,
+                              selected: _statusFilter == 1,
                               onSelected: (selected) {
                                 setState(() {
-                                  _isActiveFilter = selected ? true : null;
+                                  _statusFilter = selected ? 1 : null;
                                 });
                                 _fetchData(resetCurrentPage: true);
                               },
-                              selectedColor: Colors.green,
+                              selectedColor: Colors.indigo,
                             ),
                             _buildCustomChip(
-                              label: 'Đã khóa',
-                              icon: Icons.block,
-                              selected: _isActiveFilter == false,
+                              label: 'Đang chuẩn bị',
+                              icon: Icons.inventory,
+                              selected: _statusFilter == 2,
                               onSelected: (selected) {
                                 setState(() {
-                                  _isActiveFilter = selected ? false : null;
-                                });
-                                _fetchData(resetCurrentPage: true);
-                              },
-                              selectedColor: Colors.red,
-                            ),
-                            _buildCustomChip(
-                              label: 'Quản trị viên',
-                              icon: Icons.admin_panel_settings,
-                              selected: _selectedRole == 'Admin',
-                              onSelected: (selected) {
-                                setState(() {
-                                  _selectedRole = selected ? 'Admin' : null;
+                                  _statusFilter = selected ? 2 : null;
                                 });
                                 _fetchData(resetCurrentPage: true);
                               },
                               selectedColor: Colors.purple,
                             ),
                             _buildCustomChip(
-                              label: 'Khách hàng',
-                              icon: Icons.person,
-                              selected: _selectedRole == 'Customer',
+                              label: 'Đang giao hàng',
+                              icon: Icons.local_shipping,
+                              selected: _statusFilter == 3,
                               onSelected: (selected) {
                                 setState(() {
-                                  _selectedRole = selected ? 'Customer' : null;
+                                  _statusFilter = selected ? 3 : null;
                                 });
                                 _fetchData(resetCurrentPage: true);
                               },
-                              selectedColor: Colors.blue,
+                              selectedColor: Colors.orange,
+                            ),
+                            _buildCustomChip(
+                              label: 'Đã giao hàng',
+                              icon: Icons.home,
+                              selected: _statusFilter == 4,
+                              onSelected: (selected) {
+                                setState(() {
+                                  _statusFilter = selected ? 4 : null;
+                                });
+                                _fetchData(resetCurrentPage: true);
+                              },
+                              selectedColor: Colors.teal,
+                            ),
+                            _buildCustomChip(
+                              label: 'Hoàn thành',
+                              icon: Icons.done_all,
+                              selected: _statusFilter == 5,
+                              onSelected: (selected) {
+                                setState(() {
+                                  _statusFilter = selected ? 5 : null;
+                                });
+                                _fetchData(resetCurrentPage: true);
+                              },
+                              selectedColor: Colors.green,
+                            ),
+                            _buildCustomChip(
+                              label: 'Đang hoàn trả',
+                              icon: Icons.assignment_return,
+                              selected: _statusFilter == 6,
+                              onSelected: (selected) {
+                                setState(() {
+                                  _statusFilter = selected ? 6 : null;
+                                });
+                                _fetchData(resetCurrentPage: true);
+                              },
+                              selectedColor: Colors.amber,
+                            ),
+                            _buildCustomChip(
+                              label: 'Đã hủy',
+                              icon: Icons.cancel,
+                              selected: _statusFilter == 7,
+                              onSelected: (selected) {
+                                setState(() {
+                                  _statusFilter = selected ? 7 : null;
+                                });
+                                _fetchData(resetCurrentPage: true);
+                              },
+                              selectedColor: Colors.red,
                             ),
                           ],
                         )
@@ -678,9 +800,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
                 const SizedBox(height: 24),
 
-                // Users table with sortable headers
+                // Orders table with sortable headers
                 Expanded(
-                  child: _userList.isEmpty
+                  child: _orderList.isEmpty
                       ? _buildEmptyState()
                       : Column(
                           children: [
@@ -698,15 +820,17 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                               child: Row(
                                 children: _columnDefinitions.map((column) {
                                   if (column['field'] == 'actions') {
-                                    return Container(
-                                      width: 180, // Fixed width for actions
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
-                                      child: const Text(
-                                        'Hành động',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
+                                    return Expanded(
+                                      flex: column['flex'],
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: const Text(
+                                          'Hành động',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
                                         ),
                                       ),
                                     );
@@ -720,7 +844,6 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                 }).toList(),
                               ),
                             ),
-
                             // Table body
                             Expanded(
                               child: Container(
@@ -732,12 +855,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                     bottomRight: Radius.circular(12),
                                   ),
                                 ),
+                                // -------------- ORDER LIST ------------------
                                 child: ListView.builder(
                                   controller: _scrollController,
-                                  itemCount: _userList.length,
+                                  itemCount: _orderList.length,
                                   itemBuilder: (context, index) {
-                                    final user = _userList[index];
-                                    final isActive = user.isActive ?? true;
+                                    final order = _orderList[index];
 
                                     return Container(
                                       height: 80,
@@ -751,9 +874,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                         ),
                                       ),
                                       child: Row(
-                                        children: // User Management Table Cells
-                                            [
-                                          // Full name
+                                        children: [
+                                          // Order code
                                           Expanded(
                                             flex: _columnDefinitions[0]['flex'],
                                             child: Container(
@@ -762,7 +884,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                                   const EdgeInsets.symmetric(
                                                       horizontal: 16),
                                               child: Text(
-                                                user.fullName,
+                                                order.code,
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.w500,
                                                 ),
@@ -770,7 +892,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                             ),
                                           ),
 
-                                          // Email
+                                          // Customer name
                                           Expanded(
                                             flex: _columnDefinitions[1]['flex'],
                                             child: Container(
@@ -779,7 +901,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                                   const EdgeInsets.symmetric(
                                                       horizontal: 16),
                                               child: Text(
-                                                user.email,
+                                                order.shippingInfo.name,
                                                 style: TextStyle(
                                                   color: Colors.grey.shade700,
                                                 ),
@@ -787,7 +909,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                             ),
                                           ),
 
-                                          // Phone
+                                          // Total price
                                           Expanded(
                                             flex: _columnDefinitions[2]['flex'],
                                             child: Container(
@@ -796,24 +918,17 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                                   const EdgeInsets.symmetric(
                                                       horizontal: 16),
                                               child: Text(
-                                                user.phoneNumber.isEmpty
-                                                    ? 'Chưa cập nhật'
-                                                    : user.phoneNumber,
+                                                currencyFormatter
+                                                    .format(order.totalPrice),
                                                 style: TextStyle(
-                                                  color: user.phoneNumber
-                                                          .isNotEmpty
-                                                      ? Colors.grey.shade700
-                                                      : Colors.grey.shade400,
-                                                  fontStyle: user.phoneNumber
-                                                          .isNotEmpty
-                                                      ? FontStyle.normal
-                                                      : FontStyle.italic,
+                                                  color: Colors.grey.shade700,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
                                               ),
                                             ),
                                           ),
 
-                                          // Role
+                                          // Item count
                                           Expanded(
                                             flex: _columnDefinitions[3]['flex'],
                                             child: Container(
@@ -821,39 +936,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                               padding:
                                                   const EdgeInsets.symmetric(
                                                       horizontal: 16),
-                                              child: Center(
-                                                child: Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 6,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color:
-                                                        _getRoleColor(user.role)
-                                                            .withOpacity(0.1),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            16),
-                                                  ),
-                                                  child: Text(
-                                                    _getLocalizedRole(
-                                                        user.role),
-                                                    style: TextStyle(
-                                                      color: _getRoleColor(
-                                                          user.role),
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      fontSize: 13,
-                                                    ),
-                                                    textAlign: TextAlign.center,
-                                                  ),
+                                              child: Text(
+                                                order.itemCount.toString(),
+                                                style: TextStyle(
+                                                  color: Colors.grey.shade700,
                                                 ),
                                               ),
                                             ),
                                           ),
 
-                                          // Created date
+                                          // Payment method
                                           Expanded(
                                             flex: _columnDefinitions[4]['flex'],
                                             child: Container(
@@ -862,10 +954,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                                   const EdgeInsets.symmetric(
                                                       horizontal: 16),
                                               child: Text(
-                                                user.createdAt != null
-                                                    ? DateFormat('dd/MM/yyyy')
-                                                        .format(user.createdAt!)
-                                                    : 'Không rõ',
+                                                _getPaymentMethodText(
+                                                    order.paymentMethod),
                                                 style: TextStyle(
                                                   color: Colors.grey.shade700,
                                                 ),
@@ -889,23 +979,20 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                                     vertical: 6,
                                                   ),
                                                   decoration: BoxDecoration(
-                                                    color: isActive
-                                                        ? Colors.green
-                                                            .withOpacity(0.1)
-                                                        : Colors.red
-                                                            .withOpacity(0.1),
+                                                    color: _getOrderStatusColor(
+                                                            order.status)
+                                                        .withOpacity(0.1),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             16),
                                                   ),
                                                   child: Text(
-                                                    isActive
-                                                        ? 'Đang hoạt động'
-                                                        : 'Đã khóa',
+                                                    _getOrderStatusText(
+                                                        order.status),
                                                     style: TextStyle(
-                                                      color: isActive
-                                                          ? Colors.green
-                                                          : Colors.red,
+                                                      color:
+                                                          _getOrderStatusColor(
+                                                              order.status),
                                                       fontWeight:
                                                           FontWeight.w600,
                                                       fontSize: 13,
@@ -917,9 +1004,27 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                             ),
                                           ),
 
-                                          // Actions
+                                          // Created date
                                           Expanded(
                                             flex: _columnDefinitions[6]['flex'],
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                              child: Text(
+                                                DateFormat('dd/MM/yyyy HH:mm')
+                                                    .format(order.createdAt),
+                                                style: TextStyle(
+                                                  color: Colors.grey.shade700,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+
+                                          // Actions
+                                          Expanded(
+                                            flex: _columnDefinitions[7]['flex'],
                                             child: Container(
                                               alignment: Alignment.center,
                                               padding:
@@ -928,47 +1033,38 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  // Edit button
-                                                  IconButton(
-                                                    icon: const Icon(Icons.edit,
-                                                        color: Colors.blue),
-                                                    tooltip:
-                                                        'Chỉnh sửa người dùng',
-                                                    onPressed: () =>
-                                                        _showEditDialog(
-                                                            context, user),
-                                                  ),
-
-                                                  // Ban/Unban button
-                                                  IconButton(
-                                                    icon: Icon(
-                                                      isActive
-                                                          ? Icons.block
-                                                          : Icons.check_circle,
-                                                      color: isActive
-                                                          ? Colors.orange
-                                                          : Colors.green,
-                                                    ),
-                                                    tooltip: isActive
-                                                        ? 'Khóa người dùng'
-                                                        : 'Mở khóa người dùng',
-                                                    onPressed: () =>
-                                                        _showToggleStatusConfirmation(
-                                                      context,
-                                                      user.id,
-                                                      isActive,
-                                                    ),
-                                                  ),
-
-                                                  // Delete button
+                                                  // View details button
                                                   IconButton(
                                                     icon: const Icon(
-                                                        Icons.delete,
-                                                        color: Colors.red),
-                                                    tooltip: 'Xóa người dùng',
+                                                        Icons.visibility,
+                                                        color: Colors.blue),
+                                                    tooltip:
+                                                        'Xem chi tiết đơn hàng',
+                                                    onPressed: () {
+                                                      navigateTo(
+                                                        context,
+                                                        '${AppRoute.orderManagement.path}/:id',
+                                                        pathParameters: {
+                                                          'id': order.id
+                                                        },
+                                                      );
+                                                    },
+                                                  ),
+
+                                                  // Update status button
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                      Icons.edit_note,
+                                                      color: Colors.orange,
+                                                    ),
+                                                    tooltip:
+                                                        'Cập nhật trạng thái',
                                                     onPressed: () =>
-                                                        _showDeleteConfirmation(
-                                                            context, user.id),
+                                                        _showUpdateStatusDialog(
+                                                      context,
+                                                      order.id,
+                                                      order.status,
+                                                    ),
                                                   ),
                                                 ],
                                               ),
@@ -1034,44 +1130,98 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
-  String _getLocalizedRole(String role) {
-    switch (role) {
-      case 'Admin':
-        return 'Quản trị viên';
-      case 'Staff':
-        return 'Nhân viên';
-      case 'Customer':
-        return 'Khách hàng';
-      default:
-        return role;
-    }
-  }
+  void _showUpdateStatusDialog(
+      BuildContext context, String orderId, int currentStatus) {
+    int selectedStatus = currentStatus;
 
-  Color _getRoleColor(String role) {
-    switch (role.toLowerCase()) {
-      case 'admin':
-        return Colors.purple;
-      case 'staff':
-        return Colors.orange;
-      case 'customer':
-        return Colors.blue;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  Widget _buildTableCell({
-    required int flex,
-    required Widget child,
-  }) {
-    // Calculate minimum width based on flex
-    final double minWidth = 100.0 * flex;
-
-    return Container(
-      constraints: BoxConstraints(minWidth: minWidth),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      alignment: Alignment.center,
-      child: child,
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: const Text('Cập nhật trạng thái đơn hàng'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Chọn trạng thái mới cho đơn hàng:'),
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: DropdownButtonFormField<int>(
+                  value: selectedStatus,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: 0,
+                      child: Text('Chờ xác nhận'),
+                    ),
+                    DropdownMenuItem(
+                      value: 1,
+                      child: Text('Đã xác nhận'),
+                    ),
+                    DropdownMenuItem(
+                      value: 2,
+                      child: Text('Đang chuẩn bị'),
+                    ),
+                    DropdownMenuItem(
+                      value: 3,
+                      child: Text('Đang giao hàng'),
+                    ),
+                    DropdownMenuItem(
+                      value: 4,
+                      child: Text('Đã giao hàng'),
+                    ),
+                    DropdownMenuItem(
+                      value: 5,
+                      child: Text('Hoàn thành'),
+                    ),
+                    DropdownMenuItem(
+                      value: 6,
+                      child: Text('Đang hoàn trả'),
+                    ),
+                    DropdownMenuItem(
+                      value: 7,
+                      child: Text('Đã hủy'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        selectedStatus = value;
+                      });
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                if (selectedStatus != currentStatus) {
+                  _updateOrderStatus(orderId, selectedStatus);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Cập nhật'),
+            ),
+          ],
+        );
+      }),
     );
   }
 
@@ -1112,95 +1262,19 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
-  void _showEditDialog(BuildContext context, User user) {
-    showDialog(
-      context: context,
-      builder: (context) => UserFormDialog(
-          user: user,
-          onUpdate: (updateUserDto) {
-            _updateUser(user.id, updateUserDto);
-          }),
-    );
-  }
-
-  void _showDeleteConfirmation(BuildContext context, String userId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Xác nhận xóa'),
-        content: const Text('Bạn có chắc chắn muốn xóa người dùng này không?'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _deleteUser(userId);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Xóa'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showToggleStatusConfirmation(
-      BuildContext context, String userId, bool currentStatus) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(currentStatus
-            ? 'Xác nhận khóa người dùng'
-            : 'Xác nhận mở khóa người dùng'),
-        content: Text(currentStatus
-            ? 'Bạn có chắc chắn muốn khóa người dùng này không? Họ sẽ không thể đăng nhập vào hệ thống.'
-            : 'Bạn có chắc chắn muốn mở khóa người dùng này không? Họ sẽ có thể đăng nhập vào hệ thống.'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _toggleUserStatus(userId, currentStatus);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: currentStatus ? Colors.orange : Colors.green,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(currentStatus ? 'Khóa' : 'Mở khóa'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.people_outline,
+            Icons.shopping_bag_outlined,
             size: 80,
             color: Colors.grey.shade300,
           ),
           const SizedBox(height: 16),
           const Text(
-            'Không tìm thấy người dùng',
+            'Không tìm thấy đơn hàng',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -1208,16 +1282,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Thêm người dùng đầu tiên hoặc điều chỉnh bộ lọc tìm kiếm',
+            'Điều chỉnh bộ lọc tìm kiếm để xem các đơn hàng khác',
             style: TextStyle(
               color: Colors.grey.shade600,
             ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _showAddUserDialog,
-            icon: const Icon(Icons.add),
-            label: const Text('Thêm người dùng'),
           ),
         ],
       ),

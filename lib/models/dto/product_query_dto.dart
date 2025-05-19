@@ -1,7 +1,5 @@
 import 'package:flutter_ecommerce/models/dto/date_range_query.dart';
 import 'package:flutter_ecommerce/models/dto/pagination_query.dart';
-import 'package:flutter_ecommerce/models/dto/date_range_query.dart';
-import 'package:flutter_ecommerce/models/dto/pagination_query.dart';
 
 class ProductQuery {
   final String? sort;
