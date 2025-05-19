@@ -223,13 +223,11 @@ class _CouponManagementScreenState extends State<CouponManagementScreen> {
   void _deleteCoupon(String couponId) async {
     try {
       // Show loading
-      _showLoadingDialog('Đang xóa mã giảm giá...');
+      // _showLoadingDialog('Đang xóa mã giảm giá...');
 
-      // await couponApiService.remove(couponId);
+      await couponApiService.remove(couponId);
 
-      Navigator.pop(context);
       _fetchData(resetCurrentPage: true);
-
       _showSuccessSnackBar('Xóa mã giảm giá thành công');
     } catch (e) {
       Navigator.pop(context);

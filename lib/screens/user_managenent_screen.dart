@@ -42,7 +42,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   String _searchQuery = '';
   String _emailFilter = '';
   String? _selectedRole;
-  bool? _isActiveFilter;
+  int? _isActiveFilter;
   int _currentPage = 1;
   final int _pageSize = 10;
   String _sortOption = 'createdAt.desc';
@@ -90,7 +90,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     _fetchData(resetCurrentPage: true);
   }
 
-  Future<void> _fetchData({bool? resetCurrentPage = false}) async {
+  Future<void> _fetchData({bool? resetCurrentPage}) async {
     setState(() {
       _isLoading = true;
     });
@@ -624,10 +624,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             _buildCustomChip(
                               label: 'Đang hoạt động',
                               icon: Icons.check_circle,
-                              selected: _isActiveFilter == true,
+                              selected: _isActiveFilter == 1,
                               onSelected: (selected) {
                                 setState(() {
-                                  _isActiveFilter = selected ? true : null;
+                                  _isActiveFilter = selected ? 1 : 0;
                                 });
                                 _fetchData(resetCurrentPage: true);
                               },
@@ -636,10 +636,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             _buildCustomChip(
                               label: 'Đã khóa',
                               icon: Icons.block,
-                              selected: _isActiveFilter == false,
+                              selected: _isActiveFilter == 0,
                               onSelected: (selected) {
                                 setState(() {
-                                  _isActiveFilter = selected ? false : null;
+                                  _isActiveFilter = selected ? 0 : 1;
                                 });
                                 _fetchData(resetCurrentPage: true);
                               },

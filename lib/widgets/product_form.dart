@@ -10,21 +10,21 @@ import 'package:flutter_ecommerce/models/brand.dart';
 import 'package:flutter_ecommerce/models/category.dart';
 import 'package:flutter_ecommerce/models/dto/create_product_dto.dart';
 import 'package:flutter_ecommerce/models/dto/create_sku_dto.dart';
+import 'package:flutter_ecommerce/models/dto/update_product_dto.dart';
+import 'package:flutter_ecommerce/routing/app_router.dart';
 import 'package:flutter_ecommerce/screens/product_management_screen.dart';
 import 'package:flutter_ecommerce/services/api_client.dart';
+import 'package:flutter_ecommerce/utils/util.dart';
 import 'package:flutter_ecommerce/widgets/cross_platform_image.dart';
 import 'package:flutter_ecommerce/widgets/responsive_builder.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProductForm extends StatefulWidget {
   final CreateProductDto? product;
-  final Function(CreateProductDto) onSave;
+  final Function(CreateProductDto)? onCreate;
+  final Function(UpdateProductDto)? onUpdate;
 
-  const ProductForm({
-    super.key,
-    this.product,
-    required this.onSave,
-  });
+  const ProductForm({super.key, this.product, this.onCreate, this.onUpdate});
 
   @override
   State<ProductForm> createState() => _ProductFormState();
@@ -46,7 +46,7 @@ class _ProductFormState extends State<ProductForm> {
   final _maxStockController = TextEditingController();
   bool _isSaving = false;
 
-  // Image handling - can be File (mobile) or Uint8List (web)
+  // Image handling - can be File (mobile) or Uint8List (web) || string
   dynamic _productImage;
   final ImagePicker _imagePicker = ImagePicker();
   final Map<int, dynamic> _skuImages = {};
@@ -163,28 +163,44 @@ class _ProductFormState extends State<ProductForm> {
       _minStockController.text = widget.product!.minStockLevel.toString();
       _maxStockController.text = widget.product!.maxStockLevel.toString();
 
+      // Set the product image URL directly
+      if (widget.product!.imageUrl != null &&
+          widget.product!.imageUrl!.isNotEmpty) {
+        _productImage = widget.product!.imageUrl; // This is a URL string
+      }
+
       // Initialize attributes and SKUs
-      _attributeNames.addAll(widget.product!.attributeNames ?? []);
 
       // Initialize SKUs if available
-      if (widget.product!.skus != null) {
-        for (var sku in widget.product!.skus!) {
-          _skus.add({
-            'stockQuantity': sku.stockQuantity,
+      if (widget.product!.skus != null && widget.product!.skus!.isNotEmpty) {
+        // Set attribute names
+        if (widget.product!.attributeNames != null) {
+          _attributeNames.addAll(widget.product!.attributeNames ?? []);
+        }
+
+        // Set SKUs data
+        _skus.addAll((widget.product!.skus ?? []).asMap().entries.map((entry) {
+          int index = entry.key;
+          CreateSkuDto sku = entry.value;
+
+          // Save SKU image URLs
+          if (sku.imageUrl != null && sku.imageUrl!.isNotEmpty) {
+            _skuImages[index] = sku.imageUrl;
+          }
+
+          return {
             'costPrice': sku.costPrice,
             'sellingPrice': sku.sellingPrice,
             'stockOnHand': sku.stockOnHand,
             'attributeValues': sku.attributeValues,
-            'imageUrl': sku.imageUrl,
-          });
-        }
+          };
+        }).toList());
       }
     } else {
       // Set defaults for new product
       _minStockController.text = '1';
       _maxStockController.text = '20';
     }
-
     _fetchBrandAndCategoriesList();
   }
 
@@ -359,7 +375,7 @@ class _ProductFormState extends State<ProductForm> {
             int.tryParse(_skuControllers[stockOnHandKey]?.text ?? '0') ?? 0;
 
         return CreateSkuDto(
-          stockQuantity: skuMap['stockQuantity'] ?? 0,
+          // stockQuantity: skuMap['stockQuantity'] ?? 0,
           costPrice: costPrice,
           sellingPrice: sellingPrice,
           stockOnHand: stockOnHand,
@@ -370,72 +386,117 @@ class _ProductFormState extends State<ProductForm> {
 
       // Handle product image based on platform
       String? productImageUrl;
-      if (_productImage != null && kIsWeb) {
-        try {
-          // Upload the product image using the new service
-          productImageUrl = await imageUploadService.apiClient.uploadImage(
-            imageBytes: _productImage,
-            folderName: 'products-flutter',
-            fileName: 'product_image_${DateTime.now().millisecondsSinceEpoch}',
-          );
 
-          print('>>>>> ${productImageUrl}');
-        } catch (e) {
-          print('Failed to upload product image: $e');
-          // Handle upload error, perhaps show a snackbar
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content:
-                    Text('Failed to upload product image: ${e.toString()}')),
-          );
+      // Fix the condition check
+      if (_productImage != null) {
+        // If _productImage is a String (URL), keep using it
+        if (_productImage is String) {
+          productImageUrl = _productImage;
         }
-      } else if (!kIsWeb && _productImage is File) {
-        // For mobile, read the file into bytes first
-        final File file = _productImage as File;
-        final bytes = await file.readAsBytes();
-        try {
-          productImageUrl = await imageUploadService.apiClient.uploadImage(
-            imageBytes: bytes,
-            folderName: 'products-flutter',
-            fileName: 'product_image_${DateTime.now().millisecondsSinceEpoch}',
-          );
-        } catch (e) {
-          print('Failed to upload product image: $e');
-          // Handle upload error
+        // If on web and image is Uint8List
+        else if (kIsWeb && _productImage is Uint8List) {
+          try {
+            // Upload the product image using the new service
+            productImageUrl = await imageUploadService.apiClient.uploadImage(
+              imageBytes: _productImage,
+              folderName: 'products-flutter',
+              fileName:
+                  'product_image_${DateTime.now().millisecondsSinceEpoch}',
+            );
+          } catch (e) {
+            print('Failed to upload product image: $e');
+            // Handle upload error, perhaps show a snackbar
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content:
+                      Text('Failed to upload product image: ${e.toString()}')),
+            );
+          }
+        }
+        // If on mobile and image is File
+        else if (!kIsWeb && _productImage is File) {
+          // For mobile, read the file into bytes first
+          final File file = _productImage as File;
+          final bytes = await file.readAsBytes();
+          try {
+            productImageUrl = await imageUploadService.apiClient.uploadImage(
+              imageBytes: bytes,
+              folderName: 'products-flutter',
+              fileName:
+                  'product_image_${DateTime.now().millisecondsSinceEpoch}',
+            );
+          } catch (e) {
+            print('Failed to upload product image: $e');
+            // Handle upload error
+          }
         }
       }
 
-      // Create product object
-      final product = CreateProductDto(
-        name: _nameController.text,
-        description: _descriptionController.text,
-        category: _selectedCategory ?? '',
-        brand: _selectedBrand ?? '',
-        basePrice: double.tryParse(_basePriceController.text) ?? 0,
-        minStockLevel: int.tryParse(_minStockController.text) ?? 1,
-        maxStockLevel: int.tryParse(_maxStockController.text) ?? 20,
-        attributeNames: _attributeNames,
-        skus: productSkus,
-        imageUrl: productImageUrl,
-      );
-
       try {
-        await widget.onSave(product);
+        final name = _nameController.text.trim();
+        final description = _descriptionController.text.trim();
+        final category = _selectedCategory?.trim();
+        final brand = _selectedBrand?.trim();
+        final basePrice = double.tryParse(_basePriceController.text) ?? 0;
+        final minStock = int.tryParse(_minStockController.text) ?? 1;
+        final maxStock = int.tryParse(_maxStockController.text) ?? 20;
+
+        if (name.isEmpty || category == null || brand == null) {
+          throw 'Tên, danh mục và thương hiệu là bắt buộc';
+        }
+
+        if (widget.product == null && widget.onCreate != null) {
+          // Tạo sản phẩm mới
+          final dto = CreateProductDto(
+            name: name,
+            description: description,
+            category: category,
+            brand: brand,
+            basePrice: basePrice,
+            minStockLevel: minStock,
+            maxStockLevel: maxStock,
+            attributeNames: _attributeNames,
+            skus: productSkus,
+            imageUrl: productImageUrl,
+          );
+          await widget.onCreate!(dto);
+        } else if (widget.product != null && widget.onUpdate != null) {
+          // Cập nhật sản phẩm
+          final dto = UpdateProductDto(
+            name: name,
+            description: description,
+            category: category,
+            brand: brand,
+            basePrice: basePrice,
+            minStockLevel: minStock,
+            maxStockLevel: maxStock,
+            attributeNames: _attributeNames,
+            skus: productSkus,
+            imageUrl: productImageUrl,
+          );
+          await widget.onUpdate!(dto);
+        }
+
         if (context.mounted) {
           Navigator.of(context).push(
               MaterialPageRoute(builder: (ctx) => ProductManagementScreen()));
-        }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Thêm sản phẩm thành công'),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.green,
-          ),
-        );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(widget.product != null
+                  ? 'Cập nhật sản phẩm thành công'
+                  : 'Thêm sản phẩm thành công'),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lưu sản phẩm thất bại: $e')),
+          SnackBar(
+            content: Text('Lưu sản phẩm thất bại: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       } finally {
         if (mounted) {
@@ -829,35 +890,34 @@ class _ProductFormState extends State<ProductForm> {
       child: _productImage != null
           ? Stack(
               children: [
-                // Use CrossPlatformImage instead of Image.file
-                CrossPlatformImage(
-                  imageSource: _productImage,
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(10),
+                // Display the product image
+                Positioned.fill(
+                  child: _productImage != null
+                      ? CrossPlatformImage(
+                          imageSource: _productImage,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          borderRadius: BorderRadius.circular(10),
+                        )
+                      : Container(
+                          color: Colors.grey.shade200,
+                          child: const Icon(Icons.image,
+                              size: 50, color: Colors.grey),
+                        ),
                 ),
+                // Add image picker button
                 Positioned(
-                  top: 8,
-                  right: 8,
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        _productImage = null;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.close,
-                        size: 20,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+                  bottom: 10,
+                  right: 10,
+                  child: ElevatedButton(
+                    onPressed: _pickProductImage,
+                    style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(8),
+                      backgroundColor: Theme.of(context).primaryColor,
                     ),
+                    child: const Icon(Icons.camera_alt, color: Colors.white),
                   ),
                 ),
               ],
@@ -1471,35 +1531,35 @@ class _ProductFormState extends State<ProductForm> {
       child: _skuImages[index] != null
           ? Stack(
               children: [
-                // Use CrossPlatformImage instead of Image.file
-                CrossPlatformImage(
-                  imageSource: _skuImages[index],
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(10),
+                // Display the SKU image
+                Positioned.fill(
+                  child: _skuImages.containsKey(index)
+                      ? CrossPlatformImage(
+                          imageSource: _skuImages[index],
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          borderRadius: BorderRadius.circular(10),
+                        )
+                      : Container(
+                          color: Colors.grey.shade200,
+                          child: const Icon(Icons.image,
+                              size: 40, color: Colors.grey),
+                        ),
                 ),
+                // Add image picker button
                 Positioned(
-                  top: 8,
-                  right: 8,
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        _skuImages.remove(index);
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.close,
-                        size: 20,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+                  bottom: 5,
+                  right: 5,
+                  child: ElevatedButton(
+                    onPressed: () => _pickSkuImage(index),
+                    style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(6),
+                      backgroundColor: Theme.of(context).primaryColor,
                     ),
+                    child: const Icon(Icons.camera_alt,
+                        size: 18, color: Colors.white),
                   ),
                 ),
               ],

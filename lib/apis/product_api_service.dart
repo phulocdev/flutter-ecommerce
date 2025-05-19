@@ -86,4 +86,18 @@ class ProductApiService {
       rethrow;
     }
   }
+
+  Future remove(String id) async {
+    try {
+      final response = await _apiClient.delete(
+        '/products/$id',
+      );
+      return response;
+    } on ApiException catch (e) {
+      rethrow;
+    } catch (e) {
+      print("Lỗi không xác định: $e");
+      rethrow;
+    }
+  }
 }

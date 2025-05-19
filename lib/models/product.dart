@@ -21,7 +21,7 @@ class Product {
   final DateTime updatedAt;
   final int views;
   final List<Sku>? skus;
-  // final List<AttributeOption>? attributeOptions;
+  final List<AttributeValue>? attributeOptions;
 
   const Product({
     required String id,
@@ -40,8 +40,8 @@ class Product {
     required this.createdAt,
     required this.updatedAt,
     required this.views,
-    required this.skus,
-    // this.attributeOptions,
+    this.skus,
+    this.attributeOptions,
   }) : _id = id;
 
   String get id => _id;
@@ -53,60 +53,39 @@ class Product {
   }
 
   factory Product.fromJson(Map<String, dynamic> json) {
-    try {
-      final id = json['_id'] as String;
-      final code = json['code'] as String;
-      final name = json['name'] as String;
-      final description = json['description'] as String;
-      final soldQuantity =
-          json['soldQuantity'] != null ? json['soldQuantity'] as int : 0;
-      final discountPercentage = json['discountPercentage'] != null
-          ? json['discountPercentage'] as int
-          : 0;
-      final imageUrl = json['imageUrl'] as String;
-      final category = json['category'] is Map<String, dynamic>
+    return Product(
+      id: json['_id'] as String,
+      code: json['code'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String,
+      imageUrl: json['imageUrl'] as String,
+      category: json['category'] is Map<String, dynamic>
           ? Category.fromJson(json['category'])
-          : null;
-      final brand = json['brand'] is Map<String, dynamic>
+          : null,
+      brand: json['brand'] is Map<String, dynamic>
           ? Brand.fromJson(json['brand'])
-          : null;
-      final status = json['status'] as String;
-      final basePrice = (json['basePrice'] as num).toDouble();
-      final minStockLevel = (json['minStockLevel'] as num).toInt();
-      final maxStockLevel = (json['maxStockLevel'] as num).toInt();
-      final createdAt = DateTime.parse(json['createdAt']);
-      final updatedAt = DateTime.parse(json['updatedAt']);
-      final views = json['views'] as int;
-      final skus = json['skus'] != null
+          : null,
+      status: json['status'] as String,
+      soldQuantity:
+          json['soldQuantity'] != null ? json['soldQuantity'] as int : 0,
+      discountPercentage: json['discountPercentage'] != null
+          ? json['discountPercentage'] as int
+          : 0,
+      basePrice: (json['basePrice'] as num).toDouble(),
+      minStockLevel: (json['minStockLevel'] as num).toInt(),
+      maxStockLevel: (json['maxStockLevel'] as num).toInt(),
+      createdAt: DateTime.parse(json['createdAt']),
+      updatedAt: DateTime.parse(json['updatedAt']),
+      views: json['views'] as int,
+      skus: json['skus'] != null
           ? (json['skus'] as List<dynamic>).map((e) => Sku.fromJson(e)).toList()
-          : null;
-
-      return Product(
-        id: id,
-        code: code,
-        name: name,
-        description: description,
-        imageUrl: imageUrl,
-        soldQuantity: soldQuantity,
-        discountPercentage: discountPercentage,
-        category: category,
-        brand: brand,
-        status: status,
-        minStockLevel: minStockLevel,
-        maxStockLevel: maxStockLevel,
-        basePrice: basePrice,
-        createdAt: createdAt,
-        updatedAt: updatedAt,
-        views: views,
-        skus: skus,
-      );
-    } catch (e, stackTrace) {
-      print('❌ Failed to parse Product.fromJson');
-      print('🔎 JSON: $json');
-      print('⚠️ Error: $e');
-      print('🧱 Stack trace: $stackTrace');
-      rethrow;
-    }
+          : null,
+      attributeOptions: json['attributeOptions'] != null
+          ? (json['attributeOptions'] as List<dynamic>)
+              .map((e) => AttributeValue.fromJson(e))
+              .toList()
+          : null,
+    );
   }
 
   Map<String, dynamic> toJson() => {
@@ -127,6 +106,28 @@ class Product {
         'updatedAt': updatedAt.toIso8601String(),
         'views': views,
         'skus': skus?.map((e) => e.toJson()).toList(),
-        // 'attributeOptions': attributeOptions?.map((e) => e.toJson()).toList(),
+        'attributeOptions': attributeOptions?.map((e) => e.toJson()).toList(),
+      };
+}
+
+class AttributeValue {
+  final String name;
+  final List<String> values;
+
+  AttributeValue({
+    required this.name,
+    required this.values,
+  });
+
+  factory AttributeValue.fromJson(Map<String, dynamic> json) {
+    return AttributeValue(
+      name: json['name'] as String,
+      values: List<String>.from(json['values'] as List),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'values': values,
       };
 }
