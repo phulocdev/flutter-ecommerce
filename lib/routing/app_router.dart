@@ -314,8 +314,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         return AppRoute.home.path;
       }
 
-      return AppRoute.couponManagement.path;
       return null;
+      return AppRoute.couponManagement.path;
     },
     errorBuilder: (context, state) => Scaffold(
       body: Center(
